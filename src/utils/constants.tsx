@@ -6,7 +6,7 @@ export const navigation: { title: string; href: string }[] = [
     { title: "About", href: "/about" },
     { title: "Programs", href: "/programs" },
     { title: "Trustees", href: "/trustees" },
-    { title: "Building Blocks Club", href: "/club" },
+    { title: "Building Blocks Club", href: "/building-blocks-club" },
     { title: "Contact", href: "/contact" },
   ]
 

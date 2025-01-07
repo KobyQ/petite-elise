@@ -20,6 +20,9 @@ export interface IEnrollChild {
     dropOffNames?: IDropOff[];
     programs: string[];
     dayCareSchedule?: string;
+    saturdayClubDuration?: string;
+    saturdayClubSchedule?: string;
+    summerCampSchedule?: string;
     hasSibling: boolean;
     sibling?: string;
     feeding?: string;

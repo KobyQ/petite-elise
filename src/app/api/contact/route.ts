@@ -12,18 +12,17 @@ const messageFields = {
 };
 
 interface IContact {
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    subject: string
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  subject: string;
+  message: string;
 }
 
 const generateEmailContent = (data: IContact) => {
   const stringData = Object.entries(data).reduce(
     (str, [key, val]) =>
-      (str += `${
-        messageFields[key as keyof typeof messageFields]
-      }: \n${val} \n \n`),
+      (str += `${messageFields[key as keyof typeof messageFields]}: \n${val} \n\n`),
     ""
   );
 
@@ -42,20 +41,43 @@ const generateEmailContent = (data: IContact) => {
 };
 
 export async function POST(request: NextRequest) {
-  const data = await request.json();
   try {
+    const data = await request.json();
+
+    // Input validation (optional but recommended)
+    if (
+      !data.fullName ||
+      !data.email ||
+      !data.phoneNumber ||
+      !data.subject ||
+      !data.message
+    ) {
+      return NextResponse.json(
+        { error: "All fields are required." },
+        { status: 400 }
+      );
+    }
+
+    // Send the email
     await transporter.sendMail({
       ...mailOptions,
       ...generateEmailContent(data as IContact),
       subject: (data as IContact).subject,
     });
+
+    // Return success response
+    return NextResponse.json(
+      { message: "This message has been successfully sent" },
+      { status: 200 }
+    );
   } catch (error: any) {
-    return NextResponse.json({
-      message: "An Error occured",
-      error: error?.message || error,
-    });
+    console.log("Error sending email:", error);
+    return NextResponse.json(
+      {
+        error: error?.response || "An unexpected error occurred.",
+        message: error?.message || null,
+      },
+      { status: 500 }
+    );
   }
-  return NextResponse.json({
-    message: "This message has been successfully sent",
-  });
 }

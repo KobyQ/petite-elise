@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { contactSchema } from "@/utils/validations";
 import { useFormik } from "formik";
 import React from "react";
-import { LuMail,  LuPhone, LuUser } from "react-icons/lu";
+import {  LuMail,  LuMessageSquareText,  LuPhone, LuUser } from "react-icons/lu";
 import { toast } from "react-toastify";
 
 const SendMessage = () => {
@@ -17,13 +18,14 @@ const SendMessage = () => {
     touched,
     handleBlur,
     handleChange,
-    isValid, // Add this
+    isValid, 
   } = useFormik({
     initialValues: {
       subject: "Registration Request from Petite Elise Website",
       fullName: "",
       email: "",
       phoneNumber: "",
+      message: "",
     },
     validationSchema: contactSchema,
     onSubmit: async (_values) => {
@@ -36,22 +38,28 @@ const SendMessage = () => {
             "Content-Type": "application/json",
           },
         });
-        resetForm();
-  
-        toast.success("Message sent Successfully!");
+    
+        console.log("response", response)
+    
         if (!response.ok) {
-          throw new Error("HTTP error! status: " + response.status);
+          const errorData = await response.json(); 
+          throw new Error(errorData?.message || "HTTP error! status: " + response.status);
         }
-      } catch (error) {
-        console.log(error)
-        toast.error("An error occurred. Try again");
+    
+      
+        resetForm();
+        toast.success("Message sent Successfully!");
+      } catch (error: any) {
+        console.error("Error during submission:", error);
+        toast.error(error?.message || "An error occurred. Try again");
       } finally {
         setSubmitting(false);
       }
     },
+    
   });
   
-
+console.log("formerrors", errors)
   return (
     <div className="max-w-4xl mx-auto px-2 md:px-8 py-16">
       <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 relative overflow-hidden">
@@ -75,7 +83,7 @@ const SendMessage = () => {
                 type="text"
                 name="fullName"
                 value={values.fullName}
-                onChange={handleChange} // Use handleChange
+                onChange={handleChange} 
                 onBlur={handleBlur}
                 placeholder="Your Full Name"
                 className="block min-w-0 grow p-3 sm:p-4 pl-1 text-base placeholder:text-gray-400 focus:ring-blue-300 focus:outline-none"
@@ -101,7 +109,7 @@ const SendMessage = () => {
                 type="email"
                 name="email"
                 value={values.email}
-                onChange={handleChange} // Use handleChange
+                onChange={handleChange} 
                 onBlur={handleBlur}
                 placeholder="Your Email"
                 className="block min-w-0 grow p-3 sm:p-4 pl-1 text-base placeholder:text-gray-400 focus:ring-blue-300 focus:outline-none"
@@ -127,7 +135,7 @@ const SendMessage = () => {
                 type="tel"
                 name="phoneNumber"
                 value={values.phoneNumber}
-                onChange={handleChange} // Use handleChange
+                onChange={handleChange} 
                 onBlur={handleBlur}
                 placeholder="Your Phone Number"
                 className="block min-w-0 grow p-3 sm:p-4 pl-1 text-base placeholder:text-gray-400 focus:ring-blue-300 focus:outline-none"
@@ -136,6 +144,31 @@ const SendMessage = () => {
             </div>
             {errors.phoneNumber && touched.phoneNumber && (
               <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
+            )}
+          </div>
+
+           {/* message Input */}
+           <div>
+            <div
+              className={`flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 ${
+                errors.message && touched.message
+                  ? "outline-red-500"
+                  : "outline-gray-300"
+              } focus-within:outline-indigo-600`}
+            >
+              <LuMessageSquareText className="shrink-0 text-gray-400" />
+              <textarea
+                name="message"
+                value={values.message}
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                placeholder="Please share the programs you want to enroll your child in or any questions you have."
+                className="block min-w-0 grow p-3 sm:p-4 pl-1 h-40 text-base placeholder:text-gray-400 focus:ring-blue-300 focus:outline-none"
+                required
+              />
+            </div>
+            {errors.message && touched.message && (
+              <p className="mt-1 text-sm text-red-500">{errors.message}</p>
             )}
           </div>
 

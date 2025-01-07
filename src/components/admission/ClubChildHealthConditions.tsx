@@ -7,17 +7,17 @@ import { IEnrollChild } from "@/utils/interfaces";
 import { Button } from "../ui/button";
 import Input from "../shared/forms/Input";
 
-type ChildHealthConditionsProps = {
+type ClubChildHealthConditionsProps = {
   values: IEnrollChild;
   nextStep: () => void;
   prevStep: () => void;
 };
 
-const ChildHealthConditions = ({
+const ClubChildHealthConditions = ({
   values,
   nextStep,
   prevStep,
-}: ChildHealthConditionsProps) => {
+}: ClubChildHealthConditionsProps) => {
   const options = [
     { label: "ADHD", value: "ADHD" },
     { label: "Dyslexia", value: "Dyslexia" },
@@ -36,12 +36,6 @@ const ChildHealthConditions = ({
 
   return (
     <div className="mb-10 mt-5">
-      <CustomSelect
-        label="Add Ons (optional)"
-        name="feeding"
-        options={foodOptions}
-        placeholder="Select an option"
-      />
 
       <div className="flex flex-col gap-6 mt-8 ">
         <div>
@@ -91,20 +85,7 @@ const ChildHealthConditions = ({
           )}
         </div>
 
-        <div>
-          <RadioButton
-            label="Are you enrolling a sibling?"
-            name="hasSibling"
-            options={[
-              { label: "Yes", value: true },
-              { label: "No", value: false },
-            ]}
-            required
-          />
-          {values?.hasSibling === true && (
-            <Input label="Existing Sibling’s Full Name" name="sibling" required />
-          )}
-        </div>
+     
       </div>
 
       <div className="w-full flex justify-between gap-4">
@@ -130,4 +111,4 @@ const ChildHealthConditions = ({
   );
 };
 
-export default ChildHealthConditions;
+export default ClubChildHealthConditions;

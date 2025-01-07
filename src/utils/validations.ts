@@ -6,6 +6,8 @@ export const contactSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required"),
   phoneNumber: Yup.string().required("Phone is required"),
+  message: Yup.string().required("Message is required"),
+
 });
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
