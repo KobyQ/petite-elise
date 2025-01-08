@@ -24,7 +24,7 @@ const StudentDetails = ({
         className="max-w-3xl h-[80vh] overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg"
         hideDefaultCloseButton={true}
       >
-         <DialogTitle className="sr-only">Student Details</DialogTitle>
+        <DialogTitle className="sr-only">Student Details</DialogTitle>
         {/* Header */}
         <div className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg relative">
           <h2 className="text-xl font-semibold text-center">Student Details</h2>
@@ -109,28 +109,26 @@ const StudentDetails = ({
                 <strong>Will Drop Off Self:</strong>{" "}
                 {data?.dropChildOffSelf === "true" ? "Yes" : "No"}
               </p>
-                  <p>
-                    <strong>Authorized Drop-Off Names:</strong>
-                  </p>
-                  {data?.dropOffNames?.length > 0 ? (
-                    <ul className="list-disc pl-5">
-                      {data?.dropOffNames?.map(
-                        (
-                          dropOff: { name: string; relationToChild: string },
-                          index: number
-                        ) => (
-                          <li key={index}>
-                            <strong>{dropOff.name}</strong> -{" "}
-                            {dropOff.relationToChild}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500">
-                      No authorized drop-off names
-                    </p>
+              <p>
+                <strong>Authorized Drop-Off Names:</strong>
+              </p>
+              {data?.dropOffNames?.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {data?.dropOffNames?.map(
+                    (
+                      dropOff: { name: string; relationToChild: string },
+                      index: number
+                    ) => (
+                      <li key={index}>
+                        <strong>{dropOff.name}</strong> -{" "}
+                        {dropOff.relationToChild}
+                      </li>
+                    )
                   )}
+                </ul>
+              ) : (
+                <p className="text-gray-500">No authorized drop-off names</p>
+              )}
             </div>
           </section>
 
@@ -160,10 +158,26 @@ const StudentDetails = ({
                   <p className="text-gray-500">No programs registered</p>
                 )}
               </div>
-              <p>
-                <strong>Day Care Schedule:</strong>{" "}
-                {data?.dayCareSchedule || "N/A"}
-              </p>
+              <div className="flex flex-col gap-4">
+                {data?.dayCareSchedule && (
+                  <p>
+                    <strong>Day Care Schedule:</strong>{" "}
+                    {data?.dayCareSchedule || "N/A"}
+                  </p>
+                )}{" "}
+                {data?.saturdayClubSchedule && (
+                  <p>
+                    <strong>Saturday Club Schedule:</strong>{" "}
+                    {data?.saturdayClubSchedule || "N/A"}
+                  </p>
+                )}{" "}
+                {data?.childMindingSchedule && (
+                  <p>
+                    <strong>SChildminding Schedule:</strong>{" "}
+                    {data?.childMindingSchedule || "N/A"}
+                  </p>
+                )}
+              </div>
             </div>
           </section>
 
@@ -202,8 +216,18 @@ const StudentDetails = ({
               </p>
               <p className="capitalize">
                 <strong>Photo Consent:</strong>{" "}
-                {data?.photographUsageConsent === "permit" ? "Permit certain features (except for face and full body photos)" : data?.photographUsageConsent }
+                {data?.photographUsageConsent === "permit"
+                  ? "Permit certain features (except for face and full body photos)"
+                  : data?.photographUsageConsent}
               </p>
+              {data?.familyId && (
+                <p>
+                  <strong>
+                    Family Id (Siblings have the same family ID) :
+                  </strong>{" "}
+                  {data?.familyId || "N/A"}
+                </p>
+              )}
             </div>
           </section>
         </div>

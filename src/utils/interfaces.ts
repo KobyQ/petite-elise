@@ -22,6 +22,7 @@ export interface IEnrollChild {
     dayCareSchedule?: string;
     saturdayClubSchedule?: string;
     summerCampSchedule?: string;
+    childMindingSchedule?: string;
     hasSibling: boolean;
     feeding?: string;
     hasAllergies: boolean;

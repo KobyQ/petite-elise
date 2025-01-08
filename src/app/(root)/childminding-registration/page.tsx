@@ -91,6 +91,7 @@ const ChildMindingRegistration = () => {
         { name: "", relationToChild: "" },
       ],
       programs: selectedChild?.programs || [],
+      childMindingSchedule: selectedChild?.childMindingSchedule || [],
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
