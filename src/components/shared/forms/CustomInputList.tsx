@@ -13,17 +13,23 @@ const CustomInputList: React.FC<CustomInputListProps> = ({
   label,
   name,
   required = false,
-  placeholder = "Type and press Enter",
+  placeholder = "Type and press Enter or click Add",
 }) => {
   const [field, meta, helpers] = useField(name);
   const [inputValue, setInputValue] = useState("");
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && inputValue.trim()) {
-      event.preventDefault();
+  const addItem = () => {
+    if (inputValue.trim()) {
       const updatedValue = [...(field.value || []), inputValue.trim()];
       helpers.setValue(updatedValue);
       setInputValue("");
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addItem();
     }
   };
 
@@ -38,16 +44,25 @@ const CustomInputList: React.FC<CustomInputListProps> = ({
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
-      <input
-        type="text"
-        className={`mt-2 p-3 w-full border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none ${
-          meta.touched && meta.error ? "border-red-500" : "border-gray-300"
-        }`}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-      />
+      <div className="flex items-center space-x-2">
+        <input
+          type="text"
+          className={`mt-2 p-3 w-full border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none ${
+            meta.touched && meta.error ? "border-red-500" : "border-gray-300"
+          }`}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+        />
+        <button
+          type="button"
+          onClick={addItem}
+          className="mt-2 px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400 focus:outline-none"
+        >
+          Add
+        </button>
+      </div>
       {meta.touched && meta.error && (
         <p className="mt-1 text-sm text-red-500">{meta.error}</p>
       )}

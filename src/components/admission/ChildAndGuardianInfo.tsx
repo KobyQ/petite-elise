@@ -138,7 +138,7 @@ const ChildAndGuardianInfo = ({
                     {values?.dropOffNames &&
                       values?.dropOffNames?.length > 0 &&
                       values?.dropOffNames?.map((val: any, index: any) => (
-                        <div className="flex gap-5 items-center " key={index}>
+                        <div className="flex flex-col lg:flex-row gap-5 items-center " key={index}>
                           <div className="w-full">
                             <Input
                               label="Full name"
@@ -154,7 +154,7 @@ const ChildAndGuardianInfo = ({
                             />
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex justify-end w-full lg:w-auto gap-2">
                             <MdAdd
                               className="w-5 h-5 bg-primary text-white border-primary mt-3 cursor-pointer rounded-md "
                               onClick={() => push("")}

@@ -4,6 +4,7 @@ import { Field } from "formik";
 import { Button } from "../ui/button";
 import RadioButton from "../shared/forms/RadioButton";
 import { IEnrollChild } from "@/utils/interfaces";
+import { toast } from "react-toastify";
 
 type AuthorizationProps = {
   values: IEnrollChild;
@@ -18,6 +19,22 @@ const Authorization = ({
   prevStep,
   isSubmitting,
 }: AuthorizationProps) => {
+  const handleRegisterClick = () => {
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach((error: any) => {
+        toast.error(error, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      });
+    }
+  };
+
   return (
     <div className="my-10">
       <div>
@@ -119,6 +136,7 @@ const Authorization = ({
         <Button
           type="submit"
           disabled={isSubmitting}
+          onClick={handleRegisterClick}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
           {values?.hasSibling
