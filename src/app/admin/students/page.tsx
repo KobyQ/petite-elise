@@ -44,15 +44,15 @@ const Students = () => {
       buildingSchoolClub: [] as IEnrollChild[],
     };
 
-    items.forEach((item) => {
+    items?.forEach((item) => {
       if (
-        item.programs.some((program) =>
+        item?.programs?.some((program) =>
           ["Daycare", "Preschool", "Afterschool Care"].includes(program)
         )
       ) {
-        grouped.mainRegistration.push(item);
+        grouped?.mainRegistration?.push(item);
       } else {
-        grouped.buildingSchoolClub.push(item);
+        grouped?.buildingSchoolClub?.push(item);
       }
     });
 
@@ -75,7 +75,7 @@ const Students = () => {
       label: "Building Blocks Club",
       content: (
         <CustomTable
-          data={groupedData.buildingSchoolClub}
+          data={groupedData?.buildingSchoolClub}
           columns={userColumns(setSelectedData, setIsOpen)}
         />
       ),
