@@ -7,14 +7,17 @@ import { toast } from "react-toastify";
 import supabase from "@/utils/supabaseClient";
 import { IEnrollChild } from "@/utils/interfaces";
 import { enrollChildSchema } from "@/utils/validations";
-import Link from "next/link";
 import ExistingInfoCheck from "@/components/admission/ExistingInfoCheck";
 import ChildAndGuardianInfo from "@/components/admission/ChildAndGuardianInfo";
 import Authorization from "@/components/admission/Authorization";
 import ClubProgramSelection from "@/components/admission/ClubProgramSelection";
 import ClubChildHealthConditions from "@/components/admission/ClubChildHealthConditions";
+import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess";
 
 const JoinOurClub = () => {
+    const [familyId, setFamilyId] = useState<string | null>(null);
+    const [siblings, setSiblings] = useState<IEnrollChild[]>([]);
+    const [finalSiblings, setFinalSiblings] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isChildAlreadyEnrolled, setIsChildAlreadyEnrolled] =
     useState<string>("");
@@ -57,6 +60,7 @@ const JoinOurClub = () => {
 
   const formik = useFormik<IEnrollChild>({
     initialValues: {
+      familyId: selectedChild?.familyId || familyId,
       childName: selectedChild?.childName || "",
       childDOB: selectedChild?.childDOB
         ? moment(selectedChild.childDOB).format("YYYY-MM-DD")
@@ -79,11 +83,9 @@ const JoinOurClub = () => {
         { name: "", relationToChild: "" },
       ],
       programs: selectedChild?.programs || [],
-      saturdayClubDuration: selectedChild?.saturdayClubDuration || "",
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
       summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",
-      sibling: selectedChild?.sibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
       hasSpecialHealthConditions:
@@ -91,26 +93,45 @@ const JoinOurClub = () => {
       specialHealthConditions: selectedChild?.specialHealthConditions || [],
       photographUsageConsent: selectedChild?.photographUsageConsent || "",
     },
-    onSubmit: async (values, { setSubmitting, resetForm }) => {
+    onSubmit: async (values, { setSubmitting, setFieldValue }) => {
       try {
-        if (selectedChild) {
+        const childData = { ...values};
+     
+    
+        if (values.hasSibling === true) {
+          // Add child to siblings and reset form
+          setSiblings((prev: any) => [...prev, childData]);
+    
+          setFieldValue("childName", "");
+          setFieldValue("childDOB", "");
+          setFieldValue("childAge", "");
+          setFieldValue("hasSibling", "");
+    
+          setCurrentStep(1);
+          toast.success("Child added successfully. You can enroll another child.");
+          console.log("siblings", siblings)
+        } else {
+          const allSiblings = [...siblings, values ]
+          console.log("allSiblings", allSiblings)
+          // Submit all siblings together
+          const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
+            ...sibling,
+            familyId,
+          }));
           const { error } = await supabase
             .from("children")
-            .update(values)
-            .eq("id", selectedChild.id);
-
+            .insert(siblingsWithFamilyId);
           if (error) throw error;
-        } else {
-          const { error } = await supabase.from("children").insert(values);
-
-          if (error) throw error;
+    
+          toast.success("Enrollment complete!");
+          setFinalSiblings(siblingsWithFamilyId)
+          setSiblings([]);
+          setFamilyId(null);
+          setIsEnrollmentSuccessful(true);
         }
-
-        toast.success("Child enrollment successful!");
-        setIsEnrollmentSuccessful(true);
       } catch (error: any) {
-        console.error("Submission Error:", error);
-        toast.error(`An error occurred during submission: ${error?.message}`);
+        console.log("error", error)
+        toast.error(`An error occurred: ${error?.message}`);
       } finally {
         setSubmitting(false);
       }
@@ -120,42 +141,10 @@ const JoinOurClub = () => {
   });
 
   if (isEnrollmentSuccessful) {
-    return (
-      <section
-        id="enroll-success"
-        className="py-12 md:py-20 bg-gradient-to-r from-[#ffec89] to-[#a9e2a0] text-[#2d3d3d] animate-fadeIn"
-      >
-        <div className="max-w-5xl mx-auto px-2 md:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-green-600">
-            Enrollment Successful!
-          </h2>
-          <p className="mt-4 text-lg md:text-xl text-gray-700">
-            Your child has been enrolled successfully. Thank you for choosing
-            us!
-          </p>
-          <div className="flex flex-col lg:flex-row justify-center items-center gap-6 mt-8 ">
-            <button
-              onClick={() => {
-                setIsEnrollmentSuccessful(false);
-                setCurrentStep(1);
-              }}
-              className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-md w-full lg:w-fit"
-            >
-              Enroll Another Child
-            </button>
-            <Link
-              href="/"
-              className=" bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-md w-full lg:w-fit"
-            >
-              Visit Our Website
-            </Link>
-          </div>
-        </div>
-      </section>
-    );
+    return <EnrollmentSuccess enrolledChildren={finalSiblings} />;
   }
 
-  const { values, setFieldValue, handleSubmit, isSubmitting } = formik;
+  const { values, errors, setFieldValue, handleSubmit, isSubmitting } = formik;
 
   const totalSteps = 5;
 
@@ -232,7 +221,12 @@ const JoinOurClub = () => {
               />
             )}
             {currentStep === 5 && (
-              <Authorization prevStep={prevStep} isSubmitting={isSubmitting} />
+              <Authorization
+                values={values}
+                errors={errors}
+                prevStep={prevStep}
+                isSubmitting={isSubmitting}
+              />
             )}
           </form>
         </FormikProvider>

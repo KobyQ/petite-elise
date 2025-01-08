@@ -69,13 +69,6 @@ export const enrollChildSchema = Yup.object().shape({
     otherwise: (schema) => schema.notRequired(),
   }),
   hasSibling: Yup.boolean().required("This field is required"),
-  sibling: Yup.string().when("hasSibling", {
-    is: (val: boolean) => val === true,
-    then: (schema) =>
-      schema
-        .required("This field is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
   hasAllergies: Yup.boolean().required("This field is required"),
   allergies: Yup.array().when("hasAllergies", {
     is: (val: string) => val === "Yes",

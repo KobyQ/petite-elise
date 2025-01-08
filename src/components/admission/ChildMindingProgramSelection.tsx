@@ -15,9 +15,12 @@ const ChildMindingProgramSelection: React.FC<
 > = ({ values, setFieldValue, nextStep, prevStep }) => {
   const programOptions = [{ label: "Childminding", value: "Childminding" }];
   const childMindingSchedule = [
-    { label: "Full Day", value: "Full Day" },
-    { label: "Half Day", value: "Half Day" },
+    { label: "Hourly  Ghc60", value: "Hourly  Ghc60" },
+    { label: "Daily Ghc250", value: "Daily Ghc250" },
+    { label: "⁠Weekly Ghc1500", value: "⁠Weekly Ghc1500" },
+    { label: "⁠Monthly Ghc3500", value: "⁠Monthly Ghc3500" },
   ];
+
 
   const isChildMindingSelected = values?.programs?.includes("Childminding");
 

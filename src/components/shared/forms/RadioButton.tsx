@@ -3,9 +3,9 @@ import React from "react";
 import { useField } from "formik";
 
 interface RadioButtonProps {
-  label: string;
+  label?: string;
   name: string;
-  options: { label: string; value: boolean }[]; // Ensure values are boolean
+  options: { label: string; value: boolean | string }[]; // Ensure values are boolean
   required?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }

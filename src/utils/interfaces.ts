@@ -20,16 +20,15 @@ export interface IEnrollChild {
     dropOffNames?: IDropOff[];
     programs: string[];
     dayCareSchedule?: string;
-    saturdayClubDuration?: string;
     saturdayClubSchedule?: string;
     summerCampSchedule?: string;
     hasSibling: boolean;
-    sibling?: string;
     feeding?: string;
     hasAllergies: boolean;
     allergies?: string[]
     hasSpecialHealthConditions: boolean;
     specialHealthConditions?: string[];
+    familyId?: string;
     // childPassport: FileOrUrl;
     // parentPassport: FileOrUrl;
     // emergencyContactPassport: FileOrUrl;

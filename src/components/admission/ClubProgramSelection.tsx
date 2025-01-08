@@ -21,14 +21,24 @@ const ClubProgramSelection: React.FC<ClubProgramSelectionProps> = ({
     { label: "Summer Camp", value: "Summer Camp" },
     { label: "Christmas Camp", value: "Christmas Camp" },
   ];
-  const saturdayClubDuration = [
-    { label: "Full Day", value: "Full Day" },
-    { label: "Half Day", value: "Half Day" },
-  ];
 
   const saturdayClubSchedule = [
-    { label: "Termly", value: "Termly" },
-    { label: "Walk-In", value: "Walk-In" },
+    {
+      label: "Termly ( Full Day 12 sessions)  Ghc1500",
+      value: "Termly ( Full Day 12 sessions)  Ghc1500",
+    },
+    {
+      label: "Termly ( Half Day 12 sessions) Ghc1250",
+      value: "Termly ( Half Day 12 sessions) Ghc1250",
+    },
+    {
+      label: "Walk- in ( Full Day) Ghc250",
+      value: "Walk- in ( Full Day) Ghc250",
+    },
+    {
+      label: "Walk- in ( Half Day) Ghc150",
+      value: "Walk- in ( Half Day) Ghc150",
+    },
   ];
 
   const summerCampSchedule = [
@@ -44,10 +54,6 @@ const ClubProgramSelection: React.FC<ClubProgramSelectionProps> = ({
 
   // Effect to clear schedule when Saturday Kids Club is deselected
   useEffect(() => {
-    if (!isSaturdayKidsClubSelected && values?.saturdayClubDuration) {
-      setFieldValue("saturdayClubDuration", "", false);
-    }
-
     if (!isSaturdayKidsClubSelected && values?.saturdayClubSchedule) {
       setFieldValue("saturdayClubSchedule", "", false);
     }
@@ -73,22 +79,13 @@ const ClubProgramSelection: React.FC<ClubProgramSelectionProps> = ({
         />
 
         {isSaturdayKidsClubSelected && (
-          <div>
-            <CustomSelect
-              label="Select Duration"
-              name="saturdayClubDuration"
-              options={saturdayClubDuration}
-              required
-              placeholder="Select a duration"
-            />
-            <CustomSelect
-              label="Select Schedule"
-              name="saturdayClubSchedule"
-              options={saturdayClubSchedule}
-              required
-              placeholder="Select a schedule"
-            />
-          </div>
+          <CustomSelect
+            label="Select Schedule"
+            name="saturdayClubSchedule"
+            options={saturdayClubSchedule}
+            required
+            placeholder="Select a schedule"
+          />
         )}
 
         {isSummerCampSelected && (

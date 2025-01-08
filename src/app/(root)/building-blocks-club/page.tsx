@@ -11,24 +11,28 @@ const BuildingBlocksClub = () => {
       period: "January to December",
       description:
         "Kids are dropped off on Saturdays for either half day or full day",
+        link: "/join-our-club"
     },
     {
       title: "Summer Camp",
       period: "July to September",
       description:
         "Our Summer Camp runs for 13 weeks and is open to children outside our school from ages 1-6 years. Daily, Weekly, Monthly, and Full Term options are available.",
+        link: "/join-our-club"
     },
     {
       title: "Christmas Camp",
       period: "3rd/4th week of December",
       description:
         "Join us for holiday fun and learning during the festive season.",
+        link: "/join-our-club"
     },
     {
       title: "Childminding",
       period: "School breaks, Public holidays, Weekends",
       description:
         "Children on a midterm break, enrolled in other schools, can be registered. During public holidays and weekends, childminding services are available upon request. They will be assisted with homework, fed, and engaged during the period.",
+        link: "/childminding-registration"
     },
   ];
 
@@ -85,7 +89,7 @@ const BuildingBlocksClub = () => {
                   <p className="text-gray-700">{program.description}</p>
                 </div>
                 {/* Register Button */}
-             <Link href="/admissions">
+             <Link href={program?.link} >
              
              <button
                   className="mt-6 w-full bg-primary hover:bg-opacity-90 text-white font-medium py-2 rounded-md transition-all duration-300"

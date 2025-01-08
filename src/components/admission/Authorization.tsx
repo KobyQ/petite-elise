@@ -2,13 +2,22 @@
 import React from "react";
 import { Field } from "formik";
 import { Button } from "../ui/button";
+import RadioButton from "../shared/forms/RadioButton";
+import { IEnrollChild } from "@/utils/interfaces";
 
 type AuthorizationProps = {
+  values: IEnrollChild;
+  errors: any;
   prevStep: () => void;
   isSubmitting: boolean;
 };
 
-const Authorization = ({ prevStep, isSubmitting }: AuthorizationProps) => {
+const Authorization = ({
+  values,
+  errors,
+  prevStep,
+  isSubmitting,
+}: AuthorizationProps) => {
   return (
     <div className="my-10">
       <div>
@@ -27,7 +36,7 @@ const Authorization = ({ prevStep, isSubmitting }: AuthorizationProps) => {
         </ul>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 border-b pb-6">
         <p className="mb-6 font-bold text-gray-600 text-lg">
           Kindly note that photographs and videos may be taken at our Preschool.
           By registering your child, you give Petite Elise Preschool the
@@ -35,6 +44,7 @@ const Authorization = ({ prevStep, isSubmitting }: AuthorizationProps) => {
           child for promotional reference for our future kid-friendly programs.
         </p>
         <div className="mb-4">
+   
           <div className="flex flex-col gap-6 mt-2">
             <label className="inline-flex items-center">
               <Field
@@ -76,7 +86,24 @@ const Authorization = ({ prevStep, isSubmitting }: AuthorizationProps) => {
               </span>
             </label>
           </div>
+          {
+            errors?.photographUsageConsent && (
+              <p className="mt-1 text-sm text-red-500">{ errors?.photographUsageConsent}</p>
+            )
+          }
         </div>
+      </div>
+
+      <div className="mt-10">
+        <RadioButton
+          label="Are you enrolling a sibling?"
+          name="hasSibling"
+          options={[
+            { label: "Yes", value: true },
+            { label: "No", value: false },
+          ]}
+          required
+        />
       </div>
 
       <div className="w-full flex flex-col lg:flex-row justify-between gap-4 mt-8">
@@ -88,12 +115,17 @@ const Authorization = ({ prevStep, isSubmitting }: AuthorizationProps) => {
         >
           Back
         </Button>
+
         <Button
           type="submit"
           disabled={isSubmitting}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
-          {isSubmitting ? "Registering..." : "Register Your Child"}
+          {values?.hasSibling
+            ? "Enroll Another Child"
+            : isSubmitting
+              ? "Registering..."
+              : "Register Your Child"}
         </Button>
       </div>
     </div>
