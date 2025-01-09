@@ -55,11 +55,7 @@ export const enrollChildSchema = Yup.object().shape({
     then: (schema) => schema.required("Daycare schedule is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
-  saturdayClubDuration: Yup.string().when("programs", {
-    is: (programs: string[]) => programs.includes("Saturday Kids Club"),
-    then: (schema) => schema.required("Duration is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),  saturdayClubSchedule: Yup.string().when("programs", {
+  saturdayClubSchedule: Yup.string().when("programs", {
     is: (programs: string[]) => programs.includes("Saturday Kids Club"),
     then: (schema) => schema.required("Schedule is required"),
     otherwise: (schema) => schema.notRequired(),

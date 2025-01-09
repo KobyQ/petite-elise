@@ -14,6 +14,7 @@ import Authorization from "@/components/admission/Authorization";
 import ChildMindingProgramSelection from "@/components/admission/ChildMindingProgramSelection";
 import ChildHealthConditions from "@/components/admission/ChildHealthConditions";
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess";
+import ClubAuthorization from "@/components/admission/ClubAuthorization";
 
 const ChildMindingRegistration = () => {
   const [familyId, setFamilyId] = useState<string | null>(null);
@@ -187,7 +188,7 @@ const ChildMindingRegistration = () => {
                     ? "Program Selection and Schedule"
                     : currentStep === 4
                       ? "Health Conditions and Allergies"
-                      : "Required Documents and Photograph Usage Authorization"}
+                      : "Photograph Usage Authorization"}
               <h5 className="text-xs md:text-base">{`Step ${currentStep} / ${totalSteps}`}</h5>
             </div>
             {currentStep === 1 && (
@@ -228,7 +229,7 @@ const ChildMindingRegistration = () => {
               />
             )}
             {currentStep === 5 && (
-              <Authorization
+              <ClubAuthorization
               errors={errors}
                 values={values}
                 prevStep={prevStep}
