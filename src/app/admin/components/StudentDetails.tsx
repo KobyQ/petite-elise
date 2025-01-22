@@ -210,7 +210,7 @@ const StudentDetails = ({
                   : "N/A"}
               </p>
               <p>
-                <strong>Special Health Conditions:</strong>{" "}
+                <strong>Special Education Conditions:</strong>{" "}
                 {data?.specialHealthConditions?.length > 0
                   ? data.specialHealthConditions.join(", ")
                   : "N/A"}

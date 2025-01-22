@@ -2,6 +2,7 @@
 import React from "react";
 import { Badge } from "../ui/badge";
 import { Card, CardDescription, CardTitle } from "../ui/card";
+import Link from "next/link";
 
 interface ProgramCardProps {
   icon: string;
@@ -10,6 +11,7 @@ interface ProgramCardProps {
   ageGroup: string;
   schedule: string;
   activities: string[];
+  link: string;
 }
 
 const ProgramCard: React.FC<ProgramCardProps> = ({
@@ -19,11 +21,13 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
   ageGroup,
   schedule,
   activities,
+  link
 }) => {
   return (
-    <Card className="relative flex flex-col bg-gradient-to-b from-white to-gray-50 p-6 rounded-lg shadow-lg max-w-sm mt-16">
-      {/* Icon Container */}
-      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20">
+    <Card className="relative flex flex-col justify-between bg-gradient-to-b from-white to-gray-50 p-6 rounded-lg shadow-lg max-w-sm mt-16">
+   <div>
+       {/* Icon Container */}
+       <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20">
         <svg
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
@@ -74,6 +78,12 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
           ))}
         </ul>
       </div>
+   </div>
+      <Link href={link}>
+        <button className="mt-6 w-full bg-primary hover:bg-opacity-90 text-white font-medium py-2 rounded-md transition-all duration-300">
+          Register Now
+        </button>
+      </Link>
     </Card>
   );
 };

@@ -19,6 +19,7 @@ const ProgramCards = () => {
                 ageGroup={program?.ageGroup}
                 schedule={program?.schedule}
                 activities={program?.activities}
+                link={program?.link}
               />
           ))}
         </div>

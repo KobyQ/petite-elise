@@ -64,6 +64,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "3months-3years",
       schedule: "Monday -Friday 8am -3pm",
       activities: ["Development Boosting Activities", "Rhyme Time", "Story Time", "Playtime", "Naptime "],
+      link: "/register-your-child"
     },
     {
       icon: "/images/puzzle.png",
@@ -75,6 +76,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 3-5 years",
       schedule: "Monday -Friday 8am -3pm",
       activities: ["Early Literacy", "Math Foundations", "Creative Arts", "Science", "Gardening & Outdoor Adventures"],
+      link: "/register-your-child"
     },
     {
       icon: "/images/calendar.png",
@@ -86,6 +88,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 3months- 5years ",
       schedule: "Monday -Friday 4pm -6pm",
       activities: ["Reading", "Homework Help", "Indoor Play"],
+      link: "/register-your-child"
     },
     {
       icon: "/images/feet.png",
@@ -97,6 +100,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 3 months - 15 months",
       schedule: "Once a month - 9am- 10am",
       activities: ["Sensory Activities", "Music & Dance", "Storytime"],
+      link: "/baby-and-me-registration"
     },
     {
       icon: "/images/playing.png",
@@ -107,6 +111,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 16months - 35months ",
       schedule: "Once a month 9am - 10am",
       activities: ["Spatial Concepts", "Gross Motor Skills Development", "Fine Motor Skills Activities", "Joint Attention", "Physical Exercises"],
+       link: "/baby-and-me-registration"
     },
     {
       icon: "/images/student.png",
@@ -117,6 +122,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 3- 5 years",
       schedule: "Once a week",
       activities: ["Ballet", "Taekwondo", "Piano"],
+      link: "/register-your-child"
     },
   ];
   
