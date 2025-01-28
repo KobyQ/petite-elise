@@ -43,6 +43,7 @@ const Students = () => {
       mainRegistration: [] as IEnrollChild[],
       buildingSchoolClub: [] as IEnrollChild[],
       babyAndMe: [] as IEnrollChild[],
+      playgroup: [] as IEnrollChild[],
     };
 
     items?.forEach((item) => {
@@ -54,10 +55,19 @@ const Students = () => {
         grouped?.mainRegistration?.push(item);
       } else if (
         item?.programs?.some((program) =>
-          ["Baby & Me", "Developmental Playgroup"].includes(program)
+          ["Baby & Me"].includes(program)
         )
       ) {
         grouped?.babyAndMe?.push(item);
+      }
+
+
+      else if (
+        item?.programs?.some((program) =>
+          ["Developmental Playgroup"].includes(program)
+        )
+      ) {
+        grouped?.playgroup?.push(item);
       }
       
       else {
@@ -90,10 +100,19 @@ const Students = () => {
       ),
     },
     {
-      label: "Baby & Me / Developmental Playgroup",
+      label: "Baby & Me",
       content: (
         <CustomTable
           data={groupedData?.babyAndMe}
+          columns={userColumns(setSelectedData, setIsOpen)}
+        />
+      ),
+    },
+    {
+      label: "Developmental Playgroup",
+      content: (
+        <CustomTable
+          data={groupedData?.playgroup}
           columns={userColumns(setSelectedData, setIsOpen)}
         />
       ),
