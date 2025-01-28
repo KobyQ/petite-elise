@@ -111,7 +111,7 @@ export const navigation: { title: string; href: string }[] = [
       ageGroup: "Ages 16months - 35months ",
       schedule: "Once a month 9am - 10am",
       activities: ["Spatial Concepts", "Gross Motor Skills Development", "Fine Motor Skills Activities", "Joint Attention", "Physical Exercises"],
-       link: "/baby-and-me-registration"
+       link: "/developmental-playgroup-registration"
     },
     {
       icon: "/images/student.png",
