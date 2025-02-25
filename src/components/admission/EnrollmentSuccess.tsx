@@ -4,7 +4,6 @@ import Link from "next/link";
 import React from "react";
 
 const EnrollmentSuccess = ({ enrolledChildren }: { enrolledChildren: any }) => {
-    console.log("meee", enrolledChildren)
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 p-6">
       {/* Success Message */}

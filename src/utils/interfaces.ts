@@ -4,6 +4,7 @@ interface IDropOff {
 }
 export type FileOrUrl = File | string;
 export interface IEnrollChild {
+    id?: string;
     childName: string;
     childDOB: string;
     childAge: string;

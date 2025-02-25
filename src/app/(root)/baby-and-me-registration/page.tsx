@@ -109,10 +109,8 @@ const BabyAndMeRegistration = () => {
     
           setCurrentStep(1);
           toast.success("Child added successfully. You can enroll another child.");
-          console.log("siblings", siblings)
         } else {
           const allSiblings = [...siblings, values ]
-          console.log("allSiblings", allSiblings)
           // Submit all siblings together
           const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
             ...sibling,
@@ -130,7 +128,6 @@ const BabyAndMeRegistration = () => {
           setIsEnrollmentSuccessful(true);
         }
       } catch (error: any) {
-        console.log("error", error)
         toast.error(`An error occurred: ${error?.message}`);
       } finally {
         setSubmitting(false);

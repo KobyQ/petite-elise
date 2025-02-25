@@ -39,7 +39,6 @@ const SendMessage = () => {
           },
         });
     
-        console.log("response", response)
     
         if (!response.ok) {
           const errorData = await response.json(); 
@@ -59,7 +58,6 @@ const SendMessage = () => {
     
   });
   
-console.log("formerrors", errors)
   return (
     <div className="max-w-4xl mx-auto px-2 md:px-8 py-16">
       <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 relative overflow-hidden">
