@@ -96,8 +96,10 @@ const Students = () => {
       buildingSchoolClub: [] as IEnrollChild[],
       babyAndMe: [] as IEnrollChild[],
       playgroup: [] as IEnrollChild[],
+      childMindinggroup: [] as IEnrollChild[],
+      saturdaygroup: [] as IEnrollChild[],
     };
-
+    
     items?.forEach((item) => {
       if (
         item?.programs?.some((p) =>
@@ -109,7 +111,12 @@ const Students = () => {
         grouped.babyAndMe.push(item);
       } else if (item?.programs?.includes("Developmental Playgroup")) {
         grouped.playgroup.push(item);
-      } else {
+      } 
+      else if (item?.programs?.includes("Childminding")) {
+        grouped.childMindinggroup.push(item); } 
+        else if (item?.programs?.includes("Saturday Kids Club")) {
+          grouped.saturdaygroup.push(item); }
+        else {
         grouped.buildingSchoolClub.push(item);
       }
     });
@@ -134,20 +141,7 @@ const Students = () => {
         </div>
       ),
     },
-    {
-      label: "Building Blocks Club",
-      content: (
-        <div>
-          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
-            <CustomTable
-              data={groupedData.buildingSchoolClub}
-              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
-            />
-          )}
-        </div>
-      ),
-    },
+ 
     {
       label: "Baby & Me",
       content: (
@@ -170,6 +164,49 @@ const Students = () => {
           {isLoading ? <SkeletonLoader /> : (
             <CustomTable
               data={groupedData.playgroup}
+              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Saturday Kids Club",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
+          {isLoading ? <SkeletonLoader /> : (
+            <CustomTable
+              data={groupedData.saturdaygroup}
+              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Childminding",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
+          {isLoading ? <SkeletonLoader /> : (
+            <CustomTable
+              data={groupedData.childMindinggroup}
+              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+
+    {
+      label: "Building Blocks Club",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
+          {isLoading ? <SkeletonLoader /> : (
+            <CustomTable
+              data={groupedData.buildingSchoolClub}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
             />
           )}
