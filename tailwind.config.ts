@@ -11,7 +11,8 @@ export default {
       colors: {
         primary: "#007f94",
         secondary: "#eab308",
-        tertiary: "#f9f871"
+        tertiary: "#f9f871",
+        coding: "#8ac23d"
       },
       fontFamily: {
         "quick-sand": "var(--font-quick-sand)",
