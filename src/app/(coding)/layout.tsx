@@ -15,12 +15,12 @@ const quickSand = Quicksand({
 export const metadata: Metadata = {
   title: "Code Ninjas Club",
   description:
-    "Nurturing young minds to become curious, resilient, and independent thinkers in a safe, loving environment",
+    "Fun and interactive Scratch coding for kids 6-13. Let them create, play, and learn!",
   icons: {
-    icon: "/icons/logo.petite-elise.ico",
+    icon: "/icons/coding-ninja-club.ico",
   },
   openGraph: {
-    images: ["/images/logo.jpg"],
+    images: ["/images/coding-ninja-logo-black.jpg"],
   },
 };
 
