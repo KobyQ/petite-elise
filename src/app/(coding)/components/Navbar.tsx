@@ -29,7 +29,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              href="/building-blocs"
+              href="/building-blocks-club"
               className="text-gray-300 hover:text-lime-500 transition-colors font-medium"
             >
               Building Blocks
@@ -73,7 +73,7 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4 py-4 space-y-4">
           <Link
-            href="/building-blocs"
+            href="/building-blocks-club"
             className="block text-gray-300 hover:text-lime-500 transition-colors font-medium py-2"
             onClick={() => setIsMenuOpen(false)}
           >
