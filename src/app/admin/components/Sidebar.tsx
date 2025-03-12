@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { FaHome, FaUsers } from "react-icons/fa";
+import { FaCode, FaHome, FaUsers } from "react-icons/fa";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -10,6 +10,7 @@ const Sidebar = () => {
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: FaHome },
     { name: "Students", path: "/admin/students", icon: FaUsers },
+    { name: "Coding Ninjas", path: "/admin/coding-ninjas", icon: FaCode },
   ];
 
   return (

@@ -273,7 +273,7 @@ const Students = () => {
 
 export default Students;
 
-const SearchBar = ({
+export const SearchBar = ({
   query,
   setQuery,
 }: {
