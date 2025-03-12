@@ -19,7 +19,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-2 cursor-pointer">
               <Image
                 src="/images/coding-ninjas-logo.png"
-                alt="Coding Ninjas Club"
+                alt="Code Ninjas Club"
                 height={150}
                 width={150}
               />
@@ -38,7 +38,7 @@ export default function Navbar() {
               href="/code-ninjas-club"
               className="text-gray-300 hover:text-lime-500 transition-colors font-medium"
             >
-              Coding Club
+              Code Ninjas Club
             </Link>
            <Link href="/code-ninjas-club/register">
            <Button  className="ml-4 bg-coding hover:bg-lime-600 text-black font-bold">Enroll Now</Button>
@@ -84,7 +84,7 @@ export default function Navbar() {
             className="block text-gray-300 hover:text-lime-500 transition-colors font-medium py-2"
             onClick={() => setIsMenuOpen(false)}
           >
-            Coding Club
+            Code Ninjas Club
           </Link>
           <Link href="/code-ninjas-club/register" >
           <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">Enroll Now</Button>

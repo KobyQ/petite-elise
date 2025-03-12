@@ -10,14 +10,14 @@ const Footer = () => {
           <div className="flex items-center space-x-2 cursor-pointer">
             <Image
               src="/images/coding-ninjas-logo.png"
-              alt="Coding Ninjas Club"
+              alt="Code Ninjas Club"
               height={150}
               width={150}
             />
           </div>
         </Link>
         <p className=" text-gray-500">
-          © {new Date().getFullYear()} Coding Ninjas Club. All rights reserved.
+          © {new Date().getFullYear()} Code Ninjas Club. All rights reserved.
         </p>
       </div>
     </footer>

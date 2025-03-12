@@ -10,7 +10,7 @@ const Sidebar = () => {
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: FaHome },
     { name: "Students", path: "/admin/students", icon: FaUsers },
-    { name: "Coding Ninjas", path: "/admin/coding-ninjas", icon: FaCode },
+    { name: "Code Ninjas", path: "/admin/code-ninjas", icon: FaCode },
   ];
 
   return (

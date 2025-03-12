@@ -17,7 +17,6 @@ const Partnership = () => {
           />
           <div className="text-left">
             <h3 className="text-xl font-bold">Petite Elise Preschool</h3>
-            <p className="text-black">Nurturing young minds together</p>
           </div>
         </div>
       </div>

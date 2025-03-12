@@ -49,7 +49,6 @@ const validationSchema = Yup.object({
     then: (schema) => schema.required("Please describe the coding experience"),
     otherwise: (schema) => schema,
   }),
-  sessionPreference: Yup.string().required("Please select a session"),
   paymentMethod: Yup.string().required("Please select a payment method"),
   specialRequests: Yup.string(),
 });
@@ -67,7 +66,6 @@ export default function RegistrationForm() {
       ageGroup: "",
       hasCodingExperience: "",
       codingExperience: "",
-      sessionPreference: "",
       paymentMethod: "",
       specialRequests: "",
     },
@@ -278,24 +276,10 @@ export default function RegistrationForm() {
                         </motion.div>
                         <motion.div variants={itemVariants} className="mb-8">
                           <h3 className="text-lg text-coding font-semibold mb-4 pb-2 border-b border-zinc-800">
-                            Session & Payment Information
+                            Payment Information
                           </h3>
                           <div className="space-y-4">
-                            <RadioButton
-                              label="Which session would you prefer on Saturdays?"
-                              name="sessionPreference"
-                              options={[
-                                {
-                                  label: "10:00AM - 12:00PM",
-                                  value: "10:00AM - 12:00PM",
-                                },
-                                {
-                                  label: "12:30PM - 2:30PM",
-                                  value: "12:30PM - 2:30PM",
-                                },
-                              ]}
-                              required
-                            />
+                        
                             <RadioButton
                               label="Preferred Payment Method"
                               name="paymentMethod"

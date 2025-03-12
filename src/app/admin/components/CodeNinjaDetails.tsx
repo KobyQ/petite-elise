@@ -57,10 +57,7 @@ const CodeNinjaDetails = ({
             <p className="text-sm text-gray-500">Coding Experience</p>
             <p className="font-semibold text-lg bg-gray-100 p-3 rounded-lg">{data.codingExperience || "No details provided"}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Session Preference</p>
-            <p className="font-semibold text-lg">{data.sessionPreference}</p>
-          </div>
+        
           <div>
             <p className="text-sm text-gray-500">Payment Method</p>
             <p className="font-semibold text-lg">{data.paymentMethod}</p>

@@ -89,23 +89,7 @@ const Intro = () => {
       </Card>
     </motion.div>
 
-    <motion.div variants={itemVariants}>
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <FiMonitor size={20} className="text-lime-500 mr-2" />
-          Requirements
-        </h2>
-        <p className="text-gray-300 mb-4">
-          Please note that you are to provide good laptops for your kids. (No tablets allowed)
-        </p>
-        <div className="bg-yellow-900/20 border border-yellow-800/30 rounded p-4 text-yellow-200">
-          <p className="text-sm">
-            <strong>Note:</strong> If you are registering more than one child, kindly fill a new form for each
-            child.
-          </p>
-        </div>
-      </div>
-    </motion.div>
+  
   </motion.div>
   )
 }

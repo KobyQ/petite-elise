@@ -84,11 +84,7 @@ export const codeNinjaColumns = (
     selector: (row: any) => row?.childName,
     grow: 2,
   },
-  {
-    name: "Session",
-    selector: (row: any) => row?.sessionPreference,
-    grow: 2
-  },
+
 
   {
     name: "Date Registered",

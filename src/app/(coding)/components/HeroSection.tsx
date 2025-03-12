@@ -16,7 +16,7 @@ const HeroSection = () => {
                   </div>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-lime-400 to-lime-600 mb-4">
-                  Coding Ninjas Club
+                  Code Ninjas Club
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-300 mb-8">
                   A 12-week coding adventure for young tech warriors ages 6-13

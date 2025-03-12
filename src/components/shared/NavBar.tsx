@@ -40,7 +40,7 @@ const NavBar: React.FC = () => {
             <button className="hover:text-secondary flex items-center transition-all duration-300">Clubs ▾</button>
             <div className="absolute left-0 mt-2 bg-white text-primary rounded-lg shadow-lg w-56 opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100 transition-all duration-300 ease-in-out">
               <Link href="/building-blocks-club" className="block px-6 py-3 hover:bg-gray-200 rounded-t-lg transition-all duration-300">Building Blocks Club</Link>
-              <Link href="/code-ninjas-club" className="block px-6 py-3 hover:bg-gray-200 rounded-b-lg transition-all duration-300">Coding Club</Link>
+              <Link href="/code-ninjas-club" className="block px-6 py-3 hover:bg-gray-200 rounded-b-lg transition-all duration-300">Code Ninjas Club</Link>
             </div>
           </div>
 
@@ -78,7 +78,7 @@ const NavBar: React.FC = () => {
                 {isClubsOpen && (
                   <div className="mt-2 ml-4 bg-white text-primary rounded-lg shadow-lg w-56 py-2">
                     <Link href="/building-blocks-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Building Blocks Club</Link>
-                    <Link href="/code-ninjas-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Coding Club</Link>
+                    <Link href="/code-ninjas-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Code Ninjas Club</Link>
                   </div>
                 )}
               </div>
