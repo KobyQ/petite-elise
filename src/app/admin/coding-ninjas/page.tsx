@@ -145,7 +145,6 @@ const CodingNinjas = () => {
             }
           };
 
-      console.log("students", students)
   return (
     <div>
     {fetchError && (

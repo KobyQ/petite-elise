@@ -104,7 +104,6 @@ export default function RegistrationForm() {
           throw error;
         }
 
-        console.log("Data saved successfully:", data);
         toast.success("Form submitted successfully!");
 
         setIsSubmitted(true);
@@ -131,7 +130,6 @@ export default function RegistrationForm() {
     isValid,
     dirty,
   } = formik;
-  console.log("valueeeee", values);
 
   return (
     <div className=" bg-black text-white">
