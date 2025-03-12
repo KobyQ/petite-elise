@@ -18,6 +18,7 @@ export default {
         "quick-sand": "var(--font-quick-sand)",
       },
       
+      
     },
   },
   plugins: [],

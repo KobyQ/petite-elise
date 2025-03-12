@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { useField } from "formik";
+import { Label } from "@/components/ui/label";
 
 interface RadioButtonProps {
   label?: string;
   name: string;
-  options: { label: string; value: boolean | string }[]; // Ensure values are boolean
+  options: { label: string; value: boolean | string }[];
   required?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -17,36 +18,37 @@ const RadioButton: React.FC<RadioButtonProps> = ({
   required,
   onChange,
 }) => {
-  const [field, meta, helpers] = useField(name); // Access Formik helpers for explicit updates
+  const [field, meta, helpers] = useField(name);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value === "true"; // Convert string to boolean
-    helpers.setValue(value); // Set the value explicitly in Formik
+    const { value } = event.target;
+    const parsedValue = value === "true" ? true : value === "false" ? false : value;
+    helpers.setValue(parsedValue);
     if (onChange) {
-      onChange(event); // Call the additional onChange handler
+      onChange(event);
     }
   };
 
   return (
     <div className="mb-4">
-      <label className="block text-gray-700">
+      <Label htmlFor={name}>
         {label}
         {required && <span className="text-red-500"> *</span>}
-      </label>
+      </Label>
       <div className="mt-2">
         {options.map((option) => (
           <label key={String(option.value)} className="inline-flex items-center mr-4">
             <input
               type="radio"
               name={name}
-              value={String(option.value)} 
-              checked={field.value === option.value} 
-              className={`form-radio text-green-400 border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none ${
+              value={String(option.value)}
+              checked={field.value === option.value}
+              className={`form-radio text-green-500 border-gray-300 checked:text-green-500 checked:border-green-500 focus:outline-none ${
                 meta.touched && meta.error ? "border-red-500" : ""
               }`}
               onChange={handleChange}
             />
-            <span className="ml-2 text-gray-700">{option.label}</span>
+            <span className="ml-2 text-white">{option.label}</span>
           </label>
         ))}
       </div>
