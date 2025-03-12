@@ -3,10 +3,33 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { FiCalendar, FiMonitor, FiUsers } from "react-icons/fi"
-import { containerVariants, itemVariants } from '../code-ninjas-club/register/page'
 
 
 const Intro = () => {
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
+
+  
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="mb-10">
        

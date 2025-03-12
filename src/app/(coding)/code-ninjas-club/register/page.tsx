@@ -28,27 +28,7 @@ import Input from "../../components/forms/Input";
 import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
 
-export const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
 
-export const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-    },
-  },
-};
 
 const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
@@ -123,13 +103,34 @@ export default function RegistrationForm() {
 
   const {
     values,
-    errors,
-    touched,
     handleSubmit,
     isSubmitting,
     isValid,
     dirty,
   } = formik;
+
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
 
   return (
     <div className=" bg-black text-white">

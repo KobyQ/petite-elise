@@ -2,18 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client"
-import supabase from '@/utils/supabaseClient';
-import React, { useEffect, useState } from 'react'
-import { toast } from 'react-toastify';
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
+import { Dialog, DialogContent } from "@/components/ui/modal";
+import React from 'react';
 
-import SkeletonLoader from '../components/SkeletonLoader';
-import { SearchBar } from '../students/page';
-import CustomTable from '../components/CustomTable';
-import { codeNinjaColumns } from '../students/columns';
-import StudentDetails from '../components/StudentDetails';
-import { Button } from '@/components/ui/button';
-import CustomTabs from '@/components/shared/CustomTabs';
 
 const CodeNinjaDetails = ({
   isOpen,
