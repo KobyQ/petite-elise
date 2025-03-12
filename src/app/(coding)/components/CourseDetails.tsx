@@ -43,7 +43,7 @@ const CourseDetails = () => {
                     <FaCalendarAlt className="h-6 w-6 text-coding" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white">Every Saturday</h4>
+                    <h4 className="font-semibold text-white">Saturdays</h4>
                     <div className="flex flex-col mt-1 text-gray-400">
                       <div className="flex items-center gap-2">
                         <FaClock className="h-4 w-4" />

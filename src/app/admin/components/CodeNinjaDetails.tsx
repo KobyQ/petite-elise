@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-"use client"
+"use client";
 import { Dialog, DialogContent } from "@/components/ui/modal";
-import React from 'react';
-
+import React from "react";
 
 const CodeNinjaDetails = ({
   isOpen,
@@ -15,6 +14,7 @@ const CodeNinjaDetails = ({
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   data: any;
 }) => {
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-3xl h-[80vh] overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg">
@@ -50,21 +50,54 @@ const CodeNinjaDetails = ({
             <p className="font-semibold text-lg">{data.phoneNumber}</p>
           </div>
           <div>
+            <p className="text-sm text-gray-500">Preferred Contact Mode</p>
+            <p className="font-semibold text-lg">{data.contactMode}</p>
+          </div>
+          <div>
             <p className="text-sm text-gray-500">Has Coding Experience</p>
             <p className="font-semibold text-lg">{data.hasCodingExperience}</p>
           </div>
-          <div className="md:col-span-2">
-            <p className="text-sm text-gray-500">Coding Experience</p>
-            <p className="font-semibold text-lg bg-gray-100 p-3 rounded-lg">{data.codingExperience || "No details provided"}</p>
-          </div>
-        
+          {data.hasCodingExperience === "Yes" && (
+            <div className="md:col-span-2">
+              <p className="text-sm text-gray-500">Coding Experience</p>
+              <p className="font-semibold text-lg bg-gray-100 p-3 rounded-lg">
+                {data.codingExperience || "No details provided"}
+              </p>
+            </div>
+          )}
           <div>
             <p className="text-sm text-gray-500">Payment Method</p>
             <p className="font-semibold text-lg">{data.paymentMethod}</p>
           </div>
+          <div>
+            <p className="text-sm text-gray-500">Photograph Usage Consent</p>
+            <p className="font-semibold text-lg">{data.photographUsageConsent}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Will Drop Off Child</p>
+            <p className="font-semibold text-lg">{data.dropChildOffSelf}</p>
+          </div>
+
+          {data.dropChildOffSelf === "No" && data.dropOffNames?.length > 0 && (
+            <div className="md:col-span-2">
+              <p className="text-sm text-gray-500">Authorized Drop-Off Persons</p>
+              <ul className="bg-gray-100 p-3 rounded-lg">
+                {data.dropOffNames.map((person: any, index: number) => (
+                  <li key={index} className="font-semibold text-lg">
+                    {person.name} - <span className="text-gray-600">{person.relationToChild}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="md:col-span-2">
             <p className="text-sm text-gray-500">Special Requests</p>
             <p className="font-semibold text-lg bg-gray-100 p-3 rounded-lg">{data.specialRequests || "None"}</p>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-sm text-gray-500">Registration Date</p>
+            <p className="font-semibold text-lg">{new Date(data.created_at).toLocaleString()}</p>
           </div>
         </div>
       </DialogContent>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -10,25 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import supabase from "@/utils/supabaseClient";
-import {
-  Form,
-  FormikProvider,
-  useFormik
-} from "formik";
+import { FieldArray, Form, FormikProvider, useFormik } from "formik";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import {
-  FiCheckCircle,
-  FiCode
-} from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiCheckCircle, FiCode } from "react-icons/fi";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 import Intro from "../../components/Intro";
 import Input from "../../components/forms/Input";
 import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
-
-
+import { MdAdd, MdClose } from "react-icons/md";
 
 const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
@@ -49,7 +42,26 @@ const validationSchema = Yup.object({
     then: (schema) => schema.required("Please describe the coding experience"),
     otherwise: (schema) => schema,
   }),
+  dropChildOffSelf: Yup.string().required(
+    "Please specify if you will drop off the child"
+  ),
+  dropOffNames: Yup.array().when("dropChildOffSelf", {
+    is: "No",
+    then: (schema) =>
+      schema.min(2, "You must provide at least two people").of(
+        Yup.object().shape({
+          name: Yup.string().required("Name is required"),
+          relationToChild: Yup.string().required(
+            "Relation to child is required"
+          ),
+        })
+      ),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   paymentMethod: Yup.string().required("Please select a payment method"),
+  photographUsageConsent: Yup.string().required(
+    "Photograph Usage Consent is required"
+  ),
   specialRequests: Yup.string(),
 });
 
@@ -62,11 +74,14 @@ export default function RegistrationForm() {
       phoneNumber: "",
       email: "",
       contactMode: "",
+      dropChildOffSelf: "",
+      dropOffNames: [{ name: "", relationToChild: "" }],
       childName: "",
       ageGroup: "",
       hasCodingExperience: "",
       codingExperience: "",
       paymentMethod: "",
+      photographUsageConsent: "",
       specialRequests: "",
     },
     validationSchema,
@@ -74,9 +89,14 @@ export default function RegistrationForm() {
       setSubmitting(true);
 
       try {
-        const { data, error } = await supabase
+        const submissionValues = { ...values };
+        if (values.dropChildOffSelf === "Yes") {
+          delete submissionValues.dropOffNames;
+        }
+
+        const { error } = await supabase
           .from("code-ninjas")
-          .insert([values]);
+          .insert([submissionValues]);
 
         if (error) {
           throw error;
@@ -99,14 +119,7 @@ export default function RegistrationForm() {
     },
   });
 
-  const {
-    values,
-    handleSubmit,
-    isSubmitting,
-    isValid,
-    dirty,
-  } = formik;
-
+  const { values, errors, handleSubmit, isSubmitting, isValid, dirty } = formik;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -227,6 +240,80 @@ export default function RegistrationForm() {
                               ]}
                               required
                             />
+
+                            <RadioButton
+                              label="Will you do the drop off & pick up of your child daily? (If no, please state two alternative names that may do the drop off and pick up) "
+                              name="dropChildOffSelf"
+                              options={[
+                                { label: "Yes", value: "Yes" },
+                                { label: "No", value: "No" },
+                              ]}
+                              required
+                            />
+
+                            {values?.dropChildOffSelf === "No" && (
+                              <div className="col-span-2">
+                                <FieldArray name="dropOffNames">
+                                  {({
+                                    remove,
+                                    push,
+                                  }: {
+                                    remove: (val: number) => void;
+                                    push: (val: string) => void;
+                                  }) => (
+                                    <div className="grid gap-2">
+                                      {values?.dropOffNames &&
+                                        values?.dropOffNames?.length > 0 &&
+                                        values?.dropOffNames?.map(
+                                          (val: any, index: any) => (
+                                            <div
+                                              className="flex flex-col lg:flex-row gap-5 items-center "
+                                              key={index}
+                                            >
+                                              <div className="w-full">
+                                                <Input
+                                                  label="Full name"
+                                                  name={`dropOffNames.${index}.name`}
+                                                  required
+                                                />
+                                              </div>
+                                              <div className="w-full">
+                                                <Input
+                                                  label="Relationship with the child."
+                                                  name={`dropOffNames.${index}.relationToChild`}
+                                                  required
+                                                />
+                                              </div>
+
+                                              <div className="flex justify-end w-full lg:w-auto gap-2">
+                                                <MdAdd
+                                                  className="w-5 h-5 bg-coding text-white border-coding mt-3 cursor-pointer rounded-md "
+                                                  onClick={() => push("")}
+                                                />
+                                                {index > 0 && (
+                                                  <MdClose
+                                                    className="w-5 h-5 bg-red-400 text-white border-red-400 mt-3 cursor-pointer rounded-md"
+                                                    onClick={() =>
+                                                      remove(index)
+                                                    }
+                                                  />
+                                                )}
+                                              </div>
+                                            </div>
+                                          )
+                                        )}
+                                    </div>
+                                  )}
+                                </FieldArray>
+                                {typeof errors?.dropOffNames === "string" && (
+                                  <p className="mt-1 text-sm text-red-500">
+                                    {errors.dropOffNames}
+                                  </p>
+                                )}
+
+                              
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                         <motion.div variants={itemVariants} className="mb-8">
@@ -279,7 +366,6 @@ export default function RegistrationForm() {
                             Payment Information
                           </h3>
                           <div className="space-y-4">
-                        
                             <RadioButton
                               label="Preferred Payment Method"
                               name="paymentMethod"
@@ -293,6 +379,47 @@ export default function RegistrationForm() {
                                   value: "Bank Transfer",
                                 },
                                 { label: "Cash", value: "Cash" },
+                              ]}
+                              required
+                            />
+                          </div>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} className="mb-8">
+                          <div className="mb-4 pb-2 border-b border-zinc-800">
+                            <h3 className="text-lg text-coding font-semibold ">
+                              Photo Usage and Consent
+                            </h3>
+                            <p className="mb-6 font-bold text-gray-600 text-sm">
+                              Kindly note that photographs and videos may be
+                              taken at our Preschool. By registering your child,
+                              you give Petite Elise Preschool and Code
+                              Ninjas Club the permission to use photographs,
+                              images, and/or video footage of your child for
+                              promotional reference for our future kid-friendly
+                              programs.
+                            </p>
+                          </div>
+                          <div className="space-y-4">
+                            <RadioButton
+                              label="Photograph Usage Consent"
+                              name="photographUsageConsent"
+                              options={[
+                                {
+                                  label:
+                                    "I authorize my child's photograph or image to be used in any of Petite Elise Preschool promotional reference for kid-friendly events.",
+                                  value: "Authorize",
+                                },
+                                {
+                                  label:
+                                    " I do not authorize my child's photograph or image to be used in any of Petite Elise Preschool promotional reference for kid-friendly events.",
+                                  value: "Do not Authorize",
+                                },
+                                {
+                                  label:
+                                    "I permit certain features (except for face and full body photos) of my child to be used in any of Petite Elise Preschool promotional reference for kid-friendly events.",
+                                  value: "Permit Certain Features",
+                                },
                               ]}
                               required
                             />
