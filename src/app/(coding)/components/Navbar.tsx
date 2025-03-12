@@ -35,19 +35,21 @@ export default function Navbar() {
               Building Blocks
             </Link>
             <Link
-              href="/coding-club"
+              href="/code-ninjas-club"
               className="text-gray-300 hover:text-lime-500 transition-colors font-medium"
             >
               Coding Club
             </Link>
-            <Button  className="ml-4 bg-coding hover:bg-lime-600 text-black font-bold">Enroll Now</Button>
+           <Link href="/code-ninjas-club/register">
+           <Button  className="ml-4 bg-coding hover:bg-lime-600 text-black font-bold">Enroll Now</Button>
+           </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-lime-500 transition-colors"
+              className="text-gray-300  hover:text-lime-500 transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? (
@@ -84,7 +86,9 @@ export default function Navbar() {
           >
             Coding Club
           </Link>
-          <Button className="w-full">Enroll Now</Button>
+          <Link href="/code-ninjas-club/register" >
+          <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">Enroll Now</Button>
+          </Link>
         </div>
       </div>
     </nav>

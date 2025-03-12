@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import React from "react";
 import {
   FaBolt,
@@ -129,9 +130,11 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Ready to Join?
                       </h4>
-                      <Button className="mt-3 bg-coding hover:bg-lime-600 text-black font-bold">
-                        Register Now
-                      </Button>
+                      <Link href="/code-ninjas-club/register">
+                        <Button className="mt-3 bg-coding hover:bg-lime-600 text-black font-bold">
+                          Register Now
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>

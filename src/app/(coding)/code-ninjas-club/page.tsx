@@ -3,7 +3,7 @@ import CourseDetails from "../components/CourseDetails";
 import CTA from "../components/CTA";
 import Founders from "../components/Founders";
 import HeroSection from "../components/HeroSection";
-import Partnership from "../components/PartnerShip";
+import Partnership from "../components/Partnership";
 import Programs from "../components/Programs";
 
 export default function Home() {

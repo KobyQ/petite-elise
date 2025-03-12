@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
   } from "@/components/ui/card";
+import Link from 'next/link';
 import React from 'react'
 import { BsPuzzle } from 'react-icons/bs';
 import { FaCode } from 'react-icons/fa';
@@ -57,9 +58,11 @@ const Programs = () => {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">
+        <Link href="/code-ninjas-club/register" className='w-full'>
+        <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">
               Enroll Now
             </Button>
+        </Link>
           </CardFooter>
         </Card>
 
@@ -92,9 +95,11 @@ const Programs = () => {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">
+         <Link href="/code-ninjas-club/register" className='w-full'>
+         <Button className="w-full bg-coding hover:bg-lime-600 text-black font-bold">
               Enroll Now
             </Button>
+         </Link>
           </CardFooter>
         </Card>
       </div>

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import React from 'react'
 import { FaBolt, FaCode } from 'react-icons/fa'
 
@@ -21,12 +22,14 @@ const HeroSection = () => {
                   A 12-week coding adventure for young tech warriors ages 6-13
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center">
-                  <Button
+                <Link href="/code-ninjas-club/register">
+                <Button
                     size="lg"
                     className="bg-coding hover:bg-lime-600 text-black font-bold"
                   >
                     Enroll Now
                   </Button>
+                </Link>
                 </div>
               </div>
             </div>

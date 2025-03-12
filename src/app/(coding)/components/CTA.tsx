@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import React from 'react'
 
 const CTA = () => {
@@ -13,12 +14,14 @@ const CTA = () => {
           Limited spots available. Secure your child&apos;s place in our
           next cohort today!
         </p>
-        <Button
+      <Link href="/code-ninjas-club/register">
+      <Button
           size="lg"
           className="bg-coding hover:bg-lime-600 text-black font-bold"
         >
           Enroll Now
         </Button>
+      </Link>
       </div>
     </div>
   </section>

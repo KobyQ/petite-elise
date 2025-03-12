@@ -78,7 +78,7 @@ const NavBar: React.FC = () => {
                 {isClubsOpen && (
                   <div className="mt-2 ml-4 bg-white text-primary rounded-lg shadow-lg w-56 py-2">
                     <Link href="/building-blocks-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Building Blocks Club</Link>
-                    <Link href="/coding-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Coding Club</Link>
+                    <Link href="/code-ninjas-club" onClick={closeMenu} className="block px-6 py-3 hover:bg-gray-200 transition-all duration-300">Coding Club</Link>
                   </div>
                 )}
               </div>
