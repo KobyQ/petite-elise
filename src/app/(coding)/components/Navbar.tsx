@@ -32,7 +32,7 @@ export default function Navbar() {
               href="/building-blocks-club"
               className="text-gray-300 hover:text-lime-500 transition-colors font-medium"
             >
-              Building Blocks
+              Building Blocks Club
             </Link>
             <Link
               href="/code-ninjas-club"
@@ -77,7 +77,7 @@ export default function Navbar() {
             className="block text-gray-300 hover:text-lime-500 transition-colors font-medium py-2"
             onClick={() => setIsMenuOpen(false)}
           >
-            Building Blocs
+            Building Blocks Club
           </Link>
           <Link
             href="/coding-club"
