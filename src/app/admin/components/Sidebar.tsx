@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaCode, FaHome, FaUsers, FaUserShield } from "react-icons/fa";
 
@@ -26,8 +27,10 @@ const Sidebar = () => {
             {navItems.map((item) => {
               const isActive = pathname === item.path;
               return (
-                <li
-                  key={item.name}
+                <Link
+                key={item.name}
+                href={item.path}
+                
                   className={`flex items-center gap-4 p-4 rounded-md cursor-pointer ${
                     isActive ? "bg-[#005f6b]" : "hover:bg-[#006d7a]"
                   }`}
@@ -35,7 +38,7 @@ const Sidebar = () => {
                 >
                   <item.icon className="h-6 w-6" />
                   <span>{item.name}</span>
-                </li>
+                </Link>
               );
             })}
           </ul>

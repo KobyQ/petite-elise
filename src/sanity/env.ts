@@ -12,4 +12,5 @@ export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-07
 export const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUBABSE_PROJECT_URL!
 export const supabaseAPIKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY!
 export const supabaseServiceRoleKey = process.env.NEXT_PUBLIC_SUBABSE_SERVICE_ROLE_KEY!
+export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
