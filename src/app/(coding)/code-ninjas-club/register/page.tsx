@@ -22,6 +22,7 @@ import Input from "../../components/forms/Input";
 import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
 import { MdAdd, MdClose } from "react-icons/md";
+import { sendRegistrationEmail } from "@/utils/helper";
 
 const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
@@ -101,6 +102,15 @@ export default function RegistrationForm() {
         if (error) {
           throw error;
         }
+            // Send a request to the registration API to trigger email
+        console.log("values", values)
+                  const emailObject = {
+                    childName: values?.childName,
+                    parentEmail: values?.email,
+                    parentPhoneNumber: values?.phoneNumber,
+                    childDOB: values?.ageGroup,
+                  };
+                  await sendRegistrationEmail(emailObject);
 
         toast.success("Form submitted successfully!");
 

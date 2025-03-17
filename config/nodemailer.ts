@@ -13,7 +13,13 @@ export const transporter = nodemailer.createTransport({
 });
 
 
-
+// export const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: Email,
+//     pass: password,
+//   },
+// });
 
 
 export const mailOptions = {

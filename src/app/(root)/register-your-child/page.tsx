@@ -14,6 +14,7 @@ import ProgramSelection from "@/components/admission/ProgramSelection";
 import ChildAndGuardianInfo from "@/components/admission/ChildAndGuardianInfo";
 import ExistingInfoCheck from "@/components/admission/ExistingInfoCheck";
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess";
+import { sendRegistrationEmail } from "@/utils/helper";
 
 const RegisterYourChild = () => {
   const [familyId, setFamilyId] = useState<string | null>(null);
@@ -32,14 +33,12 @@ const RegisterYourChild = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentStep]);
 
- // Generate familyId on component mount
- useEffect(() => {
-  if (!familyId) {
-    setFamilyId(uuidv4());
-  }
-}, [familyId]);
-
- 
+  // Generate familyId on component mount
+  useEffect(() => {
+    if (!familyId) {
+      setFamilyId(uuidv4());
+    }
+  }, [familyId]);
 
   const fetchAllDocuments = async (
     parentEmail: string,
@@ -67,8 +66,6 @@ const RegisterYourChild = () => {
       setFetchingData(false);
     }
   };
-
-  
 
   const formik = useFormik<IEnrollChild>({
     initialValues: {
@@ -106,48 +103,58 @@ const RegisterYourChild = () => {
       photographUsageConsent: selectedChild?.photographUsageConsent || "",
     },
 
-onSubmit: async (values, { setSubmitting, setFieldValue }) => {
-  try {
-    const childData = { ...values};
- 
+    onSubmit: async (values, { setSubmitting, setFieldValue }) => {
+      try {
+        const childData = { ...values };
 
-    if (values.hasSibling === true) {
-      // Add child to siblings and reset form
-      setSiblings((prev: any) => [...prev, childData]);
+        if (values.hasSibling === true) {
+          // Add child to siblings and reset form
+          setSiblings((prev: any) => [...prev, childData]);
 
-      setFieldValue("childName", "");
-      setFieldValue("childDOB", "");
-      setFieldValue("childAge", "");
-      setFieldValue("hasSibling", "");
+          setFieldValue("childName", "");
+          setFieldValue("childDOB", "");
+          setFieldValue("childAge", "");
+          setFieldValue("hasSibling", "");
 
-      setCurrentStep(1);
-      toast.success("Child added successfully. You can enroll another child.");
-    } else {
-      const allSiblings = [...siblings, values ]
-      // Submit all siblings together
-      const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
-        ...sibling,
-        familyId,
-      }));
-      const { error } = await supabase
-        .from("children")
-        .insert(siblingsWithFamilyId);
-      if (error) throw error;
+          setCurrentStep(1);
+          toast.success(
+            "Child added successfully. You can enroll another child."
+          );
+        } else {
+          const allSiblings = [...siblings, values];
+          // Submit all siblings together
+          const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
+            ...sibling,
+            familyId,
+          }));
+          const { error } = await supabase
+            .from("children")
+            .insert(siblingsWithFamilyId);
+          if (error) throw error;
+          // Send a request to the registration API to trigger email
 
-      toast.success("Enrollment complete!");
-      setFinalSiblings(siblingsWithFamilyId)
-      setSiblings([]);
-      setFamilyId(null);
-      setIsEnrollmentSuccessful(true);
-    }
-  } catch (error: any) {
-    toast.error(`An error occurred: ${error?.message}`);
-  } finally {
-    setSubmitting(false);
-  }
-},
-    
-      
+          const emailData = siblingsWithFamilyId[0];
+          const emailObject = {
+            childName: emailData?.childName,
+            parentEmail: emailData?.parentEmail,
+            parentPhoneNumber: emailData?.parentPhoneNumber,
+            childDOB: emailData?.childDOB,
+          };
+          await sendRegistrationEmail(emailObject);
+
+          toast.success("Enrollment complete!");
+          setFinalSiblings(siblingsWithFamilyId);
+          setSiblings([]);
+          setFamilyId(null);
+          setIsEnrollmentSuccessful(true);
+        }
+      } catch (error: any) {
+        toast.error(`An error occurred: ${error?.message}`);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+
     enableReinitialize: true,
     validationSchema: enrollChildSchema,
   });
@@ -157,8 +164,6 @@ onSubmit: async (values, { setSubmitting, setFieldValue }) => {
   }
 
   const { values, errors, setFieldValue, handleSubmit, isSubmitting } = formik;
-
-
 
   const totalSteps = 5;
 
@@ -240,7 +245,6 @@ onSubmit: async (values, { setSubmitting, setFieldValue }) => {
                 errors={errors}
                 prevStep={prevStep}
                 isSubmitting={isSubmitting}
-             
               />
             )}
           </form>
