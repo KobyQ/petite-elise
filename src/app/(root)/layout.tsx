@@ -5,7 +5,7 @@ import { Theme } from "@radix-ui/themes";
 import "../globals.css";
 import NavBar from "@/components/shared/NavBar";
 import Footer from "@/components/shared/Footer";
-import Provider from "../provider";
+import MainProvider from "../mainProvider";
 
 const quickSand = Quicksand({
   subsets: ["latin"],
@@ -33,7 +33,7 @@ export default function RootLayout({
     <html lang="en" className={`${quickSand.variable}`}>
       <body className="antialiased flex flex-col min-h-screen font-quick-sand">
         <Theme>
-          <Provider>
+          <MainProvider>
             {/* Sticky Navbar */}
             <NavBar />
 
@@ -42,7 +42,7 @@ export default function RootLayout({
 
             {/* Footer */}
             <Footer />
-          </Provider>
+          </MainProvider>
         </Theme>
       </body>
     </html>
