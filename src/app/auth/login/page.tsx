@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useAuth } from "@/context/useAuthContext";
 import Input from "../components/Input";
+import { loginSchema } from "@/utils/validations";
 
 const supabase = createClientComponentClient();
 
@@ -39,6 +40,7 @@ const Login = () => {
         router.push("/admin/dashboard"); // Redirect to dashboard
       }
     },
+    validationSchema: loginSchema
   });
 
   // Redirect if already logged in
@@ -47,7 +49,7 @@ const Login = () => {
     return null;
   }
 
-
+  const { isValid, dirty } = formik;
 
   return (
     <motion.div
@@ -91,7 +93,7 @@ const Login = () => {
             >
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !(isValid && dirty)}
                 className="w-full bg-tertiary text-black font-semibold py-6 text-lg relative overflow-hidden group"
               >
                 {isSubmitting ? (

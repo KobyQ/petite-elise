@@ -10,8 +10,11 @@ import { Button } from "@/components/ui/button";
 import CustomTable from "../components/CustomTable";
 import { userColumns } from "./columns";
 import AddUser from "./components/AddUser";
+import { useAuth } from "@/context/useAuthContext";
 
 const Users = () => {
+  const { user, logout, loading: authLoading } = useAuth();
+
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -22,7 +25,6 @@ const Users = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Fetch users from Supabase
-
   const fetchUsers = async () => {
     setLoading(true);
     setFetchError(null);
@@ -34,7 +36,11 @@ const Users = () => {
         setFetchError(error?.message || "An unexpected error occurred");
         setUsers([]);
       } else {
-        setUsers(data?.users || []);
+        // Sort users by created_at in descending order (newest first)
+        const sortedUsers = (data?.users || []).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setUsers(sortedUsers);
       }
     } catch (error) {
       setFetchError("Failed to fetch data. Please try again.");
@@ -48,8 +54,15 @@ const Users = () => {
   }, []);
 
   const deleteUser = async (userId: string) => {
-    setDeleteLoading(true);
     if (!userId) return;
+
+    // Prevent logged-in user from deleting themselves
+    if (userId === user?.id) {
+      toast.error("You cannot delete your own account!", { position: "top-right" });
+      return;
+    }
+
+    setDeleteLoading(true);
 
     try {
       const response = await fetch(`/api/delete-user`, {
@@ -71,7 +84,7 @@ const Users = () => {
         });
       } else {
         toast.success("User deleted successfully!", { position: "top-right" });
-        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        setUsers((prevUsers) => prevUsers.filter((user) => user?.id !== userId));
         setIsDeleteOpen(false);
       }
     } catch (error: any) {
@@ -107,7 +120,7 @@ const Users = () => {
         </>
       )}
 
-      {isOpen && <AddUser isOpen={isOpen} setIsOpen={setIsOpen} />}
+      {isOpen && <AddUser isOpen={isOpen} setIsOpen={setIsOpen} setUsers={setUsers} />}
       {/* Confirm Delete Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent className="max-w-md bg-white border border-gray-300 rounded-lg shadow-lg p-6">
@@ -115,7 +128,7 @@ const Users = () => {
             Confirm Deletion
           </DialogTitle>
           <p className="text-gray-600">
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete {" "}
             <strong>{selectedUser?.user_metadata?.name}</strong>
           </p>
           <div className="flex justify-end gap-4 mt-4">

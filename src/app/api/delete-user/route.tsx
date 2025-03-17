@@ -14,7 +14,6 @@ export async function DELETE(req: Request) {
 
     
 
-    // 🔥 Use supabaseAdmin to delete user
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) {
       console.error("Supabase error:", error);

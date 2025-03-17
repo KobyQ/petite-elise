@@ -1,22 +1,76 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/useAuthContext";
+import supabase from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
-import { FaCode, FaUsers, FaUserShield } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaUsers, FaCode, FaUserShield } from "react-icons/fa";
 import { LuLoader, LuLogOut } from "react-icons/lu";
+
+
 
 const Dashboard = () => {
   const router = useRouter();
-  const { user, logout, loading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
 
-  // Example statistics (replace with real data)
-  const stats = [
-    { label: "Total Students", value: 120, icon: FaUsers, color: "bg-blue-500" },
-    { label: "Total Coders", value: 80, icon: FaCode, color: "bg-green-500" },
-    { label: "Total Admins", value: 10, icon: FaUserShield, color: "bg-red-500" },
-  ];
+  const [stats, setStats] = useState([
+    { label: "Total Students", value: null, icon: FaUsers, color: "bg-blue-500" },
+    { label: "Total Coders", value: null, icon: FaCode, color: "bg-green-500" },
+    { label: "Total Admins", value: null, icon: FaUserShield, color: "bg-red-500" },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  if (loading) {
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        // Fetch Code Ninjas
+        const { count: ninjasCount, error: ninjasError } = await supabase
+          .from("code-ninjas") 
+          .select("*", { count: "exact", head: true });
+
+        if (ninjasError) throw new Error("Failed to fetch code ninjas");
+
+        // Fetch Students
+        const { count: childrenCount, error: childrenError } = await supabase
+          .from("children")
+          .select("*", { count: "exact", head: true });
+
+        if (childrenError) throw new Error("Failed to fetch students");
+
+        // Fetch Users via API (Avoid Forbidden Error)
+        const usersResponse = await fetch("/api/fetch-user", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store", // Prevents caching issues
+        });
+        const usersData = await usersResponse.json();
+        
+        if (!usersResponse.ok) throw new Error(usersData.error || "Failed to fetch users");
+        
+
+        setStats([
+          { label: "Total Students", value: childrenCount, icon: FaUsers, color: "bg-blue-500" },
+          { label: "Total Coders", value: ninjasCount, icon: FaCode, color: "bg-green-500" },
+          { label: "Total Admins", value: usersData.users.length, icon: FaUserShield, color: "bg-red-500" },
+        ]);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+ 
+
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LuLoader className="animate-spin w-8 h-8 text-gray-600" />
@@ -30,35 +84,35 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 -mt-36">
-      {/* Welcome Card */}
-      <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.email}!</h1>
-        <p className="text-gray-500 mt-2">You are logged in.</p>
+    <div className="min-h-screen bg-gray-100 px-6 py-8">
+
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-medium text-gray-700">Hello, {user.user_metadata?.name ?? user?.email}!</h2>
         <Button
           onClick={() => {
             logout();
             router.push("/auth/login");
           }}
-          className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full mt-4 transition"
+          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition"
         >
           <LuLogOut size={18} />
-          Logout
+          <span className="hidden sm:inline">Logout</span>
         </Button>
       </div>
 
-      {/* Statistics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+      {error && <div className="bg-red-100 text-red-700 p-3 rounded-md mb-6">{error}</div>}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto ">
         {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white shadow-md rounded-lg p-4 flex flex-col items-center text-center"
-          >
+          <div key={index} className="bg-white flex flex-col items-center justify-center shadow-md rounded-lg p-5 text-center">
             <div className={`w-12 h-12 flex items-center justify-center text-white rounded-full ${stat.color}`}>
               <stat.icon size={24} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mt-2">{stat.label}</h3>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <h3 className="text-lg font-semibold text-gray-700 mt-3">{stat.label}</h3>
+            <p className="text-2xl font-bold text-gray-900">
+              {stat.value === null ? "No data" : stat.value}
+            </p>
           </div>
         ))}
       </div>

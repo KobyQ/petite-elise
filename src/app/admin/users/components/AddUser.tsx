@@ -7,13 +7,16 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
 import { Form, FormikProvider, useFormik } from "formik";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
+import { addUserSchema } from "@/utils/validations";
 
 const AddUser = ({
   isOpen,
   setIsOpen,
+  setUsers
 }: {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  setUsers: (val: any) => void
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,26 +28,32 @@ const AddUser = ({
     },
     onSubmit: async (values) => {
       setIsSubmitting(true);
-  
+    
       try {
         const response = await fetch("/api/create-user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
         });
-  
+    
         const result = await response.json();
-  
+        console.log("results", result)
+    
         if (!result.success) {
           toast.error(result.message, { position: "top-right" });
         } else {
           toast.success("User Added Successfully!", { position: "top-right" });
-  
+    
+          if (result?.data?.user) {
+            setUsers((prevUsers: any[] = []) => [result.data.user, ...prevUsers]);
+          } else {
+            toast.error("User data is missing in response!", { position: "top-right" });
+          }
+          
+          
+
+    
           setIsOpen(false);
-  
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
         }
       } catch (error: any) {
         toast.error(error.message || "Something went wrong!", {
@@ -54,19 +63,22 @@ const AddUser = ({
         setIsSubmitting(false);
       }
     },
+    validationSchema: addUserSchema
+    
   });
   
+  const { isValid, dirty } = formik;
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
         className="max-w-3xl  overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg"
-        hideDefaultCloseButton={true}
       >
         <DialogTitle>Add User</DialogTitle>
 
         {/* Content */}
-        <div className=" overflow-y-auto p-6  ">
+        <div className=" overflow-y-auto p-6">
           <FormikProvider value={formik}>
             <Form onSubmit={formik.handleSubmit} className="space-y-8">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -105,7 +117,7 @@ const AddUser = ({
               >
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !(isValid && dirty)}
                   className="w-full bg-primary text-black font-semibold py-6 text-lg relative overflow-hidden group"
                 >
                   {isSubmitting ? (
@@ -115,7 +127,7 @@ const AddUser = ({
                     </div>
                   ) : (
                     <>
-                      <span className="relative z-10">Login</span>
+                      <span className="relative z-10">Add User</span>
                       <span className="absolute inset-0 h-full w-0 bg-green-400 transition-all duration-300 ease-out group-hover:w-full"></span>
                     </>
                   )}
