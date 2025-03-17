@@ -37,8 +37,6 @@ const AddUser = ({
         });
     
         const result = await response.json();
-        console.log("results", result)
-    
         if (!result.success) {
           toast.error(result.message, { position: "top-right" });
         } else {
