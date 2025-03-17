@@ -9,6 +9,8 @@ const Navbar = () => {
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard" },
     { name: "Students", path: "/admin/students" },
+    { name: "Code Ninjas", path: "/admin/code-ninjas" },
+    { name: "Users", path: "/admin/users" },
   ];
 
   // Find the active menu item's name
