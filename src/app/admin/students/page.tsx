@@ -93,21 +93,16 @@ const Students = () => {
   const groupItems = (items: IEnrollChild[] | null) => {
     const grouped = {
       mainRegistration: [] as IEnrollChild[],
-      buildingSchoolClub: [] as IEnrollChild[],
       babyAndMe: [] as IEnrollChild[],
       playgroup: [] as IEnrollChild[],
       childMindinggroup: [] as IEnrollChild[],
       saturdaygroup: [] as IEnrollChild[],
+      christmasCamp: [] as IEnrollChild[],
+      summerCamp: [] as IEnrollChild[],
     };
 
     items?.forEach((item) => {
-      if (
-        item?.programs?.some((p) =>
-          ["Daycare", "Preschool", "Afterschool Care"].includes(p)
-        )
-      ) {
-        grouped.mainRegistration.push(item);
-      } else if (item?.programs?.includes("Baby & Me")) {
+       if (item?.programs?.includes("Baby & Me")) {
         grouped.babyAndMe.push(item);
       } else if (item?.programs?.includes("Developmental Playgroup")) {
         grouped.playgroup.push(item);
@@ -115,8 +110,12 @@ const Students = () => {
         grouped.childMindinggroup.push(item);
       } else if (item?.programs?.includes("Saturday Kids Club")) {
         grouped.saturdaygroup.push(item);
-      } else {
-        grouped.buildingSchoolClub.push(item);
+      }  else if (item?.programs?.includes("Summer Camp")) {
+        grouped.summerCamp.push(item)}
+        else if (item?.programs?.includes("Christmas Camp")) {
+          grouped.christmasCamp.push(item)}
+      else {
+        grouped.mainRegistration.push(item);
       }
     });
 
@@ -209,7 +208,7 @@ const Students = () => {
     },
 
     {
-      label: "Building Blocks Club",
+      label: "Summer Camp",
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
@@ -217,7 +216,24 @@ const Students = () => {
             <SkeletonLoader />
           ) : (
             <CustomTable
-              data={groupedData.buildingSchoolClub}
+              data={groupedData.summerCamp}
+              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+
+    {
+      label: "Christmas Camp",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
+            <CustomTable
+              data={groupedData.christmasCamp}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
             />
           )}
