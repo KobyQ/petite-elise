@@ -15,8 +15,9 @@ const supabase = createClientComponentClient();
 
 const Login = () => {
   const router = useRouter();
-  const { user } = useAuth(); // Access global user state
+  const { user } = useAuth(); 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const formik = useFormik({
     initialValues: {
       email: "",

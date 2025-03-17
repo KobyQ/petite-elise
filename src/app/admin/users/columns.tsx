@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction } from "react";
 import { AiFillDelete, AiOutlineEye } from "react-icons/ai";
 
 export const userColumns = (
-  setSelectedData: (row: any) => void,
+  setSelectedData: (row: any) => void, 
   setIsDeleteOpen: Dispatch<SetStateAction<boolean>>
 ) => [
   {
@@ -19,14 +19,11 @@ export const userColumns = (
   {
     name: "Date Created",
     selector: (row: any) => moment(row?.created_at)?.format("lll"),
-    grow: 2,
   },
   {
     name: "Actions",
     cell: (row: any) => (
       <div className="flex items-center gap-4">
-    
-
         <button
           onClick={() => {
             setSelectedData(row);
@@ -39,5 +36,11 @@ export const userColumns = (
         </button>
       </div>
     ),
+    right: true,
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+    },
+    width: "100px",
   },
 ];
