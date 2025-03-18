@@ -182,7 +182,7 @@ export default function RegistrationForm() {
             >
               <FiCheckCircle size={60} className="text-lime-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">
-                Registration Submitted!
+                Registration Submitted Successfully!
               </h2>
               <p className="text-gray-300 mb-6">
                 Thank you for registering for the Code Ninjas Club. We will
