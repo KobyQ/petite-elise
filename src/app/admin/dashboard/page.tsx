@@ -16,7 +16,7 @@ const Dashboard = () => {
 
   const [stats, setStats] = useState([
     { label: "Total Students", value: null, icon: FaUsers, color: "bg-blue-500" },
-    { label: "Total Coders", value: null, icon: FaCode, color: "bg-green-500" },
+    { label: "Total Code Ninjas", value: null, icon: FaCode, color: "bg-green-500" },
     { label: "Total Admins", value: null, icon: FaUserShield, color: "bg-red-500" },
   ]);
   const [loading, setLoading] = useState(true);
