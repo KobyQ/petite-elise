@@ -15,6 +15,7 @@ import ChildMindingProgramSelection from "@/components/admission/ChildMindingPro
 import ChildHealthConditions from "@/components/admission/ChildHealthConditions";
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess";
 import ClubAuthorization from "@/components/admission/ClubAuthorization";
+import { sendRegistrationEmail } from "@/utils/helper";
 
 const ChildMindingRegistration = () => {
   const [familyId, setFamilyId] = useState<string | null>(null);
@@ -103,22 +104,23 @@ const ChildMindingRegistration = () => {
     },
     onSubmit: async (values, { setSubmitting, setFieldValue }) => {
       try {
-        const childData = { ...values};
-     
-    
+        const childData = { ...values };
+
         if (values.hasSibling === true) {
           // Add child to siblings and reset form
           setSiblings((prev: any) => [...prev, childData]);
-    
+
           setFieldValue("childName", "");
           setFieldValue("childDOB", "");
           setFieldValue("childAge", "");
           setFieldValue("hasSibling", "");
-    
+
           setCurrentStep(1);
-          toast.success("Child added successfully. You can enroll another child.");
+          toast.success(
+            "Child added successfully. You can enroll another child."
+          );
         } else {
-          const allSiblings = [...siblings, values ]
+          const allSiblings = [...siblings, values];
           // Submit all siblings together
           const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
             ...sibling,
@@ -128,9 +130,17 @@ const ChildMindingRegistration = () => {
             .from("children")
             .insert(siblingsWithFamilyId);
           if (error) throw error;
-    
+          const emailData = siblingsWithFamilyId[0];
+          const emailObject = {
+            childName: emailData?.childName,
+            parentEmail: emailData?.parentEmail,
+            parentPhoneNumber: emailData?.parentPhoneNumber,
+            childDOB: emailData?.childDOB,
+          };
+
+          await sendRegistrationEmail(emailObject);
           toast.success("Enrollment complete!");
-          setFinalSiblings(siblingsWithFamilyId)
+          setFinalSiblings(siblingsWithFamilyId);
           setSiblings([]);
           setFamilyId(null);
           setIsEnrollmentSuccessful(true);
@@ -227,7 +237,7 @@ const ChildMindingRegistration = () => {
             )}
             {currentStep === 5 && (
               <ClubAuthorization
-              errors={errors}
+                errors={errors}
                 values={values}
                 prevStep={prevStep}
                 isSubmitting={isSubmitting}

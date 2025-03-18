@@ -1,4 +1,5 @@
 import ContactInfo from "@/components/contact/ContactInfo";
+import SendMessage from "@/components/contact/SendMessage";
 import CTA from "@/components/programs/CTA";
 import React from "react";
 
@@ -23,9 +24,9 @@ const ContactUsPage = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto flex justify-center items-center px-6 sm:px-10 w-full relative mt-12">
+      <main className="max-w-6xl mx-auto flex  flex-col-reverse lg:flex-row justify-center gap-10 items-center px-6 sm:px-10 w-full relative mt-12">
         {/* Send Us a Message */}
-        
+        <SendMessage />
 
         {/* Contact Info */}
         <ContactInfo />

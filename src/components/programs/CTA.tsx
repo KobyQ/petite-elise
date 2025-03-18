@@ -17,7 +17,7 @@ const CTA = () => {
         <p className="text-base sm:text-lg md:text-xl text-white mb-6 sm:mb-8 max-w-md sm:max-w-2xl mx-auto font-medium">
           Enroll your child today and give them the best start in their educational journey.
         </p>
-        <Link href="/admissions">
+        <Link href="/register-your-child">
         <button className="bg-[#fb9039] text-white px-6 py-3 sm:px-8 sm:py-4 md:px-10 md:py-4 rounded-full text-lg sm:text-xl md:text-2xl font-semibold hover:bg-[#f77f2f] transition-all duration-300 transform hover:scale-105 flex items-center justify-center mx-auto shadow-lg">
           Enroll Now
         </button>

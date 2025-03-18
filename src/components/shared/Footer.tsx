@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/admissions"
+                  href="/register-your-child"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Admissions

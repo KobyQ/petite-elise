@@ -1,142 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function emailHtmlTemplate(htmlData: any) {
-    return `
-      <!DOCTYPE html>
-    <html>
-      <head>
-        <title></title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <style type="text/css">
-          body,
-          table,
-          td,
-          a {
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-          }
-          table {
-            border-collapse: collapse !important;
-          }
-          body {
-            height: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-          }
-          @media screen and (max-width: 525px) {
-            .wrapper {
-              width: 100% !important;
-              max-width: 100% !important;
-            }
-            .responsive-table {
-              width: 100% !important;
-            }
-            .padding {
-              padding: 10px 5% 15px 5% !important;
-            }
-            .section-padding {
-              padding: 0 15px 50px 15px !important;
-            }
-          }
-          .form-container {
-            margin-bottom: 24px;
-            padding: 20px;
-            border: 1px dashed #ccc;
-          }
-          .form-heading {
-            color: #2a2a2a;
-            font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-            font-weight: 400;
-            text-align: left;
-            line-height: 20px;
-            font-size: 18px;
-            margin: 0 0 8px;
-            padding: 0;
-          }
-          .form-answer {
-            color: #2a2a2a;
-            font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-            font-weight: 300;
-            text-align: left;
-            line-height: 20px;
-            font-size: 16px;
-            margin: 0 0 24px;
-            padding: 0;
-          }
-          div[style*="margin: 16px 0;"] {
-            margin: 0 !important;
-          }
-        </style>
-      </head>
-      <body style="margin: 0 !important; padding: 0 !important; background: #fff">
-        <div
-          style="
-            display: none;
-            font-size: 1px;
-            color: #fefefe;
-            line-height: 1px;
-            max-height: 0px;
-            max-width: 0px;
-            opacity: 0;
-            overflow: hidden;
-          "
-        ></div>
-        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-          <tr>
-            <td
-              bgcolor="#ffffff"
-              align="center"
-              style="padding: 10px 15px 30px 15px"
-              class="section-padding"
-            >
-              <table
-                border="0"
-                cellpadding="0"
-                cellspacing="0"
-                width="100%"
-                style="max-width: 500px"
-                class="responsive-table"
-              >
-                <tr>
-                  <td>
-                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td>
-                          <table
-                            width="100%"
-                            border="0"
-                            cellspacing="0"
-                            cellpadding="0"
-                          >
-                            <tr>
-                              <td
-                                style="
-                                  padding: 0 0 0 0;
-                                  font-size: 16px;
-                                  line-height: 25px;
-                                  color: #232323;
-                                "
-                                class="padding message-content"
-                              >
-                                <h2>Registration Request from Website</h2>
-                                <div class="form-container">${htmlData}</div>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <title>New Registration Request</title>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', sans-serif;
+          background-color: #f8f9fa;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 40px auto;
+          background: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+          background: #0056b3;
+          color: white;
+          text-align: center;
+          padding: 16px;
+          font-size: 18px;
+          font-weight: 600;
+        }
+        .content {
+          padding: 24px;
+          color: #333;
+        }
+        .content h2 {
+          font-size: 20px;
+          color: #0056b3;
+          margin-bottom: 12px;
+        }
+        .card {
+          background: #f4f4f4;
+          padding: 16px;
+          border-radius: 6px;
+          margin-top: 12px;
+          font-size: 14px;
+        }
       
-      `;
-  }
+        @media (max-width: 600px) {
+          .content { padding: 20px; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="header">New Registration Request</div>
+        <div class="content">
+          <h2>Details</h2>
+          <div class="card">${htmlData}</div>
+        </div>
+     
+      </div>
+    </body>
+  </html>
+  `;
+}
+
   

@@ -10,7 +10,23 @@ export const contactSchema = Yup.object({
 
 });
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const addUserSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
+
+});
+
+
+export const loginSchema = Yup.object({
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
+
+});
 
 export const enrollChildSchema = Yup.object().shape({
   childName: Yup.string().required("Child Name is required"),

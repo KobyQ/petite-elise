@@ -59,11 +59,10 @@ const SendMessage = () => {
   });
   
   return (
-    <div className="max-w-4xl mx-auto px-2 md:px-8 py-16">
+    <div className="space-y-6 sm:space-y-8 w-full lg:w-1/2">
       <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 relative overflow-hidden">
         <p className="text-sm lg:text-lg text-gray-700 font-medium text-center leading-relaxed pb-6">
-          Enter your details below to begin your child&apos;s registration journey.
-          Our team will reach out to you shortly to help you get started!
+          Need any help? We are here to help
         </p>
 
         <form className="space-y-6 sm:space-y-8" onSubmit={handleSubmit}>

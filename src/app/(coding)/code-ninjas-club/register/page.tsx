@@ -22,6 +22,7 @@ import Input from "../../components/forms/Input";
 import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
 import { MdAdd, MdClose } from "react-icons/md";
+import { sendRegistrationEmail } from "@/utils/helper";
 
 const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
@@ -101,6 +102,15 @@ export default function RegistrationForm() {
         if (error) {
           throw error;
         }
+            // Send a request to the registration API to trigger email
+        console.log("values", values)
+                  const emailObject = {
+                    childName: values?.childName,
+                    parentEmail: values?.email,
+                    parentPhoneNumber: values?.phoneNumber,
+                    childDOB: values?.ageGroup,
+                  };
+                  await sendRegistrationEmail(emailObject);
 
         toast.success("Form submitted successfully!");
 
@@ -172,7 +182,7 @@ export default function RegistrationForm() {
             >
               <FiCheckCircle size={60} className="text-lime-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">
-                Registration Submitted!
+                Registration Submitted Successfully!
               </h2>
               <p className="text-gray-300 mb-6">
                 Thank you for registering for the Code Ninjas Club. We will

@@ -13,11 +13,12 @@ import ClubChildHealthConditions from "@/components/admission/ClubChildHealthCon
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess";
 import ClubAuthorization from "@/components/admission/ClubAuthorization";
 import PlaygroupProgramSelection from "@/components/admission/PlaygroupProgramSelection";
+import { sendRegistrationEmail } from "@/utils/helper";
 
 const BabyAndMeRegistration = () => {
-    const [familyId, setFamilyId] = useState<string | null>(null);
-    const [siblings, setSiblings] = useState<IEnrollChild[]>([]);
-    const [finalSiblings, setFinalSiblings] = useState<any[]>([]);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [siblings, setSiblings] = useState<IEnrollChild[]>([]);
+  const [finalSiblings, setFinalSiblings] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isChildAlreadyEnrolled, setIsChildAlreadyEnrolled] =
     useState<string>("");
@@ -93,22 +94,23 @@ const BabyAndMeRegistration = () => {
     },
     onSubmit: async (values, { setSubmitting, setFieldValue }) => {
       try {
-        const childData = { ...values};
-     
-    
+        const childData = { ...values };
+
         if (values.hasSibling === true) {
           // Add child to siblings and reset form
           setSiblings((prev: any) => [...prev, childData]);
-    
+
           setFieldValue("childName", "");
           setFieldValue("childDOB", "");
           setFieldValue("childAge", "");
           setFieldValue("hasSibling", "");
-    
+
           setCurrentStep(1);
-          toast.success("Child added successfully. You can enroll another child.");
+          toast.success(
+            "Child added successfully. You can enroll another child."
+          );
         } else {
-          const allSiblings = [...siblings, values ]
+          const allSiblings = [...siblings, values];
           // Submit all siblings together
           const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
             ...sibling,
@@ -118,9 +120,19 @@ const BabyAndMeRegistration = () => {
             .from("children")
             .insert(siblingsWithFamilyId);
           if (error) throw error;
-    
+
+          const emailData = siblingsWithFamilyId[0];
+          const emailObject = {
+            childName: emailData?.childName,
+            parentEmail: emailData?.parentEmail,
+            parentPhoneNumber: emailData?.parentPhoneNumber,
+            childDOB: emailData?.childDOB,
+          };
+
+          await sendRegistrationEmail(emailObject);
+
           toast.success("Enrollment complete!");
-          setFinalSiblings(siblingsWithFamilyId)
+          setFinalSiblings(siblingsWithFamilyId);
           setSiblings([]);
           setFamilyId(null);
           setIsEnrollmentSuccessful(true);

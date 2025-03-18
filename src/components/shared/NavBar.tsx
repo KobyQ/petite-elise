@@ -48,7 +48,7 @@ const NavBar: React.FC = () => {
         </ul>
 
         <div className="hidden lg:flex items-center space-x-4">
-          <a href="/admissions" className="bg-secondary font-bold text-white px-5 py-2 rounded-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105">
+          <a href="/register-your-child" className="bg-secondary font-bold text-white px-5 py-2 rounded-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105">
             Admissions
           </a>
         </div>
@@ -87,7 +87,7 @@ const NavBar: React.FC = () => {
             </ul>
 
             <div className="mt-20 w-full">
-              <Link href="/admissions">
+              <Link href="/register-your-child">
                 <button onClick={closeMenu} className="bg-secondary text-white px-8 py-4 w-full rounded-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-105">Admissions</button>
               </Link>
             </div>

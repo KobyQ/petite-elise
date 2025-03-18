@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import CustomTable from "../components/CustomTable";
@@ -28,21 +28,21 @@ const Students = () => {
   const fetchStudents = async () => {
     setIsLoading(true);
     setFetchError(null);
-  
+
     try {
       let query = supabase
         .from("children")
         .select()
-        .order("created_at", { ascending: false }); 
-  
+        .order("created_at", { ascending: false });
+
       if (searchQuery.trim()) {
         query = query.or(
           `childName.ilike.%${searchQuery}%,parentName.ilike.%${searchQuery}%`
         );
       }
-  
+
       const { data, error } = await query;
-  
+
       if (error) {
         setFetchError(error?.message || "An unexpected error occurred");
         setStudents(null);
@@ -55,12 +55,11 @@ const Students = () => {
       setIsLoading(false);
     }
   };
-  
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchStudents();
-    }, 500); 
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
@@ -94,31 +93,29 @@ const Students = () => {
   const groupItems = (items: IEnrollChild[] | null) => {
     const grouped = {
       mainRegistration: [] as IEnrollChild[],
-      buildingSchoolClub: [] as IEnrollChild[],
       babyAndMe: [] as IEnrollChild[],
       playgroup: [] as IEnrollChild[],
       childMindinggroup: [] as IEnrollChild[],
       saturdaygroup: [] as IEnrollChild[],
+      christmasCamp: [] as IEnrollChild[],
+      summerCamp: [] as IEnrollChild[],
     };
-    
+
     items?.forEach((item) => {
-      if (
-        item?.programs?.some((p) =>
-          ["Daycare", "Preschool", "Afterschool Care"].includes(p)
-        )
-      ) {
-        grouped.mainRegistration.push(item);
-      } else if (item?.programs?.includes("Baby & Me")) {
+       if (item?.programs?.includes("Baby & Me")) {
         grouped.babyAndMe.push(item);
       } else if (item?.programs?.includes("Developmental Playgroup")) {
         grouped.playgroup.push(item);
-      } 
-      else if (item?.programs?.includes("Childminding")) {
-        grouped.childMindinggroup.push(item); } 
-        else if (item?.programs?.includes("Saturday Kids Club")) {
-          grouped.saturdaygroup.push(item); }
-        else {
-        grouped.buildingSchoolClub.push(item);
+      } else if (item?.programs?.includes("Childminding")) {
+        grouped.childMindinggroup.push(item);
+      } else if (item?.programs?.includes("Saturday Kids Club")) {
+        grouped.saturdaygroup.push(item);
+      }  else if (item?.programs?.includes("Summer Camp")) {
+        grouped.summerCamp.push(item)}
+        else if (item?.programs?.includes("Christmas Camp")) {
+          grouped.christmasCamp.push(item)}
+      else {
+        grouped.mainRegistration.push(item);
       }
     });
 
@@ -133,7 +130,9 @@ const Students = () => {
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
               data={groupedData.mainRegistration}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
@@ -142,13 +141,15 @@ const Students = () => {
         </div>
       ),
     },
- 
+
     {
       label: "Baby & Me",
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
               data={groupedData.babyAndMe}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
@@ -162,7 +163,9 @@ const Students = () => {
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
               data={groupedData.playgroup}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
@@ -176,7 +179,9 @@ const Students = () => {
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
               data={groupedData.saturdaygroup}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
@@ -190,7 +195,9 @@ const Students = () => {
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
               data={groupedData.childMindinggroup}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
@@ -201,13 +208,32 @@ const Students = () => {
     },
 
     {
-      label: "Building Blocks Club",
+      label: "Summer Camp",
       content: (
         <div>
           <SearchBar query={searchQuery} setQuery={setSearchQuery} />
-          {isLoading ? <SkeletonLoader /> : (
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
             <CustomTable
-              data={groupedData.buildingSchoolClub}
+              data={groupedData.summerCamp}
+              columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+
+    {
+      label: "Christmas Camp",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} />
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : (
+            <CustomTable
+              data={groupedData.christmasCamp}
               columns={userColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
             />
           )}
@@ -218,14 +244,14 @@ const Students = () => {
 
   return (
     <div>
-      {fetchError && (
+      {isLoading || students === null ? (
+        <SkeletonLoader />
+      ) : fetchError ? (
         <div className="text-red-600 text-center">
           <p>Sorry, an error occurred while fetching data: {fetchError}</p>
           <Button onClick={() => fetchStudents()}>Retry</Button>
         </div>
-      )}
-      {(isLoading || students === null) && <SkeletonLoader />}
-      {!isLoading && !fetchError && students && (
+      ) : (
         <CustomTabs
           tabs={tabs}
           activeColor="text-blue-600"
@@ -241,8 +267,8 @@ const Students = () => {
         />
       )}
 
-        {/* Confirm Delete Modal */}
-        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+      {/* Confirm Delete Modal */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent className="max-w-md bg-white border border-gray-300 rounded-lg shadow-lg p-6">
           <DialogTitle className="text-lg font-bold">
             Confirm Deletion
@@ -273,6 +299,3 @@ const Students = () => {
 };
 
 export default Students;
-
-
-
