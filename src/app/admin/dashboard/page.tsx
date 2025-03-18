@@ -15,8 +15,8 @@ const Dashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
 
   const [stats, setStats] = useState([
-    { label: "Total Students", value: null, icon: FaUsers, color: "bg-blue-500" },
-    { label: "Total Coders", value: null, icon: FaCode, color: "bg-green-500" },
+    { label: "Total Students", value: null, icon: FaUsers, color: "bg-primary" },
+    { label: "Total Code Ninjas", value: null, icon: FaCode, color: "bg-black" },
     { label: "Total Admins", value: null, icon: FaUserShield, color: "bg-red-500" },
   ]);
   const [loading, setLoading] = useState(true);
@@ -54,8 +54,8 @@ const Dashboard = () => {
         
 
         setStats([
-          { label: "Total Students", value: childrenCount, icon: FaUsers, color: "bg-blue-500" },
-          { label: "Total Coders", value: ninjasCount, icon: FaCode, color: "bg-green-500" },
+          { label: "Total Students", value: childrenCount, icon: FaUsers, color: "bg-primary" },
+          { label: "Total Code Ninjas", value: ninjasCount, icon: FaCode, color: "bg-black" },
           { label: "Total Admins", value: usersData.users.length, icon: FaUserShield, color: "bg-red-500" },
         ]);
       } catch (err: any) {
