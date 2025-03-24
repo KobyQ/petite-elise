@@ -6,6 +6,7 @@ import "../globals.css";
 import Provider from "../provider";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import MainProvider from "../mainProvider";
 
 const quickSand = Quicksand({
   subsets: ["latin"],
@@ -33,7 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`${quickSand.variable}`}>
       <body className="antialiased flex flex-col min-h-screen font-quick-sand">
         <Theme>
-          <Provider>
+          <MainProvider>
             <Navbar />
 
             {/* Main Content */}
@@ -41,7 +42,7 @@ export default function RootLayout({
 
             {/* Footer */}
             <Footer />
-          </Provider>
+          </MainProvider>
         </Theme>
       </body>
     </html>
