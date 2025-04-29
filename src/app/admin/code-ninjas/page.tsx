@@ -1,91 +1,85 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-"use client";
-import supabase from "@/utils/supabaseClient";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
+"use client"
+import supabase from "@/utils/supabaseClient"
+import { useEffect, useState } from "react"
+import { toast } from "react-toastify"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal"
 
-import SkeletonLoader from "../components/SkeletonLoader";
-import CustomTable from "../components/CustomTable";
-import { codeNinjaColumns } from "../students/columns";
-import StudentDetails from "../components/StudentDetails";
-import { Button } from "@/components/ui/button";
-import CustomTabs from "@/components/shared/CustomTabs";
-import CodeNinjaDetails from "../components/CodeNinjaDetails";
-import SearchBar from "../components/SearchBar";
+import SkeletonLoader from "../components/SkeletonLoader"
+import CustomTable from "../components/CustomTable"
+import { codeNinjaColumns } from "../students/columns"
+import { Button } from "@/components/ui/button"
+import CustomTabs from "@/components/shared/CustomTabs"
+import CodeNinjaDetails from "../components/CodeNinjaDetails"
+import SearchBar from "../components/SearchBar"
 
 const CodingNinjas = () => {
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [students, setStudents] = useState<any[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [selectedData, setSelectedData] = useState<any | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [students, setStudents] = useState<any[] | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [selectedData, setSelectedData] = useState<any | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [groupedData, setGroupedData] = useState<{
-    litleNinja: any[];
-    miniCoder: any[];
-  }>({ litleNinja: [], miniCoder: [] });
+    litleNinja: any[]
+    miniCoder: any[]
+  }>({ litleNinja: [], miniCoder: [] })
 
   const fetchStudents = async () => {
-    setIsLoading(true);
-    setFetchError(null);
+    setIsLoading(true)
+    setFetchError(null)
 
     try {
-      let query = supabase
-        .from("code-ninjas")
-        .select()
-        .order("created_at", { ascending: false });
+      let query = supabase.from("code-ninjas").select().eq("is_active", true).order("created_at", { ascending: false })
 
       if (searchQuery.trim()) {
-        query = query.or(
-          `childName.ilike.%${searchQuery}%,parentName.ilike.%${searchQuery}%`
-        );
+        query = query.or(`childName.ilike.%${searchQuery}%,parentName.ilike.%${searchQuery}%`)
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query
 
       if (error) {
-        setFetchError(error?.message || "An unexpected error occurred");
-        setStudents(null);
+        setFetchError(error?.message || "An unexpected error occurred")
+        setStudents(null)
       } else {
-        setStudents(data || []);
-        groupStudents(data || []);
+        setStudents(data || [])
+        groupStudents(data || [])
       }
     } catch (error) {
-      setFetchError("Failed to fetch data. Please try again.");
+      setFetchError("Failed to fetch data. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const groupStudents = (students: any[]) => {
     const grouped: { litleNinja: any[]; miniCoder: any[] } = {
       litleNinja: [],
       miniCoder: [],
-    };
+    }
 
     students.forEach((student) => {
       if (student.ageGroup.includes("Little Ninja")) {
-        grouped.litleNinja.push(student);
+        grouped.litleNinja.push(student)
       } else {
-        grouped.miniCoder.push(student);
+        grouped.miniCoder.push(student)
       }
-    });
+    })
 
-    setGroupedData(grouped);
-  };
+    setGroupedData(grouped)
+  }
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchStudents();
-    }, 500);
+      fetchStudents()
+    }, 500)
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
 
   const tabs = [
     {
@@ -98,11 +92,7 @@ const CodingNinjas = () => {
           ) : (
             <CustomTable
               data={groupedData?.miniCoder}
-              columns={codeNinjaColumns(
-                setSelectedData,
-                setIsOpen,
-                setIsDeleteOpen
-              )}
+              columns={codeNinjaColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
             />
           )}
         </div>
@@ -119,46 +109,32 @@ const CodingNinjas = () => {
           ) : (
             <CustomTable
               data={groupedData?.litleNinja}
-              columns={codeNinjaColumns(
-                setSelectedData,
-                setIsOpen,
-                setIsDeleteOpen
-              )}
+              columns={codeNinjaColumns(setSelectedData, setIsOpen, setIsDeleteOpen)}
             />
           )}
         </div>
       ),
     },
-  ];
+  ]
   const deleteStudent = async () => {
-    if (!selectedData) return;
-    setDeleteLoading(true);
+    if (!selectedData) return
+    setDeleteLoading(true)
     try {
-      const { error } = await supabase
-        .from("code-ninjas")
-        .delete()
-        .eq("id", selectedData?.id);
+      const { error } = await supabase.from("code-ninjas").update({ is_active: false }).eq("id", selectedData?.id)
       if (error) {
-        toast.error("Failed to delete student. Please try again.");
+        toast.error("Failed to delete student. Please try again.")
       } else {
-        toast.success("Student deleted successfully.");
-        setStudents(
-          (prev) =>
-            prev?.filter((student: any) => student.id !== selectedData?.id) ||
-            []
-        );
-        groupStudents(
-          students?.filter((student: any) => student.id !== selectedData?.id) ||
-            []
-        );
+        toast.success("Student deleted successfully.")
+        setStudents((prev) => prev?.filter((student: any) => student.id !== selectedData?.id) || [])
+        groupStudents(students?.filter((student: any) => student.id !== selectedData?.id) || [])
       }
     } catch {
-      toast.error("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.")
     } finally {
-      setIsDeleteOpen(false);
-      setDeleteLoading(false);
+      setIsDeleteOpen(false)
+      setDeleteLoading(false)
     }
-  };
+  }
 
   return (
     <div>
@@ -171,51 +147,33 @@ const CodingNinjas = () => {
         </div>
       ) : (
         <>
-          <CustomTabs
-            tabs={tabs}
-            activeColor="text-blue-600"
-            inactiveColor="text-gray-400"
-          />
+          <CustomTabs tabs={tabs} activeColor="text-blue-600" inactiveColor="text-gray-400" />
         </>
       )}
 
-      {isOpen && (
-        <CodeNinjaDetails
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          data={selectedData}
-        />
-      )}
+      {isOpen && <CodeNinjaDetails isOpen={isOpen} setIsOpen={setIsOpen} data={selectedData} />}
 
       {/* Confirm Delete Modal */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent className="max-w-md bg-white border border-gray-300 rounded-lg shadow-lg p-6">
-          <DialogTitle className="text-lg font-bold">
-            Confirm Deletion
-          </DialogTitle>
+          <DialogTitle className="text-lg font-bold">Confirm Deactivation</DialogTitle>
           <p className="text-gray-600">
-            Are you sure you want to delete{" "}
-            <strong>{selectedData?.parentName}</strong> and their ward{" "}
-            <strong>{selectedData?.childName}</strong>? This action cannot be
-            undone.
+            Are you sure you want to deactivate <strong>{selectedData?.parentName}</strong> and their ward{" "}
+            <strong>{selectedData?.childName}</strong>? They will no longer appear in the system but their data will be
+            preserved.
           </p>
           <div className="flex justify-end gap-4 mt-4">
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              color="red"
-              onClick={deleteStudent}
-              disabled={deleteLoading}
-            >
-              {deleteLoading ? "Deleting..." : "Delete"}
+            <Button variant="destructive" color="red" onClick={deleteStudent} disabled={deleteLoading}>
+              {deleteLoading ? "Deactivating..." : "Deactivate"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  );
-};
+  )
+}
 
-export default CodingNinjas;
+export default CodingNinjas
