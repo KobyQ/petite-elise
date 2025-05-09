@@ -1,6 +1,6 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { FaPlay } from "react-icons/fa";
-import Image from "next/image";
+import * as Dialog from "@radix-ui/react-dialog"
+import { FaPlay, FaApple, FaGooglePlay } from "react-icons/fa"
+import Image from "next/image"
 
 const HeroSection = () => {
   return (
@@ -13,43 +13,80 @@ const HeroSection = () => {
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight tracking-tight">
                 Welcome to
                 <br />
-                <span className="bg-clip-text text-secondary animate-gradient-x">
-                  Petite Elise Preschool
-                </span>
+                <span className="bg-clip-text text-secondary animate-gradient-x">Petite Elise Preschool</span>
               </h1>
               <div className="w-full h-1 bg-gradient-to-r from-[#fb9039] to-[#eab308] rounded-full transform -skew-x-12"></div>
               <p className="text-white/90 text-base md:text-lg max-w-lg leading-relaxed">
-                Nurturing young minds to become curious, resilient, and
-                independent thinkers in a safe, loving environment
+                Nurturing young minds to become curious, resilient, and independent thinkers in a safe, loving
+                environment
               </p>
             </div>
 
-            <Dialog.Root>
-              <Dialog.Trigger asChild>
-                <button className="w-full lg:w-auto group lg:px-8 py-3 bg-white/10 backdrop-blur-sm text-secondary text-bold rounded-full hover:bg-white/20 transition-all duration-300 flex justify-center items-center gap-2 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-[#4B456F]">
-                  <div className="bg-white rounded-full p-1 group-hover:bg-secondary transition-colors duration-300">
-                    <FaPlay className="w-3 h-3 text-[#4B456F] group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  School Tour
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
-                <Dialog.Content className="fixed z-50 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl overflow-hidden w-[95%] max-w-[1200px] max-h-[90%] h-[80vh] sm:h-[90vh]">
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <iframe
-                      src="https://www.youtube.com/embed/3zvuBSYiB54?si=io491Tr0QULV22p8"
-                      title="School Tour"
-                      className="w-full h-full border-none"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                  <Dialog.Close className="absolute top-3 right-3 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg hover:bg-red-600">
-                    &times;
-                  </Dialog.Close>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
+            {/* All Buttons Container */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              {/* School Tour Button */}
+              <Dialog.Root>
+                <Dialog.Trigger asChild>
+                  <button className="w-full group flex items-center justify-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 h-[72px]">
+                    <div className="bg-gradient-to-r from-[#fb9039] to-[#eab308] rounded-full p-2 flex items-center justify-center">
+                      <FaPlay className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xs text-white/80">Watch Our</div>
+                      <div className="text-sm font-bold text-secondary">School Tour</div>
+                    </div>
+                  </button>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
+                  <Dialog.Content className="fixed z-50 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl overflow-hidden w-[95%] max-w-[1200px] max-h-[90%] h-[80vh] sm:h-[90vh]">
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <iframe
+                        src="https://www.youtube.com/embed/3zvuBSYiB54?si=io491Tr0QULV22p8"
+                        title="School Tour"
+                        className="w-full h-full border-none"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                    <Dialog.Close className="absolute top-3 right-3 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg hover:bg-red-600">
+                      &times;
+                    </Dialog.Close>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+
+              {/* App Store Button */}
+              <a
+                href="https://apps.apple.com/gh/app/petite-elise/id6743756094"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full group flex items-center justify-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 h-[72px]"
+              >
+                <div className="bg-gradient-to-r from-[#fb9039] to-[#eab308] rounded-full p-2 flex items-center justify-center">
+                  <FaApple className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs text-white/80">Download on the</div>
+                  <div className="text-sm font-bold text-secondary">App Store</div>
+                </div>
+              </a>
+
+              {/* Google Play Button */}
+              <a
+                href="https://play.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full group flex items-center justify-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 h-[72px]"
+              >
+                <div className="bg-gradient-to-r from-[#fb9039] to-[#eab308] rounded-full p-2 flex items-center justify-center">
+                  <FaGooglePlay className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs text-white/80">GET IT ON</div>
+                  <div className="text-sm font-bold text-secondary">Google Play</div>
+                </div>
+              </a>
+            </div>
           </div>
 
           {/* Right Column - Image */}
@@ -94,28 +131,16 @@ const HeroSection = () => {
 
             {/* Main Image */}
             <div className="relative z-20">
-              <Image
-                src="/images/hero.png"
-                alt="Excited student"
-                width={420}
-                height={420}
-                className="object-contain"
-              />
+              <Image src="/images/hero.png" alt="Excited student" width={420} height={420} className="object-contain" />
               <div className="absolute z-10 -top-[10%] md:top-[4%] lg:top-[6%] left-[1%] md:left-[15%] lg:left-[6%]">
-                <Image
-                  src="/images/sun.png"
-                  alt="Sun icon"
-                  width={100}
-                  height={100}
-                  className="object-contain"
-                />
+                <Image src="/images/sun.png" alt="Sun icon" width={100} height={100} className="object-contain" />
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default HeroSection;
+export default HeroSection
