@@ -1,6 +1,14 @@
 import SendMessage from "@/components/contact/SendMessage";
+import { Metadata } from "next";
 
 import React from "react";
+
+export const metadata: Metadata = {
+  title: "Admissions | Petite Elise Preschool",
+  description: "Enroll your child in our nurturing programs. Fill out the form to start your child's educational journey with us.",
+  keywords: ["preschool admissions", "enroll child Accra", "Petite Elise enrollment"],
+};
+
 
 const AdmissionsPage = () => {
   return (

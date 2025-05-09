@@ -2,7 +2,40 @@
 
 // import ClubGallery from "@/components/club/ClubGallery";
 import CTA from "@/components/programs/CTA";
+import { Metadata } from "next";
 import Link from "next/link";
+
+
+export const metadata: Metadata = {
+  title: "Building Blocks Club | Petite Elise Preschool",
+  description:
+    "Engaging kids in experiential fun — arts & crafts, gardening, sensory activities, outdoor adventures, and homework help every weekend at Petite Elise.",
+  keywords: [
+    "Building Blocks Club",
+    "kids weekend club Accra",
+    "Petite Elise Preschool clubs",
+    "sensory activities Accra",
+    "homework help club",
+    "child enrichment Ghana",
+    "weekend kids programs",
+  ],
+  openGraph: {
+    title: "Building Blocks Club at Petite Elise",
+    description:
+      "Join our weekend club for exciting activities like arts & crafts, gardening, sensory games, and more. Open to all kids, even if not enrolled!",
+    url: "https://www.petiteelise.com/building-blocks-club",
+    siteName: "Petite Elise Preschool",
+    type: "article",
+    images: [
+      {
+        url: "/images/logo.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Children enjoying weekend activities at Building Blocks Club",
+      },
+    ],
+  },
+};
 
 const BuildingBlocksClub = () => {
   const programs = [

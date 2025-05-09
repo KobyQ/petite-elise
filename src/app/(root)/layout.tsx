@@ -12,17 +12,48 @@ const quickSand = Quicksand({
   variable: "--font-quick-sand",
 });
 
+
 export const metadata: Metadata = {
-  title: "Petite Elise Preschool",
+  title: {
+    default: "Petite Elise Preschool",
+    template: "%s | Petite Elise Preschool",
+  },
   description:
     "Nurturing young minds to become curious, resilient, and independent thinkers in a safe, loving environment",
+  keywords: [
+    "preschool Accra",
+    "daycare Ghana",
+    "early childhood education",
+    "Petite Elise",
+    "Montessori Accra",
+    "baby care",
+    "after school program",
+    "nursery school Accra",
+  ],
+  metadataBase: new URL("https://www.petiteelise.com"),
+  openGraph: {
+    title: "Petite Elise Preschool",
+    description:
+      "Petite Elise Preschool, a Talkative Mom initiative, provides nurturing care and early learning for children aged 3 months to 5 years in Accra, Ghana.",
+    url: "https://www.petiteelise.com",
+    siteName: "Petite Elise Preschool",
+    type: "website",
+    images: [
+      {
+        url: "/images/logo.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Petite Elise Preschool logo",
+      },
+    ],
+  },
   icons: {
     icon: "/icons/logo.petite-elise.ico",
-  },
-  openGraph: {
-    images: ["/images/logo.jpg"],
+    shortcut: "/favicon.ico",
   },
 };
+
+
 
 export default function RootLayout({
   children,
