@@ -73,7 +73,7 @@ const HeroSection = () => {
 
               {/* Google Play Button */}
               <a
-                href="https://play.google.com"
+                href="https://mega.nz/file/V7UwwLzD#vSE4owrixp4gC4cgvdFZ9qeIYbbKrZGihhTjRmVznNk"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full group flex items-center justify-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 h-[72px]"
