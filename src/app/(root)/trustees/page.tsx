@@ -1,5 +1,14 @@
 import CTA from "@/components/programs/CTA";
 import TrusteeCard from "@/components/trustees/TrusteeCard";
+import { Metadata } from "next";
+
+
+export const metadata: Metadata = {
+  title: "Our Trustees | Petite Elise Preschool",
+  description: "Meet the dedicated trustees and board members guiding Petite Elise Preschool's mission and vision.",
+  keywords: ["Petite Elise trustees", "board members", "school leadership"],
+};
+
 
 interface Trustee {
   id: number;

@@ -1,7 +1,15 @@
 import ContactInfo from "@/components/contact/ContactInfo";
 import SendMessage from "@/components/contact/SendMessage";
 import CTA from "@/components/programs/CTA";
+import { Metadata } from "next";
 import React from "react";
+
+
+export const metadata: Metadata = {
+  title: "Contact Us | Petite Elise Preschool",
+  description: "Get in touch with us to learn more about our programs and enrollment process.",
+  keywords: ["contact Petite Elise", "preschool contact Accra", "enroll child preschool"],
+};
 
 const ContactUsPage = () => {
   return (

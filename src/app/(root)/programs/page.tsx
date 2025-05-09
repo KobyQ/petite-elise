@@ -2,7 +2,16 @@ import CTA from '@/components/programs/CTA'
 import ProgramCards from '@/components/programs/ProgramCards'
 import { Testimonials } from '@/components/programs/Testimonials'
 import HeroSection from '@/components/shared/HeroSection'
+import { Metadata } from 'next'
 import React from 'react'
+
+
+export const metadata: Metadata = {
+  title: "Our Programs | Petite Elise Preschool",
+  description: "Explore our range of programs including Daycare, Preschool, Afterschool Care, Baby & Me, Developmental Playgroup, and Experiential Learning Activities.",
+  keywords: ["Daycare Accra", "Preschool programs", "Afterschool care", "Baby & Me", "Developmental Playgroup", "Experiential Learning"],
+};
+
 
 const page = () => {
   return (
