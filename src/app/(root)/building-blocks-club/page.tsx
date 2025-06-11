@@ -58,7 +58,7 @@ const BuildingBlocksClub = () => {
       period: "3rd/4th week of December",
       description:
         "Join us for holiday fun and learning during the festive season.",
-        link: "/join-our-club"
+        link: "/christmas-camp-registration"
     },
     {
       title: "Childminding",

@@ -13,9 +13,9 @@ import ClubChildHealthConditions from "@/components/admission/ClubChildHealthCon
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess"
 import ClubAuthorization from "@/components/admission/ClubAuthorization"
 import { sendRegistrationEmail } from "@/utils/helper"
-import SummerCampProgramSelection from "@/components/admission/SummerCampProgramSelection"
+import ChristmasProgramSelection from "@/components/admission/ChristmasProgramSelection"
 
-const SummerCampRegistration = () => {
+const ChristmasCampRegistration = () => {
   const [familyId, setFamilyId] = useState<string | null>(null)
   const [siblings, setSiblings] = useState<IEnrollChild[]>([])
   const [finalSiblings, setFinalSiblings] = useState<any[]>([])
@@ -240,11 +240,9 @@ const SummerCampRegistration = () => {
               />
             )}
             {currentStep === 3 && (
-              <SummerCampProgramSelection
-                values={values}
+              <ChristmasProgramSelection
                 nextStep={nextStep}
                 prevStep={prevStep}
-                setFieldValue={setFieldValue}
               />
             )}
             {currentStep === 4 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
@@ -258,4 +256,4 @@ const SummerCampRegistration = () => {
   )
 }
 
-export default SummerCampRegistration
+export default ChristmasCampRegistration
