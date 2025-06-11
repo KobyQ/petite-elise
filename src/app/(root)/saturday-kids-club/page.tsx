@@ -13,9 +13,9 @@ import ClubChildHealthConditions from "@/components/admission/ClubChildHealthCon
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess"
 import ClubAuthorization from "@/components/admission/ClubAuthorization"
 import { sendRegistrationEmail } from "@/utils/helper"
-import SummerCampProgramSelection from "@/components/admission/SummerCampProgramSelection"
+import SaturdayProgramSelection from "@/components/admission/SaturdayProgramSelection"
 
-const SummerCampRegistration = () => {
+const SaturdayKidsClub = () => {
   const [familyId, setFamilyId] = useState<string | null>(null)
   const [siblings, setSiblings] = useState<IEnrollChild[]>([])
   const [finalSiblings, setFinalSiblings] = useState<any[]>([])
@@ -197,7 +197,7 @@ const SummerCampRegistration = () => {
     >
       <div className="max-w-5xl mx-auto px-2 md:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Summer Camp Registration</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold">Saturday Kids Club Registration</h2>
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
@@ -240,7 +240,7 @@ const SummerCampRegistration = () => {
               />
             )}
             {currentStep === 3 && (
-              <SummerCampProgramSelection
+              <SaturdayProgramSelection
                 values={values}
                 nextStep={nextStep}
                 prevStep={prevStep}
@@ -258,4 +258,4 @@ const SummerCampRegistration = () => {
   )
 }
 
-export default SummerCampRegistration
+export default SaturdayKidsClub

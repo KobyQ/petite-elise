@@ -197,7 +197,7 @@ const ChristmasCampRegistration = () => {
     >
       <div className="max-w-5xl mx-auto px-2 md:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Join our Building Blocks Club</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold">Christmas Camp registration</h2>
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>

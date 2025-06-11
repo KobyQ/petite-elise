@@ -44,7 +44,7 @@ const BuildingBlocksClub = () => {
       period: "January to December",
       description:
         "Kids are dropped off on Saturdays for either half day or full day",
-        link: "/join-our-club"
+        link: "/saturday-kids-club"
     },
     {
       title: "Summer Camp",

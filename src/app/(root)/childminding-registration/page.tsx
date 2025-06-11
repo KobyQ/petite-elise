@@ -203,7 +203,7 @@ const ChildMindingRegistration = () => {
     >
       <div className="max-w-5xl mx-auto px-2 md:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Enroll your child for our Childminding Program</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold"> Childminding Program Registration</h2>
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
