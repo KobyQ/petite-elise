@@ -2,7 +2,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import moment from "moment"
-import { v4 as uuidv4 } from "uuid"
 import { FormikProvider, useFormik } from "formik"
 import { toast } from "react-toastify"
 import supabase from "@/utils/supabaseClient"
@@ -10,13 +9,13 @@ import type { IEnrollChild } from "@/utils/interfaces"
 import { enrollChildSchema } from "@/utils/validations"
 import ExistingInfoCheck from "@/components/admission/ExistingInfoCheck"
 import ChildAndGuardianInfo from "@/components/admission/ChildAndGuardianInfo"
-import ChildMindingProgramSelection from "@/components/admission/ChildMindingProgramSelection"
-import ChildHealthConditions from "@/components/admission/ChildHealthConditions"
+import ClubChildHealthConditions from "@/components/admission/ClubChildHealthConditions"
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess"
 import ClubAuthorization from "@/components/admission/ClubAuthorization"
 import { sendRegistrationEmail } from "@/utils/helper"
+import ChristmasProgramSelection from "@/components/admission/ChristmasProgramSelection"
 
-const ChildMindingRegistration = () => {
+const ChristmasCampRegistration = () => {
   const [familyId, setFamilyId] = useState<string | null>(null)
   const [siblings, setSiblings] = useState<IEnrollChild[]>([])
   const [finalSiblings, setFinalSiblings] = useState<any[]>([])
@@ -34,13 +33,6 @@ const ChildMindingRegistration = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentStep])
-
-  // Generate familyId on component mount
-  useEffect(() => {
-    if (!familyId) {
-      setFamilyId(uuidv4())
-    }
-  }, [familyId])
 
   const fetchAllDocuments = async (parentEmail: string, parentPhoneNumber: string) => {
     try {
@@ -128,7 +120,8 @@ const ChildMindingRegistration = () => {
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
       programs: selectedChild?.programs || [],
-      childMindingSchedule: selectedChild?.childMindingSchedule || [],
+      saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
+      summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
@@ -169,6 +162,7 @@ const ChildMindingRegistration = () => {
           }
 
           await sendRegistrationEmail(emailObject)
+
           toast.success("Enrollment complete!")
           setFinalSiblings(siblingsWithFamilyId)
           setSiblings([])
@@ -203,7 +197,7 @@ const ChildMindingRegistration = () => {
     >
       <div className="max-w-5xl mx-auto px-2 md:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold"> Childminding Program Registration</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold">Christmas Camp registration</h2>
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
@@ -246,16 +240,14 @@ const ChildMindingRegistration = () => {
               />
             )}
             {currentStep === 3 && (
-              <ChildMindingProgramSelection
-                values={values}
+              <ChristmasProgramSelection
                 nextStep={nextStep}
                 prevStep={prevStep}
-                setFieldValue={setFieldValue}
               />
             )}
-            {currentStep === 4 && <ChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
+            {currentStep === 4 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
             {currentStep === 5 && (
-              <ClubAuthorization errors={errors} values={values} prevStep={prevStep} isSubmitting={isSubmitting} />
+              <ClubAuthorization values={values} errors={errors} prevStep={prevStep} isSubmitting={isSubmitting} />
             )}
           </form>
         </FormikProvider>
@@ -264,4 +256,4 @@ const ChildMindingRegistration = () => {
   )
 }
 
-export default ChildMindingRegistration
+export default ChristmasCampRegistration
