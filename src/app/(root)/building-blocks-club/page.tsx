@@ -48,10 +48,10 @@ const BuildingBlocksClub = () => {
     },
     {
       title: "Summer Camp",
-      period: "July to September",
+      period: "July",
       description:
-        "Our Summer Camp runs for 13 weeks and is open to children outside our school from ages 1-6 years. Daily, Weekly, Monthly, and Full Term options are available.",
-        link: "/join-our-club"
+        "Our Summer camp runs for 4 weeks and is open to children outside our school from ages 3-6 years. Daily , weekly and monthly options are available",
+        link: "/summer-camp-registration"
     },
     {
       title: "Christmas Camp",
