@@ -25,7 +25,7 @@ const CourseDetails = () => {
           <p className="text-gray-400 max-w-2xl mx-auto">
             Is your child curious about computers and how games are made? Enroll
             them in our fun and interactive Scratch programming course designed
-            for kids aged 6-13.
+            for kids aged 6-9.
           </p>
         </div>
 
@@ -51,7 +51,7 @@ const CourseDetails = () => {
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <FaClock className="h-4 w-4" />
-                        <span>Session 2: 12:30 PM – 2:30 PM</span>
+                        <span>Session 2: 1:00 PM – 3:00 PM</span>
                       </div>
                     </div>
                   </div>
@@ -106,7 +106,7 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Registration Deadline
                       </h4>
-                      <p className="mt-1 text-gray-400">28th March, 2025</p>
+                      <p className="mt-1 text-gray-400"> 2nd July,2025</p>
                     </div>
                   </div>
 
@@ -118,7 +118,7 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Cohort Starts
                       </h4>
-                      <p className="mt-1 text-gray-400">5th April, 2025</p>
+                      <p className="mt-1 text-gray-400">7th July, 2025</p>
                     </div>
                   </div>
 
