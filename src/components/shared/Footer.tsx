@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="w-full border-t bg-[#ecf0f1]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3  lg:justify-items-start">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:justify-items-start">
           <div className="space-y-4 text-left">
             <h3 className="text-lg font-bold">Petite Elise Preschool</h3>
             <p className="text-sm text-muted-foreground">
@@ -62,6 +62,19 @@ const Footer: React.FC = () => {
                   className="text-muted-foreground hover:text-primary"
                 >
                   Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="text-left">
+            <h3 className="mb-4 text-lg font-bold">Legal</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/privacy-policy"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  Privacy Policy
                 </Link>
               </li>
             </ul>
