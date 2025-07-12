@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Metadata } from "next";
 
 const RequestAccountDeletionPage = () => {
   const [formData, setFormData] = useState({

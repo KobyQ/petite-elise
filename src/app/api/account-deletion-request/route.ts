@@ -52,12 +52,13 @@ export async function POST(request: NextRequest) {
       { message: "Account deletion request submitted successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error sending account deletion request:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
     return NextResponse.json(
       {
-        error: error?.response || "An unexpected error occurred.",
-        message: error?.message || null,
+        error: "Failed to submit account deletion request",
+        message: errorMessage,
       },
       { status: 500 }
     );
