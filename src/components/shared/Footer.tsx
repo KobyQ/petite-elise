@@ -77,6 +77,14 @@ const Footer: React.FC = () => {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/request-account-deletion"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  Request Account Deletion
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
