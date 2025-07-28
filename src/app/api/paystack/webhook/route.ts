@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/utils/supabaseClient";
 import { sendRegistrationEmail } from "@/utils/helper";
+import { ETransactionStatus } from "@/utils/misc";
 
 const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
-    if (transaction.status !== "pending") {
+    if (transaction.status !== ETransactionStatus.pending) {
       return NextResponse.json({ error: "Transaction is not pending" }, { status: 400 });
     }
 
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
       allergies: registrationData.allergies,
       hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
       specialHealthConditions: registrationData.specialHealthConditions,
-      photograpghUsageConsent: registrationData.photograpghUsageConsent,
+      photographUsageConsent: registrationData.photographUsageConsent,
       feeding: registrationData.feeding,
       hasSiblings: registrationData.hasSiblings,
       sibling: registrationData.sibling,
@@ -93,6 +94,8 @@ export async function POST(request: NextRequest) {
       reference: reference,
     };
 
+    console.log(childrenData);
+
     // Save registration to children table
     const { error: registrationError } = await supabase
       .from("children")
@@ -103,7 +106,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
     }
 
-    // Send confirmation email
+    // Send receipt email to parent
+    try {
+      const receiptData = {
+        childName: registrationData.childName,
+        parentName: registrationData.parentName,
+        parentEmail: registrationData.parentEmail,
+        program: "Saturday Kids Club",
+        schedule: registrationData.saturdayClubSchedule,
+        amount: transaction.amount, // This is in cedis
+        reference: reference,
+        order_id: transaction.order_id,
+        paymentDate: new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format
+      };
+
+      await fetch(`/api/receipt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(receiptData),
+      });
+    } catch (receiptError) {
+      console.error("Receipt email sending error:", receiptError);
+      // Don't fail the webhook if receipt email fails
+    }
+
+    // Send admin notification email
     try {
       const emailData = {
         childName: registrationData.childName,
@@ -114,7 +143,7 @@ export async function POST(request: NextRequest) {
 
       await sendRegistrationEmail(emailData);
     } catch (emailError) {
-      console.error("Email sending error:", emailError);
+      console.error("Admin email sending error:", emailError);
       // Don't fail the webhook if email fails
     }
 

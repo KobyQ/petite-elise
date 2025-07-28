@@ -67,3 +67,13 @@ export const customStyles: TableStyles = {
 };
 
 
+export enum ETransactionStatus {
+  abandoned = "abandoned",
+  failed = "failed",
+  ongoing = "ongoing",
+  pending = "pending",
+  processing = "processing",
+  queued = "queued",
+  reversed = "reversed",
+  success = "success",
+}
