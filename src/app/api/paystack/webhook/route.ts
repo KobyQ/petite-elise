@@ -118,12 +118,13 @@ export async function POST(request: NextRequest) {
       statusCode: 200,
       message: "Payment verified and registration completed successfully",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error verifying payment:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       {
-        error: error?.response || "An unexpected error occurred",
-        message: error?.message || null,
+        error: errorMessage,
+        message: errorMessage,
       },
       { status: 500 }
     );

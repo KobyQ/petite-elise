@@ -72,10 +72,11 @@ export async function POST(request: NextRequest) {
         reference: data.data.reference,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Payment initiation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Something went wrong";
     return NextResponse.json(
-      { error: error?.message || "Something went wrong" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

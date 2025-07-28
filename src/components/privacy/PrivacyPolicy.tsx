@@ -41,7 +41,7 @@ const PrivacyPolicy = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [sections]);
 
   return (
     <div className="bg-white py-16">
