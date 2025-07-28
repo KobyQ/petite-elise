@@ -20,6 +20,8 @@ const VerifyPageContent = () => {
   const [error, setError] = useState<string | null>(null)
   const [registration, setRegistration] = useState<RegistrationData | null>(null)
   const [emailSent, setEmailSent] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
+  const MAX_RETRIES = 20 // Maximum 20 retries (60 seconds total)
 
   const ref = searchParams.get("reference")
 
@@ -28,6 +30,12 @@ const VerifyPageContent = () => {
       try {
         if (!ref) {
           setError("No reference provided")
+          setLoading(false)
+          return
+        }
+
+        if (retryCount >= MAX_RETRIES) {
+          setError("Payment verification is taking longer than expected. Please contact support.")
           setLoading(false)
           return
         }
@@ -45,56 +53,64 @@ const VerifyPageContent = () => {
           return
         }
 
-        // Check if registration already exists
-        const { data: registrationData, error: registrationError } = await supabase
-          .from("children")
-          .select("*")
-          .eq("reference", ref)
-          .single()
+        // Check transaction status first
+        if (transaction.status === "success") {
+          // Transaction is successful, check if registration exists
+          const { data: registrationData, error: registrationError } = await supabase
+            .from("children")
+            .select("*")
+            .eq("reference", ref)
+            .maybeSingle() // Use maybeSingle instead of single to avoid PGRST116
 
-        if (registrationError && registrationError.code !== "PGRST116") {
-          setError(registrationError.message)
-          setLoading(false)
-          return
-        }
-
-        if (registrationData) {
-          setRegistration(registrationData)
-
-          // Send confirmation email if not already sent
-          if (!emailSent) {
-            try {
-              const emailData = {
-                childName: registrationData.childName,
-                parentEmail: registrationData.parentEmail,
-                parentPhoneNumber: registrationData.parentPhoneNumber,
-                childDOB: registrationData.childDOB,
-              }
-
-              await fetch("/api/contact", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  name: registrationData.parentName,
-                  email: registrationData.parentEmail,
-                  message: `Registration confirmed for ${registrationData.childName} in Saturday Kids Club. Payment reference: ${ref}`,
-                }),
-              })
-
-              setEmailSent(true)
-            } catch (emailError) {
-              console.error("Email sending error:", emailError)
-            }
+          if (registrationError) {
+            setError(registrationError.message)
+            setLoading(false)
+            return
           }
 
-          setLoading(false)
-        } else {
-          // If registration not found, retry after delay
+          if (registrationData) {
+            setRegistration(registrationData)
+
+            // Send confirmation email if not already sent
+            if (!emailSent) {
+              try {
+                await fetch("/api/contact", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    name: registrationData.parentName,
+                    email: registrationData.parentEmail,
+                    message: `Registration confirmed for ${registrationData.childName} in Saturday Kids Club. Payment reference: ${ref}`,
+                  }),
+                })
+
+                setEmailSent(true)
+              } catch (emailError) {
+                console.error("Email sending error:", emailError)
+              }
+            }
+
+            setLoading(false)
+          } else {
+            // Registration not found but transaction is successful
+            // This means webhook hasn't processed yet, retry after delay
+            setRetryCount(prev => prev + 1)
+            setTimeout(() => {
+              verifyTransaction()
+            }, 3000)
+          }
+        } else if (transaction.status === "pending") {
+          // Transaction is still pending, retry after delay
+          setRetryCount(prev => prev + 1)
           setTimeout(() => {
             verifyTransaction()
-          }, 5000)
+          }, 3000)
+        } else {
+          // Transaction failed or has other status
+          setError("Payment verification failed. Please contact support.")
+          setLoading(false)
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : "An unknown error occurred")
@@ -103,7 +119,7 @@ const VerifyPageContent = () => {
     }
 
     verifyTransaction()
-  }, [ref, emailSent])
+  }, [ref, emailSent, retryCount])
 
   if (loading) {
     return (
@@ -119,7 +135,7 @@ const VerifyPageContent = () => {
           <div className="space-y-2 text-sm text-gray-500">
             <div className="flex items-center justify-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-              <span>Verifying payment...</span>
+              <span>Verifying payment... (Attempt {retryCount + 1}/{MAX_RETRIES})</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <div className={`w-2 h-2 rounded-full ${emailSent ? "bg-green-500" : "bg-gray-300"}`}></div>
