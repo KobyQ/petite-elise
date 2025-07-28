@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import CustomTable from "../components/CustomTable";
 import { toast } from "react-toastify";
@@ -10,6 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatMoneyToCedis, formatMoneyToPesewas } from "@/utils/constants";
 import CustomTabs from "@/components/shared/CustomTabs";
 import SearchBar from "../components/SearchBar";
+
+interface PricingItem {
+  id: string;
+  program_name: string;
+  schedule: string;
+  price: number;
+  created_at: string;
+}
 
 const PROGRAM_OPTIONS = [
   { label: "Saturday Kids Club", value: "Saturday Kids Club" },
@@ -33,7 +41,7 @@ const SCHEDULE_OPTIONS: Record<string, string[]> = {
 };
 
 export default function PaymentsPage() {
-  const [pricing, setPricing] = useState<any[]>([]);
+  const [pricing, setPricing] = useState<PricingItem[]>([]);
   const [form, setForm] = useState({
     program_name: "",
     schedule: "",
@@ -45,13 +53,13 @@ export default function PaymentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<PricingItem | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<PricingItem | null>(null);
 
   // Fetch pricing from Supabase
-  const fetchPricing = async () => {
+  const fetchPricing = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
 
@@ -75,7 +83,7 @@ export default function PaymentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -83,10 +91,10 @@ export default function PaymentsPage() {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, fetchPricing]);
 
   // Handle form changes
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -101,7 +109,7 @@ export default function PaymentsPage() {
   };
 
   // Handle add/update
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
@@ -152,7 +160,7 @@ export default function PaymentsPage() {
   };
 
   // Handle edit
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: PricingItem) => {
     setEditingItem(item);
     setIsEditMode(true);
     setForm({
@@ -189,8 +197,8 @@ export default function PaymentsPage() {
   };
 
   // Group pricing by program
-  const groupPricingByProgram = (items: any[] | null) => {
-    const grouped: Record<string, any[]> = {
+  const groupPricingByProgram = (items: PricingItem[] | null) => {
+    const grouped: Record<string, PricingItem[]> = {
       "Saturday Kids Club": [],
       "Summer Camp": [],
       "Christmas Camp": [],
@@ -209,13 +217,17 @@ export default function PaymentsPage() {
 
   const groupedData = groupPricingByProgram(pricing);
 
-  const pricingColumns = (setSelectedData: any, setIsOpen: any, setIsDeleteOpen: any) => [
-    { name: "Program", selector: (row: any) => row.program_name },
-    { name: "Schedule", selector: (row: any) => row.schedule },
-    { name: "Price", selector: (row: any) => formatMoneyToCedis(row.price) },
+  const pricingColumns = (
+    setSelectedData: (item: PricingItem) => void, 
+    setIsOpen: (open: boolean) => void, 
+    setIsDeleteOpen: (open: boolean) => void
+  ) => [
+    { name: "Program", selector: (row: PricingItem) => row.program_name },
+    { name: "Schedule", selector: (row: PricingItem) => row.schedule },
+    { name: "Price", selector: (row: PricingItem) => formatMoneyToCedis(row.price) },
     {
       name: "Actions",
-      cell: (row: any) => (
+      cell: (row: PricingItem) => (
         <div className="flex items-center gap-4">
           <button
             onClick={() => handleEdit(row)}

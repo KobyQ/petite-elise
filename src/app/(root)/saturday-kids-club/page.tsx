@@ -237,7 +237,7 @@ const SaturdayKidsClub = () => {
           
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Payment Required</h2>
           <p className="text-gray-600 mb-6">
-            Your registration is almost complete! Please complete your payment to secure your child's spot.
+            Your registration is almost complete! Please complete your payment to secure your child&apos;s spot.
           </p>
 
           {selectedPricing && (

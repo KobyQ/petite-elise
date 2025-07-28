@@ -1,11 +1,11 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 const PrivacyPolicy = () => {
   const [activeSection, setActiveSection] = useState("infowecollect");
 
-  const sections = [
+  const sections = useMemo(() => [
     { id: "infowecollect", title: "Information We Collect" },
     { id: "howweuse", title: "How We Use Your Information" },
     { id: "shareinfo", title: "Sharing Information" },
@@ -13,7 +13,7 @@ const PrivacyPolicy = () => {
     { id: "yourchoices", title: "Your Choices" },
     { id: "changetoprivacypolicy", title: "Changes to this Privacy Policy" },
     { id: "contactus", title: "Contact Us" },
-  ];
+  ], []);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);

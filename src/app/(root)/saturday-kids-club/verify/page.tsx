@@ -1,16 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import supabase from "@/utils/supabaseClient"
 import { formatMoneyToCedis } from "@/utils/constants"
 import Link from "next/link"
 
-const VerifyPage = () => {
+interface RegistrationData {
+  childName: string;
+  parentName: string;
+  parentEmail: string;
+  saturdayClubSchedule: string;
+  reference: string;
+}
+
+const VerifyPageContent = () => {
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [registration, setRegistration] = useState<any>(null)
+  const [registration, setRegistration] = useState<RegistrationData | null>(null)
   const [emailSent, setEmailSent] = useState(false)
 
   const ref = searchParams.get("reference")
@@ -105,7 +113,7 @@ const VerifyPage = () => {
           
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Verifying Payment</h2>
           <p className="text-gray-600 mb-6">
-            We're processing your payment and completing your registration. Please don't close this page.
+            We&apos;re processing your payment and completing your registration. Please don&apos;t close this page.
           </p>
 
           <div className="space-y-2 text-sm text-gray-500">
@@ -207,6 +215,22 @@ const VerifyPage = () => {
         </p>
       </div>
     </div>
+  )
+}
+
+const VerifyPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-r from-[#ffec89] to-[#a9e2a0] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading...</h2>
+          <p className="text-gray-600">Please wait while we load the verification page.</p>
+        </div>
+      </div>
+    }>
+      <VerifyPageContent />
+    </Suspense>
   )
 }
 
