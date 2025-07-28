@@ -44,11 +44,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
     }
 
-    // Update transaction status
-    await supabase
+    // Update transaction status to prevent infinite webhook calls
+    const { error: updateError } = await supabase
       .from("transactions")
       .update({ status: paymentData.data.status })
       .eq("reference", reference);
+
+    if (updateError) {
+      console.error("Error updating transaction status:", updateError);
+      return NextResponse.json({ error: "Failed to update transaction status" }, { status: 500 });
+    }
 
     // Extract registration data from transaction details
     const registrationData = transaction.details;
