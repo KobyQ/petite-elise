@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FaCode, FaHome, FaUsers, FaUserShield } from "react-icons/fa";
+import { FaCode, FaHome, FaUsers, FaUserShield, FaMoneyBillWave } from "react-icons/fa";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/admin/dashboard", icon: FaHome },
     { name: "Students", path: "/admin/students", icon: FaUsers },
     { name: "Code Ninjas", path: "/admin/code-ninjas", icon: FaCode },
+    { name: "Payments", path: "/admin/payments", icon: FaMoneyBillWave }, // Payments tab moved here
   ];
 
   const adminItems = [

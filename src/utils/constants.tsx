@@ -1,6 +1,23 @@
 import { FiCheckCircle } from "react-icons/fi";
 import { LuAward,  LuHeart, LuMessageSquare, LuShield, LuSparkles, LuTarget, LuUsers } from "react-icons/lu";
 
+export const formatMoneyToCedisView = (number: number): number => {
+  return parseFloat((number / 100).toFixed(2));
+};
+
+export function formatMoneyToCedis(pesewas: number): string {
+  return Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'GHS',
+    minimumFractionDigits: 2,
+  }).format(pesewas / 100);
+}
+
+export const formatMoneyToPesewas = (number: number): number => {
+  return number * 100;
+};
+
+
 export const navigation: { title: string; href: string }[] = [
     { title: "Home", href: "/" },
     { title: "About", href: "/about" },

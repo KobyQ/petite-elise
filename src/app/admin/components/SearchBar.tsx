@@ -3,15 +3,17 @@ import React from 'react'
 const SearchBar = ({
   query,
   setQuery,
+  placeholder = "Search...",
 }: {
   query: string;
   setQuery: React.Dispatch<React.SetStateAction<string>>;
+  placeholder?: string;
 }) => {
   return (
     <div className="flex items-center gap-2 mb-4">
     <input
       type="text"
-      placeholder="Search by child or parent name..."
+      placeholder={placeholder}
       value={query}
       onChange={(e) => setQuery(e.target.value)}
       className="border border-gray-300 rounded-md px-4 py-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition"

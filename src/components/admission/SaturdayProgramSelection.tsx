@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import CustomSelect from "../shared/forms/CustomSelect";
 import { Button } from "../ui/button";
+import supabase from "@/utils/supabaseClient";
+import { formatMoneyToCedis } from "@/utils/constants";
 
 type ClubProgramSelectionProps = {
   values: any;
@@ -16,31 +18,43 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   nextStep,
   prevStep,
 }) => {
+  const [pricingOptions, setPricingOptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const programOptions = [
     { label: "Saturday Kids Club", value: "Saturday Kids Club" },
-
   ];
 
-  const saturdayClubSchedule = [
-    {
-      label: "Termly ( Full Day 12 sessions)  Ghc1500",
-      value: "Termly ( Full Day 12 sessions)  Ghc1500",
-    },
-    {
-      label: "Termly ( Half Day 12 sessions) Ghc1250",
-      value: "Termly ( Half Day 12 sessions) Ghc1250",
-    },
-    {
-      label: "Walk- in ( Full Day) Ghc250",
-      value: "Walk- in ( Full Day) Ghc250",
-    },
-    {
-      label: "Walk- in ( Half Day) Ghc150",
-      value: "Walk- in ( Half Day) Ghc150",
-    },
-  ];
+  // Fetch pricing from admin configuration
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("program_pricing")
+          .select("*")
+          .eq("program_name", "Saturday Kids Club")
+          .order("created_at", { ascending: false });
 
+        if (error) {
+          console.error("Error fetching pricing:", error);
+        } else {
+          const options = data?.map((item) => ({
+            label: `${item.schedule} - ${formatMoneyToCedis(item.price)}`,
+            value: item.schedule,
+            price: item.price,
+            id: item.id,
+          })) || [];
+          setPricingOptions(options);
+        }
+      } catch (error) {
+        console.error("Error fetching pricing:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchPricing();
+  }, []);
 
   const isSaturdayKidsClubSelected =
     values?.programs?.includes("Saturday Kids Club");
@@ -52,7 +66,10 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
     }
   }, [isSaturdayKidsClubSelected, values, setFieldValue]);
 
-
+  // Get selected pricing details
+  const selectedPricing = pricingOptions.find(
+    (option) => option.value === values?.saturdayClubSchedule
+  );
 
   return (
     <div>
@@ -66,15 +83,27 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
           required
         />
 
-          <CustomSelect
-            label="Select Schedule"
-            name="saturdayClubSchedule"
-            options={saturdayClubSchedule}
-            required
-            placeholder="Select a schedule"
-          />
+        {isSaturdayKidsClubSelected && (
+          <>
+            <CustomSelect
+              label="Select Schedule"
+              name="saturdayClubSchedule"
+              options={pricingOptions}
+              required
+              placeholder={loading ? "Loading pricing..." : "Select a schedule"}
+              isDisabled={loading}
+            />
 
-    
+            {selectedPricing && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
+                <p className="text-blue-700">
+                  <strong>{selectedPricing.value}</strong> - {formatMoneyToCedis(selectedPricing.price)}
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="w-full flex justify-between gap-4">
@@ -91,9 +120,10 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
         <Button
           type="button"
           onClick={nextStep}
-          // disabled={hasErrors ||  !dirty }
-
-          className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
+          disabled={!isSaturdayKidsClubSelected || !values?.saturdayClubSchedule}
+          className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 ${
+            (!isSaturdayKidsClubSelected || !values?.saturdayClubSchedule) ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           Next
         </Button>
