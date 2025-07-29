@@ -47,7 +47,6 @@ const BabyAndMeRegistration = () => {
         .eq("parentEmail", parentEmail)
         .eq("parentPhoneNumber", parentPhoneNumber)
 
-      console.log("Strict query response:", strictData, strictError)
 
       if (strictError) {
         throw strictError
@@ -56,7 +55,6 @@ const BabyAndMeRegistration = () => {
       // If we found records with the strict query, use those
       if (strictData && strictData.length > 0) {
         setExistingData(strictData)
-        console.log("Found records with strict query:", strictData)
         return
       }
 

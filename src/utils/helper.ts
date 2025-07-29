@@ -17,7 +17,6 @@ export const sendRegistrationEmail = async (data: any) => {
 
   } catch (error: any) {
     console.error("Email sending failed:", error);
-    toast.error("Failed to send confirmation email.");
   }
 };
 

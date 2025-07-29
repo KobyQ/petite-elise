@@ -23,6 +23,7 @@ import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
 import { MdAdd, MdClose } from "react-icons/md";
 import { sendRegistrationEmail } from "@/utils/helper";
+import { formatMoneyToCedis } from "@/utils/constants";
 
 const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
@@ -43,6 +44,7 @@ const validationSchema = Yup.object({
     then: (schema) => schema.required("Please describe the coding experience"),
     otherwise: (schema) => schema,
   }),
+  schedule: Yup.string().required("Please select a schedule"),
   dropChildOffSelf: Yup.string().required(
     "Please specify if you will drop off the child"
   ),
@@ -68,6 +70,31 @@ const validationSchema = Yup.object({
 
 export default function RegistrationForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string>("");
+  const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false);
+  const [submittingPayment, setSubmittingPayment] = useState<boolean>(false);
+  const [selectedPricing, setSelectedPricing] = useState<any>(null);
+
+  const fetchPricingForSchedule = async (schedule: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("program_pricing")
+        .select("*")
+        .eq("program_name", "Code Ninjas Club")
+        .eq("schedule", schedule)
+        .single();
+
+      if (error) {
+        console.error("Error fetching pricing:", error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error fetching pricing:", error);
+      return null;
+    }
+  };
 
   const formik = useFormik<any>({
     initialValues: {
@@ -81,6 +108,7 @@ export default function RegistrationForm() {
       ageGroup: "",
       hasCodingExperience: "",
       codingExperience: "",
+      schedule: "",
       paymentMethod: "",
       photographUsageConsent: "",
       specialRequests: "",
@@ -88,43 +116,76 @@ export default function RegistrationForm() {
     validationSchema,
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       setSubmitting(true);
+      setSubmittingPayment(true);
 
       try {
-        const submissionValues = { ...values };
+        // Fetch pricing for the selected schedule
+        const pricing = await fetchPricingForSchedule(values.schedule || "");
+        if (!pricing) {
+          toast.error("Unable to fetch pricing information. Please try again.");
+          return;
+        }
+
+        setSelectedPricing(pricing);
+
+        // Prepare registration data for payment (don't save to code-ninjas table yet)
+        const registrationData = {
+          ...values,
+          pricing_id: pricing.id,
+          program_type: "Code Ninjas Club",
+        };
+
+        // Remove dropOffNames if not needed
         if (values.dropChildOffSelf === "Yes") {
-          delete submissionValues.dropOffNames;
+          delete registrationData.dropOffNames;
         }
 
-        const { error } = await supabase
-          .from("code-ninjas")
-          .insert([submissionValues]);
+        // Initiate payment first - registration will be saved only after payment verification
+        const response = await fetch("https://api.paystack.co/transaction/initialize", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: values.email,
+            amount: pricing.price, // Already in pesewas from database
+            callback_url: `${window.location.origin}/code-ninjas-club/verify`,
+          }),
+        });
 
-        if (error) {
-          throw error;
+        const result = await response.json();
+
+        if (!result.status) {
+          throw new Error(result.message || "Failed to initialize payment");
         }
-            // Send a request to the registration API to trigger email
-        console.log("values", values)
-                  const emailObject = {
-                    childName: values?.childName,
-                    parentEmail: values?.email,
-                    parentPhoneNumber: values?.phoneNumber,
-                    childDOB: values?.ageGroup,
-                  };
-                  await sendRegistrationEmail(emailObject);
 
-        toast.success("Form submitted successfully!");
+        // Save transaction to our database
+        const { error: dbError } = await supabase.from("transactions").insert({
+          amount: pricing.price / 100, // Convert back to cedis for storage
+          reference: result.data.reference,
+          paystack_response: result,
+          status: "pending",
+          details: registrationData,
+          order_id: `CODE-NINJAS-${Date.now()}`,
+        });
 
-        setIsSubmitted(true);
-        resetForm();
+        if (dbError) {
+          throw new Error(`Failed to save transaction: ${dbError.message}`);
+        }
 
-        setTimeout(() => {
-          setIsSubmitted(false);
-        }, 5000);
+        setPaymentUrl(result.data.authorization_url);
+        setIsPaymentInitiated(true);
+        toast.success("Payment initiated successfully! Please complete your payment to secure your registration.");
+        
+        // Scroll to top when payment screen is shown
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error: any) {
         console.error("Error submitting form:", error.message);
         toast.error(`Submission failed: ${error.message}`);
       } finally {
         setSubmitting(false);
+        setSubmittingPayment(false);
       }
     },
   });
@@ -174,7 +235,55 @@ export default function RegistrationForm() {
 
           <Intro />
 
-          {isSubmitted ? (
+          {isPaymentInitiated && paymentUrl ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-lime-500/10 border border-lime-500/30 rounded-lg p-8 text-center"
+            >
+              <FiCheckCircle size={60} className="text-lime-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-2">
+                Registration Initiated!
+              </h2>
+              <p className="text-gray-300 mb-6">
+                Your registration is almost complete! Please complete your payment to secure your child&apos;s spot.
+              </p>
+
+              {selectedPricing && (
+                <div className="bg-zinc-800 border border-lime-500/30 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-lime-500 mb-2">Selected Plan:</h4>
+                  <p className="text-gray-300">
+                    <strong>{selectedPricing.schedule}</strong> - {formatMoneyToCedis(selectedPricing.price)}
+                  </p>
+                </div>
+              )}
+
+              {/* Payment button */}
+              <a
+                href={paymentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-lime-500 hover:bg-lime-600 text-black font-semibold py-4 px-6 rounded-lg transition-colors duration-300 inline-block flex items-center justify-center gap-2 shadow-lg mb-4"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span>Continue with Paystack</span>
+              </a>
+
+              <p className="text-sm text-gray-400 mb-4">
+                You will be redirected to Paystack to complete your payment securely.
+              </p>
+
+              {/* Important notice */}
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                <p className="text-sm text-amber-400">
+                  Your registration is not confirmed until payment is received. If you have any questions, please contact our
+                  support team.
+                </p>
+              </div>
+            </motion.div>
+          ) : isSubmitted ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -354,6 +463,17 @@ export default function RegistrationForm() {
                               required
                             />
                             <RadioButton
+                              label="Program Schedule"
+                              name="schedule"
+                              options={[
+                                {
+                                  label: "Full Term - Ghc1500",
+                                  value: "Full Term",
+                                },
+                              ]}
+                              required
+                            />
+                            <RadioButton
                               label="Does your child have prior coding experience?"
                               name="hasCodingExperience"
                               options={[
@@ -451,10 +571,10 @@ export default function RegistrationForm() {
                       >
                         <Button
                           type="submit"
-                          disabled={isSubmitting || !(isValid && dirty)}
+                          disabled={isSubmitting || submittingPayment || !(isValid && dirty)}
                           className="w-full bg-lime-500 hover:bg-lime-600 text-black font-semibold py-6 text-lg relative overflow-hidden group"
                         >
-                          {isSubmitting ? (
+                          {isSubmitting || submittingPayment ? (
                             <div className="flex items-center justify-center">
                               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
                               Processing...

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import CustomSelect from "../shared/forms/CustomSelect";
 import { Button } from "../ui/button";
+import supabase from "@/utils/supabaseClient";
+import { formatMoneyToCedis } from "@/utils/constants";
 
 type ChildMindingProgramSelectionProps = {
   values: any;
@@ -13,14 +15,40 @@ type ChildMindingProgramSelectionProps = {
 const ChildMindingProgramSelection: React.FC<
   ChildMindingProgramSelectionProps
 > = ({ values, setFieldValue, nextStep, prevStep }) => {
-  const programOptions = [{ label: "Childminding", value: "Childminding" }];
-  const childMindingSchedule = [
-    { label: "Hourly  Ghc60", value: "Hourly  Ghc60" },
-    { label: "Daily Ghc250", value: "Daily Ghc250" },
-    { label: "⁠Weekly Ghc1500", value: "⁠Weekly Ghc1500" },
-    { label: "⁠Monthly Ghc3500", value: "⁠Monthly Ghc3500" },
-  ];
+  const [pricingOptions, setPricingOptions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
+  const programOptions = [{ label: "Childminding", value: "Childminding" }];
+
+  // Fetch pricing from admin configuration
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("program_pricing")
+          .select("*")
+          .eq("program_name", "Childminding")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Error fetching pricing:", error);
+        } else {
+          const options = data?.map((item) => ({
+            label: `${item.schedule} - ${formatMoneyToCedis(item.price)}`,
+            value: item.schedule,
+            price: item.price,
+            id: item.id,
+          })) || [];
+          setPricingOptions(options);
+        }
+      } catch (error) {
+        console.error("Error fetching pricing:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPricing();
+  }, []);
 
   const isChildMindingSelected = values?.programs?.includes("Childminding");
 
@@ -46,11 +74,21 @@ const ChildMindingProgramSelection: React.FC<
         {isChildMindingSelected && (
           <CustomSelect
             label="Select Schedule"
-            name="dayCareSchedule"
-            options={childMindingSchedule}
+            name="childMindingSchedule"
+            options={pricingOptions}
+            isDisabled={loading}
             required
-            placeholder="Select a schedule"
+            placeholder={loading ? "Loading schedules..." : "Select a schedule"}
           />
+        )}
+
+        {isChildMindingSelected && values.childMindingSchedule && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
+            <p className="text-blue-700">
+              <strong>{values.childMindingSchedule}</strong>
+            </p>
+          </div>
         )}
       </div>
 
@@ -68,8 +106,7 @@ const ChildMindingProgramSelection: React.FC<
         <Button
           type="button"
           onClick={nextStep}
-          // disabled={hasErrors ||  !dirty }
-
+          disabled={!values.childMindingSchedule}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
           Next

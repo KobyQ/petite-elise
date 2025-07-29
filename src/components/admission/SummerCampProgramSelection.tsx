@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import CustomSelect from "../shared/forms/CustomSelect";
 import { Button } from "../ui/button";
+import supabase from "@/utils/supabaseClient";
+import { formatMoneyToCedis } from "@/utils/constants";
 
 type ClubProgramSelectionProps = {
   values: any;
@@ -16,23 +18,44 @@ const SummerCampProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   nextStep,
   prevStep,
 }) => {
+  const [pricingOptions, setPricingOptions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
   const programOptions = [
     { label: "Summer Camp", value: "Summer Camp" },
   ];
 
+  // Fetch pricing from admin configuration
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("program_pricing")
+          .select("*")
+          .eq("program_name", "Summer Camp")
+          .order("created_at", { ascending: false });
 
-
-  const summerCampSchedule = [
-    { label: "Daily", value: "Daily" },
-    { label: "Weekly", value: "Weekly" },
-    { label: "Monthly", value: "Monthly" },
-    { label: "Termly", value: "Termly" },
-  ];
-
+        if (error) {
+          console.error("Error fetching pricing:", error);
+        } else {
+          const options = data?.map((item) => ({
+            label: `${item.schedule} - ${formatMoneyToCedis(item.price)}`,
+            value: item.schedule,
+            price: item.price,
+            id: item.id,
+          })) || [];
+          setPricingOptions(options);
+        }
+      } catch (error) {
+        console.error("Error fetching pricing:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPricing();
+  }, []);
 
   const isSummerCampSelected = values?.programs?.includes("Summer Camp");
-
-
 
   // Effect to clear schedule when Summer Camp is deselected
   useEffect(() => {
@@ -53,15 +76,25 @@ const SummerCampProgramSelection: React.FC<ClubProgramSelectionProps> = ({
           required
         />
 
-     
-
+        {isSummerCampSelected && (
           <CustomSelect
             label="Select Schedule"
-            name="dayCareSchedule"
-            options={summerCampSchedule}
+            name="summerCampSchedule"
+            options={pricingOptions}
+            isDisabled={loading}
             required
-            placeholder="Select a schedule"
+            placeholder={loading ? "Loading schedules..." : "Select a schedule"}
           />
+        )}
+
+        {isSummerCampSelected && values.summerCampSchedule && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
+            <p className="text-blue-700">
+              <strong>{values.summerCampSchedule}</strong>
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="w-full flex justify-between gap-4">
@@ -78,8 +111,7 @@ const SummerCampProgramSelection: React.FC<ClubProgramSelectionProps> = ({
         <Button
           type="button"
           onClick={nextStep}
-          // disabled={hasErrors ||  !dirty }
-
+          disabled={!values.summerCampSchedule}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
           Next

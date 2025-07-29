@@ -55,7 +55,6 @@ const RegisterYourChild = () => {
         .eq("parentEmail", parentEmail)
         .eq("parentPhoneNumber", parentPhoneNumber)
 
-      console.log("Strict query response:", strictData, strictError)
 
       if (strictError) {
         throw strictError
@@ -64,7 +63,6 @@ const RegisterYourChild = () => {
       // If we found records with the strict query, use those
       if (strictData && strictData.length > 0) {
         setExistingData(strictData)
-        console.log("Found records with strict query:", strictData)
         return
       }
 
@@ -98,9 +96,7 @@ const RegisterYourChild = () => {
 
       // Set empty array for the main results
       setExistingData([])
-      console.log("No records found with the provided email AND phone number")
-      console.log("Email found:", emailData && emailData.length > 0)
-      console.log("Phone found:", phoneData && phoneData.length > 0)
+   
     } catch (err) {
       console.error("Error fetching documents:", err)
       toast.error("Failed to fetch child records. Please try again.")

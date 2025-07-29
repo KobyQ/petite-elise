@@ -10,7 +10,7 @@ interface RegistrationData {
   childName: string;
   parentName: string;
   parentEmail: string;
-  saturdayClubSchedule: string;
+  christmasCampSchedule: string;
   reference: string;
 }
 
@@ -41,8 +41,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
-
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
           .from("transactions")
@@ -69,7 +67,7 @@ const VerifyPageContent = () => {
           return
         }
 
-                if (registrationData) {
+        if (registrationData) {
           setRegistration(registrationData)
 
           // Try to send confirmation email, but don't block the success page
@@ -83,7 +81,7 @@ const VerifyPageContent = () => {
                 body: JSON.stringify({
                   name: registrationData.parentName,
                   email: registrationData.parentEmail,
-                  message: `Registration confirmed for ${registrationData.childName} in Saturday Kids Club. Payment reference: ${ref}`,
+                  message: `Registration confirmed for ${registrationData.childName} in Christmas Camp Program. Payment reference: ${ref}`,
                 }),
               })
 
@@ -164,7 +162,7 @@ const VerifyPageContent = () => {
 
           <div className="space-y-3">
             <Link
-              href="/saturday-kids-club"
+              href="/christmas-camp-registration"
               className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 inline-block"
             >
               Try Again
@@ -192,7 +190,7 @@ const VerifyPageContent = () => {
         
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Complete!</h2>
         <p className="text-gray-600 mb-6">
-          Thank you for registering your child for Saturday Kids Club. Your payment has been confirmed.
+          Thank you for registering your child for Christmas Camp Program. Your payment has been confirmed.
         </p>
 
         {registration && (
@@ -202,8 +200,8 @@ const VerifyPageContent = () => {
               <p><strong>Child:</strong> {registration.childName}</p>
               <p><strong>Parent:</strong> {registration.parentName}</p>
               <p><strong>Email:</strong> {registration.parentEmail}</p>
-              <p><strong>Program:</strong> Saturday Kids Club</p>
-              <p><strong>Schedule:</strong> {registration.saturdayClubSchedule}</p>
+              <p><strong>Program:</strong> Christmas Camp Program</p>
+              <p><strong>Schedule:</strong> {registration.christmasCampSchedule}</p>
               <p><strong>Reference:</strong> {registration.reference}</p>
             </div>
           </div>

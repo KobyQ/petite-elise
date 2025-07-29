@@ -52,7 +52,6 @@ const SaturdayKidsClub = () => {
         .eq("parentEmail", parentEmail)
         .eq("parentPhoneNumber", parentPhoneNumber)
 
-      console.log("Strict query response:", strictData, strictError)
 
       if (strictError) {
         throw strictError
@@ -61,7 +60,6 @@ const SaturdayKidsClub = () => {
       // If we found records with the strict query, use those
       if (strictData && strictData.length > 0) {
         setExistingData(strictData)
-        console.log("Found records with strict query:", strictData)
         return
       }
 
@@ -95,9 +93,7 @@ const SaturdayKidsClub = () => {
 
       // Set empty array for the main results
       setExistingData([])
-      console.log("No records found with the provided email AND phone number")
-      console.log("Email found:", emailData && emailData.length > 0)
-      console.log("Phone found:", phoneData && phoneData.length > 0)
+
     } catch (err) {
       console.error("Error fetching documents:", err)
       toast.error("Failed to fetch child records. Please try again.")
@@ -227,6 +223,9 @@ const SaturdayKidsClub = () => {
           setPaymentUrl(result.data.authorization_url)
           setIsPaymentInitiated(true)
           toast.success("Payment initiated successfully! Please complete your payment to secure your registration.")
+          
+          // Scroll to top when payment screen is shown
+          window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       } catch (error: any) {
         toast.error(`An error occurred: ${error?.message}`)

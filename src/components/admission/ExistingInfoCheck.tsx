@@ -57,7 +57,6 @@ const ExistingInfoCheck = ({
       return
     }
 
-    console.log("Search clicked with:", values.parentEmail, values.parentPhoneNumber)
     setDisableButton(true) // Disable the button during fetch
     setSearchAttempted(true) // Mark that a search has been attempted
     fetchAllDocuments(values.parentEmail, values.parentPhoneNumber)
