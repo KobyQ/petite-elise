@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import supabase from "@/utils/supabaseClient"
-import { formatMoneyToCedis } from "@/utils/constants"
 import Link from "next/link"
 
 interface RegistrationData {
@@ -19,15 +18,12 @@ const VerifyPageContent = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [registration, setRegistration] = useState<RegistrationData | null>(null)
-  const [emailSent, setEmailSent] = useState(false)
-  const [retryTimeout, setRetryTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const MAX_RETRIES = 10 // Maximum 10 retries
+  const [processing, setProcessing] = useState(false)
 
   const ref = searchParams.get("reference")
 
   useEffect(() => {
-    async function verifyTransaction() {
+    async function checkRegistration() {
       try {
         if (!ref) {
           setError("No reference provided")
@@ -35,71 +31,53 @@ const VerifyPageContent = () => {
           return
         }
 
-        if (retryCount >= MAX_RETRIES) {
-          setError("Payment verification is taking longer than expected. Please contact support.")
-          setLoading(false)
-          return
-        }
-
-        // Fetch transaction data
+        // First, check if transaction exists and its status
         const { data: transaction, error: transactionError } = await supabase
           .from("transactions")
-          .select("*")
+          .select("status, details")
           .eq("reference", ref)
           .single()
 
         if (transactionError || !transaction) {
-          setError(transactionError?.message || "Transaction not found")
+          setError("Transaction not found. Please contact support if you believe this is an error.")
           setLoading(false)
           return
         }
 
-        // Check if registration exists (webhook should have created it)
-        const { data: registrationData, error: registrationError } = await supabase
-          .from("code-ninjas")
-          .select("*")
-          .eq("reference", ref)
-          .maybeSingle()
-
-        if (registrationError) {
-          setError(registrationError.message)
+        // If transaction is still pending, show processing message
+        if (transaction.status === "pending") {
+          setProcessing(true)
           setLoading(false)
           return
         }
 
-        if (registrationData) {
-          setRegistration(registrationData)
+        // If transaction is successful, fetch registration data
+        if (transaction.status === "success") {
+          // Fetch registration data from code-ninjas table
+          const { data: registrationData, error: registrationError } = await supabase
+            .from("code-ninjas")
+            .select("*")
+            .eq("reference", ref)
+            .single()
 
-          // Try to send confirmation email, but don't block the success page
-          if (!emailSent) {
-            try {
-              await fetch("/api/contact", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  name: registrationData.parentName,
-                  email: registrationData.email,
-                  message: `Registration confirmed for ${registrationData.childName} in Code Ninjas Club. Payment reference: ${ref}`,
-                }),
-              })
-
-              setEmailSent(true)
-            } catch (emailError) {
-              console.error("Email sending error:", emailError)
-              // Don't fail the page if email fails - just log the error
-            }
+          if (registrationError && registrationError.code !== "PGRST116") {
+            setError(registrationError.message)
+            setLoading(false)
+            return
           }
 
-          setLoading(false)
+          if (registrationData) {
+            setRegistration(registrationData)
+            setLoading(false)
+          } else {
+            // If registration not found, retry after delay
+            setTimeout(() => {
+              checkRegistration()
+            }, 5000)
+          }
         } else {
-          // Registration not found, retry after longer delay
-          setRetryCount(prev => prev + 1)
-          const timeout = setTimeout(() => {
-            verifyTransaction()
-          }, 5000) // Increased to 5 seconds
-          setRetryTimeout(timeout)
+          setError("Payment was not successful. Please try again.")
+          setLoading(false)
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : "An unknown error occurred")
@@ -107,40 +85,40 @@ const VerifyPageContent = () => {
       }
     }
 
-    verifyTransaction()
-
-    // Cleanup timeout on unmount
-    return () => {
-      if (retryTimeout) {
-        clearTimeout(retryTimeout)
-      }
-    }
-  }, [ref, emailSent, retryTimeout, retryCount])
+    checkRegistration()
+  }, [ref])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8 text-center">
           <div className="w-16 h-16 border-4 border-lime-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          
-          <h2 className="text-2xl font-bold text-white mb-4">Verifying Payment</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Loading...</h2>
+          <p className="text-gray-400">Please wait while we load your registration details.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (processing) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 border-4 border-lime-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-white mb-4">Processing Payment</h2>
           <p className="text-gray-400 mb-6">
-            We&apos;re processing your payment and completing your registration. Please don&apos;t close this page.
+            Your payment is being processed. This usually takes a few moments. Please wait while we complete your registration.
           </p>
-
-          <div className="space-y-2 text-sm text-gray-500">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-lime-500 rounded-full animate-pulse"></div>
-              <span>Verifying payment... (Attempt {retryCount + 1}/{MAX_RETRIES})</span>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${emailSent ? "bg-lime-500" : "bg-gray-600"}`}></div>
-              <span>{emailSent ? "Confirmation sent" : "Preparing confirmation..."}</span>
-            </div>
-          </div>
-
-          <div className="mt-6 text-xs text-gray-600">
+          <p className="text-sm text-gray-500">
             Reference: {ref}
+          </p>
+          <div className="mt-6">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="w-full bg-lime-500 hover:bg-lime-600 text-black font-semibold py-3 px-6 rounded-lg transition-colors duration-300"
+            >
+              Check Again
+            </button>
           </div>
         </div>
       </div>
@@ -157,7 +135,7 @@ const VerifyPageContent = () => {
             </svg>
           </div>
           
-          <h2 className="text-2xl font-bold text-white mb-4">Payment Error</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Registration Error</h2>
           <p className="text-gray-400 mb-6">{error}</p>
 
           <div className="space-y-3">
@@ -190,7 +168,7 @@ const VerifyPageContent = () => {
         
         <h2 className="text-2xl font-bold text-white mb-4">Registration Complete!</h2>
         <p className="text-gray-400 mb-6">
-          Thank you for registering your child for Code Ninjas Club. Your payment has been confirmed.
+          Thank you for registering your child for Code Ninjas Club. Your payment has been confirmed and your registration is complete.
         </p>
 
         {registration && (
@@ -223,7 +201,7 @@ const VerifyPageContent = () => {
         </div>
 
         <p className="text-sm text-gray-500 mt-6">
-          A confirmation email has been sent to your registered email address.
+          A confirmation email with your receipt has been sent to your registered email address.
         </p>
       </div>
     </div>

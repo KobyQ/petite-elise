@@ -274,9 +274,8 @@ const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 export async function POST(request: NextRequest) {
   try {
     const { event, data } = await request.json();
-
     if (event !== "charge.success") {
-      return NextResponse.json({ error: "Invalid event" }, { status: 400 });
+      throw new Error("Invalid event")
     }
 
     const reference = data.reference;
