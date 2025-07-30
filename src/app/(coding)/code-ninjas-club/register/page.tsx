@@ -22,15 +22,12 @@ import Input from "../../components/forms/Input";
 import RadioButton from "../../components/forms/RadioButton";
 import Textarea from "../../components/forms/Textarea";
 import { MdAdd, MdClose } from "react-icons/md";
-import { sendRegistrationEmail } from "@/utils/helper";
 import { formatMoneyToCedis } from "@/utils/constants";
 
-const phoneRegExp = /^(\+\d{1,3})?\d{9,15}$/;
 
 const validationSchema = Yup.object({
   parentName: Yup.string().required("Parent/Guardian name is required"),
   phoneNumber: Yup.string()
-    .matches(phoneRegExp, "Phone number is not valid")
     .required("Phone number is required"),
   email: Yup.string()
     .email("Invalid email address")
