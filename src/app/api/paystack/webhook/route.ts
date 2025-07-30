@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${"sk_test_d953a413c3323124ad3361ad3bb6cdcf8c2fd196"}`,
       },
     });
 
