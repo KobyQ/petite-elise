@@ -27,6 +27,8 @@ const VerifyPageContent = () => {
           return
         }
 
+        console.log("Verifying transaction with reference:", ref)
+
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
           .from("transactions")
@@ -35,40 +37,53 @@ const VerifyPageContent = () => {
           .single()
 
         if (transactionError || !transaction) {
+          console.error("Transaction error:", transactionError)
           setError(transactionError?.message || "Transaction not found")
           setLoading(false)
           return
         }
 
-     
+        console.log("Transaction found:", transaction)
 
-          const { data: registrationData, error: registrationError } = await supabase
+        // Check if transaction is successful
+        if (transaction.status !== "success") {
+          console.log("Transaction status:", transaction.status)
+          // If transaction is still pending, retry after delay
+          setTimeout(() => {
+            verifyTransaction()
+          }, 5000) // Reduced delay to 5 seconds
+          return
+        }
+
+        // Look for registration in children table
+        const { data: registrationData, error: registrationError } = await supabase
           .from("children")
           .select("*")
-          .eq("reference", transaction.reference)
+          .eq("reference", ref)
           .maybeSingle()
-          if (registrationError  && registrationError.code !== "PGRST116") {
-            setError(registrationError.message)
-            setLoading(false)
-            return
-          }
+
+        console.log("Registration lookup result:", { registrationData, registrationError })
+
+        if (registrationError && registrationError.code !== "PGRST116") {
+          console.error("Registration lookup error:", registrationError)
+          setError(registrationError.message)
+          setLoading(false)
+          return
+        }
   
-       
         if (registrationData) {
-       
-
+          console.log("Registration found:", registrationData)
           setRegistration(registrationData)
-
-       
-
           setLoading(false)
         } else {
+          console.log("Registration not found, retrying...")
           // If registration not found, retry after delay
           setTimeout(() => {
             verifyTransaction()
-          }, 20000)
+          }, 5000) // Reduced delay to 5 seconds
         }
       } catch (error) {
+        console.error("Verification error:", error)
         setError(error instanceof Error ? error.message : "An unknown error occurred")
         setLoading(false)
       }

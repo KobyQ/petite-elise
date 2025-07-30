@@ -268,7 +268,7 @@ const generateReceiptEmailContent = (data: ReceiptData) => {
   };
 };
 
-const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 
 export async function POST(request: NextRequest) {
@@ -310,6 +310,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update transaction status to prevent infinite webhook calls
+    console.log("Updating transaction status to:", paymentData.data.status);
     const { error: updateError } = await supabase
       .from("transactions")
       .update({ status: paymentData.data.status })
