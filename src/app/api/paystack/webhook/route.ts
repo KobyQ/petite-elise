@@ -3,9 +3,7 @@ import supabase from "@/utils/supabaseClient";
 import { ETransactionStatus } from "@/utils/misc";
 import { 
   generateReceiptEmailContent, 
-  generateAdminNotificationEmailContent,
-  ReceiptData,
-  AdminNotificationData 
+  ReceiptData
 } from "@/utils/template";
 import { mailOptions, transporter } from "../../../../../config/nodemailer";
 
@@ -171,6 +169,7 @@ export async function POST(request: NextRequest) {
         reference: reference,
       };
 
+      console.log("registrationData email", registrationData.parentEmail);
       // Send receipt email directly using nodemailer
       const emailContent = generateReceiptEmailContent(receiptData);
       
@@ -195,28 +194,7 @@ export async function POST(request: NextRequest) {
       // Don't fail the webhook if receipt email fails
     }
 
-    // Send admin notification email
-    try {
-      const emailData: AdminNotificationData = {
-        childName: registrationData.childName,
-        parentEmail: registrationData.parentEmail,
-        parentPhoneNumber: registrationData.parentPhoneNumber,
-        childDOB: registrationData.childDOB,
-      };
 
-      // Send admin email directly using nodemailer
-      const emailContent = generateAdminNotificationEmailContent(emailData);
-
-      await transporter.sendMail({
-        ...mailOptions,
-        subject: "New Child Registration",
-        ...emailContent,
-      });
-
-    } catch (emailError) {
-      console.error("Admin email sending error:", emailError);
-      // Don't fail the webhook if email fails
-    }
 
     return NextResponse.json({
       success: true,
