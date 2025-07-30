@@ -183,8 +183,13 @@ export default function RegistrationForm() {
         setIsPaymentInitiated(true);
         toast.success("Payment initiated successfully! Please complete your payment to secure your registration.");
         
-        // Scroll to top when payment screen is shown
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to payment section when payment screen is shown
+        setTimeout(() => {
+          const paymentSection = document.getElementById('payment-section');
+          if (paymentSection) {
+            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
       } catch (error: any) {
         console.error("Error submitting form:", error.message);
         toast.error(`Submission failed: ${error.message}`);
@@ -242,6 +247,7 @@ export default function RegistrationForm() {
 
           {isPaymentInitiated && paymentUrl ? (
             <motion.div
+              id="payment-section"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               className="bg-lime-500/10 border border-lime-500/30 rounded-lg p-8 text-center"

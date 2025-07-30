@@ -180,7 +180,7 @@ const VerifyPageContent = () => {
             <Link href="/code-ninjas-club/register" className="flex-1">
               <button className="w-full py-2.5 md:py-3 bg-zinc-800 text-white rounded-xl font-medium hover:bg-zinc-700 transition-all duration-300 flex items-center justify-center text-sm md:text-base">
                 <BsArrowLeft className="mr-2 h-4 w-4" />
-                Try Registration Again
+                Try Again
               </button>
             </Link>
           </div>
