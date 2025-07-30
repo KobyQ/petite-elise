@@ -5,7 +5,7 @@ import {
   generateReceiptEmailContent, 
   ReceiptData
 } from "@/utils/template";
-import { mailOptions, transporter } from "../../../../../config/nodemailer";
+import { transporter } from "../../../../../config/nodemailer";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Update transaction status to prevent infinite webhook calls
-    console.log("Updating transaction status to:", paymentData.data.status);
     const { error: updateError } = await supabase
       .from("transactions")
       .update({ status: paymentData.data.status })
@@ -169,7 +168,6 @@ export async function POST(request: NextRequest) {
         reference: reference,
       };
 
-      console.log("registrationData email", registrationData.parentEmail);
       // Send receipt email directly using nodemailer
       const emailContent = generateReceiptEmailContent(receiptData);
       
