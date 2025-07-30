@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send receipt email to parent
+    // Send receipt email to parent and admin
     try {
       let programName = "Saturday Kids Club";
       let schedule = registrationData.saturdayClubSchedule;
@@ -174,10 +174,19 @@ export async function POST(request: NextRequest) {
       // Send receipt email directly using nodemailer
       const emailContent = generateReceiptEmailContent(receiptData);
       
+      // Send receipt to parent
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: registrationData.parentEmail,
         subject: `Payment Receipt - ${receiptData.program} Registration`,
+        ...emailContent,
+      });
+
+      // Send receipt to admin as well
+      await transporter.sendMail({
+        from: process.env.EMAIL,
+        to: process.env.EMAIL, // Admin email
+        subject: `Payment Receipt - ${receiptData.program} Registration (Admin Copy)`,
         ...emailContent,
       });
 
