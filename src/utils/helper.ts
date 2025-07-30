@@ -1,4 +1,3 @@
-import { toast } from "react-toastify";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const sendRegistrationEmail = async (data: any) => {
