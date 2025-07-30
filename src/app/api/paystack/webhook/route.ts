@@ -72,12 +72,14 @@ export async function POST(request: NextRequest) {
         contactMode: registrationData.contactMode,
         childName: registrationData.childName,
         ageGroup: registrationData.ageGroup,
+        schedule: registrationData.schedule,
         hasCodingExperience: registrationData.hasCodingExperience,
         codingExperience: registrationData.codingExperience,
         paymentMethod: registrationData.paymentMethod,
         specialRequests: registrationData.specialRequests,
         dropOffNames: registrationData.dropOffNames,
-        photographConsent: registrationData.photographUsageConsent,
+        dropChildOffSelf: registrationData.dropChildOffSelf,
+        photographUsageConsent: registrationData.photographUsageConsent,
         is_active: true,
         reference: reference,
       };
@@ -174,7 +176,7 @@ export async function POST(request: NextRequest) {
       // Send receipt to parent
       await transporter.sendMail({
         from: process.env.EMAIL,
-        to: registrationData.parentEmail,
+        to: registrationData.program_type === "Code Ninjas Club" ? registrationData.email : registrationData.parentEmail,
         subject: `Payment Receipt - ${receiptData.program} Registration`,
         ...emailContent,
       });

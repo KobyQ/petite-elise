@@ -81,11 +81,16 @@ export default function RegistrationForm() {
         .from("program_pricing")
         .select("*")
         .eq("program_name", "Code Ninjas Club")
-        .eq("schedule", schedule)
-        .single();
+        .ilike("schedule", schedule)
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching pricing:", error);
+        return null;
+      }
+
+      if (!data) {
+        console.error("No pricing found for schedule:", schedule);
         return null;
       }
 
@@ -149,7 +154,7 @@ export default function RegistrationForm() {
           },
           body: JSON.stringify({
             email: values.email,
-            amount: pricing.price, // Already in pesewas from database
+            amount: pricing.price, 
             callback_url: `${window.location.origin}/code-ninjas-club/verify`,
           }),
         });
