@@ -275,7 +275,6 @@ export const generateReceiptEmailContent = (data: ReceiptData) => {
 // Function to generate admin notification email content
 export const generateAdminNotificationEmailContent = (data: AdminNotificationData) => {
 
-  console.log(data);
   const textData = `A new child registration has been made.\n\n
   Child Name: ${data.childName}\n
   Parent Email: ${data.parentEmail}\n

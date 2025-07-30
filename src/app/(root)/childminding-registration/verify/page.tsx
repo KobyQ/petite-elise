@@ -27,7 +27,6 @@ const VerifyPageContent = () => {
           return
         }
 
-        console.log("Verifying transaction with reference:", ref)
 
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
@@ -43,11 +42,9 @@ const VerifyPageContent = () => {
           return
         }
 
-        console.log("Transaction found:", transaction)
 
         // Check if transaction is successful
         if (transaction.status !== "success") {
-          console.log("Transaction status:", transaction.status)
           // If transaction is still pending, retry after delay
           setTimeout(() => {
             verifyTransaction()
@@ -62,7 +59,6 @@ const VerifyPageContent = () => {
           .eq("reference", ref)
           .maybeSingle()
 
-        console.log("Registration lookup result:", { registrationData, registrationError })
 
         if (registrationError && registrationError.code !== "PGRST116") {
           console.error("Registration lookup error:", registrationError)
@@ -72,11 +68,9 @@ const VerifyPageContent = () => {
         }
   
         if (registrationData) {
-          console.log("Registration found:", registrationData)
           setRegistration(registrationData)
           setLoading(false)
         } else {
-          console.log("Registration not found, retrying...")
           // If registration not found, retry after delay
           setTimeout(() => {
             verifyTransaction()
