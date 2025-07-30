@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       // Save to code-ninjas table
       const codeNinjasData = {
         parentName: registrationData.parentName,
-        phoneNumber: registrationData.parentPhoneNumber,
-        email: registrationData.parentEmail,
+        phoneNumber: registrationData.phoneNumber,
+        email: registrationData.email,
         contactMode: registrationData.contactMode,
         childName: registrationData.childName,
         ageGroup: registrationData.ageGroup,
