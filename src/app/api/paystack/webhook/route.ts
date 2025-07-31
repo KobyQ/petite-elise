@@ -7,7 +7,7 @@ import {
 } from "@/utils/template";
 import { transporter } from "../../../../../config/nodemailer";
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const NEXT_PUBLIC_PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 
 export async function POST(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
       },
     });
 
