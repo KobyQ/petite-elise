@@ -114,7 +114,7 @@ const ChristmasCampRegistration = () => {
 
       // Set empty array for the main results
       setExistingData([])
-  
+
     } catch (err) {
       console.error("Error fetching documents:", err)
       toast.error("Failed to fetch child records. Please try again.")
@@ -185,6 +185,7 @@ const ChristmasCampRegistration = () => {
             program_type: "Christmas Camp",
           }
 
+
           // Initiate payment first - registration will be saved only after payment verification
           setSubmittingPayment(true)
           const response = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -198,6 +199,12 @@ const ChristmasCampRegistration = () => {
               amount: pricing.price, // Already in pesewas from database
               callback_url: `${window.location.origin}/christmas-camp-registration/verify`,
             }),
+          })
+
+          console.log("response", response, {
+            email: values.parentEmail,
+            amount: pricing.price, // Already in pesewas from database
+            callback_url: `${window.location.origin}/christmas-camp-registration/verify`,
           })
 
           const result = await response.json()
@@ -223,7 +230,7 @@ const ChristmasCampRegistration = () => {
           setPaymentUrl(result.data.authorization_url)
           setIsPaymentInitiated(true)
           toast.success("Payment initiated successfully! Please complete your payment to secure your registration.")
-          
+
           // Scroll to top when payment screen is shown
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }
@@ -247,7 +254,7 @@ const ChristmasCampRegistration = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          
+
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Initiated!</h2>
           <p className="text-gray-600 mb-6">
             Your registration is almost complete! Please complete your payment to secure your child&apos;s spot.
