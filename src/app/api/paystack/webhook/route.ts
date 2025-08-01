@@ -93,6 +93,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
+      // Fetch fee request details to get missing fields
+      const { data: feeRequest, error: feeRequestError } = await supabase
+        .from("fee_requests")
+        .select("*")
+        .eq("id", registrationData.request_id)
+        .single();
+
+      if (feeRequestError || !feeRequest) {
+        console.error("Error fetching fee request:", feeRequestError);
+        return NextResponse.json({ error: "Failed to fetch fee request details" }, { status: 500 });
+      }
+
       // Update fee request status to paid
       const { error: updateError } = await supabase
         .from("fee_requests")
@@ -110,13 +122,13 @@ export async function POST(request: NextRequest) {
       // Save to school_fees_payments table
       const schoolFeesPaymentData = {
         request_id: registrationData.request_id,
-        parent_name: registrationData.parent_name,
-        child_name: registrationData.child_name,
-        email: registrationData.email,
-        phone_number: registrationData.phone_number,
+        parent_name: registrationData.parentName,
+        child_name: registrationData.childName,
+        email: feeRequest.email,
+        phone_number: feeRequest.phone_number,
         programs: registrationData.programs,
-        day_care_schedule: registrationData.day_care_schedule,
-        additional_notes: registrationData.additional_notes,
+        day_care_schedule: registrationData.dayCareSchedule,
+        additional_notes: feeRequest.additional_notes || "",
         amount: transaction.amount, // Amount in cedis
         reference: reference,
         order_id: transaction.order_id,
