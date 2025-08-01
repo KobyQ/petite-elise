@@ -92,6 +92,45 @@ export async function POST(request: NextRequest) {
         console.error("Registration error:", registrationError);
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
+    } else if (registrationData.program_type === "School Fees") {
+      // Update fee request status to paid
+      const { error: updateError } = await supabase
+        .from("fee_requests")
+        .update({
+          status: "paid",
+          paid_at: new Date().toISOString(),
+        })
+        .eq("id", registrationData.request_id);
+
+      if (updateError) {
+        console.error("Error updating fee request:", updateError);
+        return NextResponse.json({ error: "Failed to update fee request" }, { status: 500 });
+      }
+
+      // Save to school_fees_payments table
+      const schoolFeesPaymentData = {
+        request_id: registrationData.request_id,
+        parent_name: registrationData.parent_name,
+        child_name: registrationData.child_name,
+        email: registrationData.email,
+        phone_number: registrationData.phone_number,
+        programs: registrationData.programs,
+        day_care_schedule: registrationData.day_care_schedule,
+        additional_notes: registrationData.additional_notes,
+        amount: transaction.amount, // Amount in cedis
+        reference: reference,
+        order_id: transaction.order_id,
+        status: "paid",
+      };
+
+      const { error: paymentError } = await supabase
+        .from("school_fees_payments")
+        .insert(schoolFeesPaymentData);
+
+      if (paymentError) {
+        console.error("Error saving school fees payment:", paymentError);
+        return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
+      }
     } else {
       // Save to children table for other programs
       const childrenData = {
@@ -157,6 +196,9 @@ export async function POST(request: NextRequest) {
       } else if (registrationData.program_type === "Christmas Camp") {
         programName = "Christmas Camp Program";
         schedule = registrationData.christmasCampSchedule;
+      } else if (registrationData.program_type === "School Fees") {
+        programName = registrationData.programs ? registrationData.programs.join(", ") : "School Fees";
+        schedule = registrationData.day_care_schedule || "N/A";
       }
 
       const receiptData: ReceiptData = {
@@ -176,8 +218,11 @@ export async function POST(request: NextRequest) {
       // Send receipt to parent
       await transporter.sendMail({
         from: process.env.EMAIL,
-        to: registrationData.program_type === "Code Ninjas Club" ? registrationData.email : registrationData.parentEmail,
-        subject: `Payment Receipt - ${receiptData.program} Registration`,
+        to: registrationData.program_type === "Code Ninjas Club" ? registrationData.email : 
+            registrationData.program_type === "School Fees" ? registrationData.email : registrationData.parentEmail,
+        subject: registrationData.program_type === "School Fees" 
+          ? `Payment Receipt - School Fees Payment` 
+          : `Payment Receipt - ${receiptData.program} Registration`,
         ...emailContent,
       });
 
@@ -185,7 +230,9 @@ export async function POST(request: NextRequest) {
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: process.env.EMAIL, // Admin email
-        subject: `Payment Receipt - ${receiptData.program} Registration (Admin Copy)`,
+        subject: registrationData.program_type === "School Fees" 
+          ? `Payment Receipt - School Fees Payment (Admin Copy)` 
+          : `Payment Receipt - ${receiptData.program} Registration (Admin Copy)`,
         ...emailContent,
       });
 

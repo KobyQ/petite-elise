@@ -5,7 +5,7 @@ import { useField } from "formik";
 interface RadioButtonProps {
   label?: string;
   name: string;
-  options: { label: string; value: boolean | string }[]; // Ensure values are boolean
+  options: { label: string; value: string }[];
   required?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -20,7 +20,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
   const [field, meta, helpers] = useField(name); // Access Formik helpers for explicit updates
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value === "true"; // Convert string to boolean
+    const value = event.target.value; // Keep as string
     helpers.setValue(value); // Set the value explicitly in Formik
     if (onChange) {
       onChange(event); // Call the additional onChange handler
@@ -35,11 +35,11 @@ const RadioButton: React.FC<RadioButtonProps> = ({
       </label>
       <div className="mt-2">
         {options.map((option) => (
-          <label key={String(option.value)} className="inline-flex items-center mr-4">
+          <label key={option.value} className="inline-flex items-center mr-4">
             <input
               type="radio"
               name={name}
-              value={String(option.value)} 
+              value={option.value} 
               checked={field.value === option.value} 
               className={`form-radio text-green-400 border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none ${
                 meta.touched && meta.error ? "border-red-500" : ""
