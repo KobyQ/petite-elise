@@ -116,8 +116,8 @@ const Authorization = ({
           label="Are you enrolling a sibling?"
           name="hasSibling"
           options={[
-            { label: "Yes", value: true },
-            { label: "No", value: false },
+            { label: "Yes", value: "true" },
+            { label: "No", value: "false" },
           ]}
           required
         />
@@ -139,7 +139,7 @@ const Authorization = ({
           onClick={handleRegisterClick}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
-          {values?.hasSibling
+          {values?.hasSibling === "true"
             ? "Enroll Another Child"
             : isSubmitting
               ? "Registering..."

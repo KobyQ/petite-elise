@@ -17,7 +17,7 @@ export interface IEnrollChild {
     emergencyContactPhoneNumber: string;
     emergencyContactWhatsappNumber: string;
     emergencyContactRelationshipToChild: string;
-    dropChildOffSelf: boolean;
+    dropChildOffSelf: string;
     dropOffNames?: IDropOff[];
     programs: string[];
     dayCareSchedule?: string;
@@ -25,11 +25,11 @@ export interface IEnrollChild {
     summerCampSchedule?: string;
     christmasCampSchedule?: string;
     childMindingSchedule?: string;
-    hasSibling: boolean;
+    hasSibling: string;
     feeding?: string;
-    hasAllergies: boolean;
+    hasAllergies: string;
     allergies?: string[]
-    hasSpecialHealthConditions: boolean;
+    hasSpecialHealthConditions: string;
     specialHealthConditions?: string[];
     familyId?: string;
     // childPassport: FileOrUrl;

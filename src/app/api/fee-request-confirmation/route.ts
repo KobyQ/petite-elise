@@ -148,12 +148,13 @@ export async function POST(request: NextRequest) {
       { message: "Confirmation email sent successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error sending confirmation email:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       {
         error: "Failed to send confirmation email",
-        message: error?.message || "An unexpected error occurred",
+        message: errorMessage,
       },
       { status: 500 }
     );

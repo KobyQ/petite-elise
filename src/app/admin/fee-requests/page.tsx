@@ -462,7 +462,7 @@ Petite Elise Preschool Team
           {selectedRequest && (
             <div className="space-y-4">
               <p className="text-gray-600">
-                Send an invoice to {selectedRequest.parent_name} for {selectedRequest.child_name}'s {selectedRequest.programs.join(", ")} fees.
+                Send an invoice to {selectedRequest.parent_name} for {selectedRequest.child_name}&apos;s {selectedRequest.programs.join(", ")} fees.
               </p>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

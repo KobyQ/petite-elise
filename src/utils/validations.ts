@@ -53,7 +53,7 @@ export const enrollChildSchema = Yup.object().shape({
   emergencyContactRelationshipToChild: Yup.string().required(
     "Relation to child is required"
   ),
-  dropChildOffSelf: Yup.boolean().required("This field is required"),
+  dropChildOffSelf: Yup.string().required("This field is required"),
   dropOffNames: Yup.array().when("dropChildOffSelf", {
     is: (val: string) => val === "No",
     then: (schema) =>
@@ -80,16 +80,16 @@ export const enrollChildSchema = Yup.object().shape({
     then: (schema) => schema.required("Schedule is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
-  hasSibling: Yup.boolean().required("This field is required"),
-  hasAllergies: Yup.boolean().required("This field is required"),
+  hasSibling: Yup.string().required("This field is required"),
+  hasAllergies: Yup.string().required("This field is required"),
   allergies: Yup.array().when("hasAllergies", {
-    is: (val: string) => val === "Yes",
+    is: (val: string) => val === "true",
     then: (schema) => schema.required("Please provide allergy details"),
     otherwise: (schema) => schema.notRequired(),
   }),
-  hasSpecialHealthConditions: Yup.boolean().required("This field is required"),
+  hasSpecialHealthConditions: Yup.string().required("This field is required"),
   specialHealthConditions: Yup.array().when("hasSpecialHealthConditions", {
-    is: (val: string) => val === "Yes",
+    is: (val: string) => val === "true",
     then: (schema) =>
       schema.required("Please provide health condition details"),
     otherwise: (schema) => schema.notRequired(),

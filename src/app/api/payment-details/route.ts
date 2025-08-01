@@ -53,12 +53,13 @@ export async function GET(request: NextRequest) {
       created_at: transaction.created_at,
       status: transaction.status,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching payment details:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       {
         error: "Failed to fetch payment details",
-        message: error?.message || "An unexpected error occurred",
+        message: errorMessage,
       },
       { status: 500 }
     );

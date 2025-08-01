@@ -193,14 +193,14 @@ const StudentDetails = ({
                 <strong>Feeding:</strong> {data?.feeding || "N/A"}
               </p>
               <p>
-                <strong>Has Sibling:</strong> {data?.hasSibling ? "Yes" : "No"}
+                <strong>Has Sibling:</strong> {data?.hasSibling === "true" ? "Yes" : "No"}
               </p>
               <p>
                 <strong>Sibling:</strong> {data?.sibling || "N/A"}
               </p>
               <p>
                 <strong>Has Allergies:</strong>{" "}
-                {data?.hasAllergies ? "Yes" : "No"}
+                {data?.hasAllergies === "true" ? "Yes" : "No"}
               </p>
               <p>
                 <strong>Allergies:</strong>{" "}

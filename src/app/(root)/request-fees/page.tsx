@@ -180,7 +180,7 @@ export default function RequestFees() {
             <CardHeader>
               <CardTitle className="text-2xl text-center">Fee Request Form</CardTitle>
               <CardDescription className="text-center">
-                Please fill out the form below to request an invoice for your child's school fees.
+                Please fill out the form below to request an invoice for your child&apos;s school fees.
               </CardDescription>
             </CardHeader>
             <CardContent>

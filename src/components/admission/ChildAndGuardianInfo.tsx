@@ -118,13 +118,13 @@ const ChildAndGuardianInfo = ({
               label="Will you do the drop off & pick up of your child daily? (If no, please state two alternative names that may do the drop off and pick up) "
               name="dropChildOffSelf"
               options={[
-                { label: "Yes", value: true },
-                { label: "No", value: false },
+                { label: "Yes", value: "true" },
+                { label: "No", value: "false" },
               ]}
               required
             />
           </div>
-          {values?.dropChildOffSelf === false && (
+          {values?.dropChildOffSelf === "false" && (
             <div className="col-span-2">
               <FieldArray name="dropOffNames">
                 {({

@@ -43,16 +43,16 @@ const ClubChildHealthConditions = ({
             label="Does the child have any allergies? "
             name="hasAllergies"
             options={[
-              { label: "Yes", value: true },
-              { label: "No", value: false },
+              { label: "Yes", value: "true" },
+              { label: "No", value: "false" },
             ]}
             required
           />
-          {values?.hasAllergies === true && (
+          {values?.hasAllergies === "true" && (
             <CustomInputList
               label="Enter Allergies"
               name="allergies"
-              required={values?.hasAllergies}
+              required={values?.hasAllergies === "true"}
             />
           )}
         </div>
@@ -62,18 +62,18 @@ const ClubChildHealthConditions = ({
             label="Does the child have any special education considerations? "
             name="hasSpecialHealthConditions"
             options={[
-              { label: "Yes", value: true },
-              { label: "No", value: false },
+              { label: "Yes", value: "true" },
+              { label: "No", value: "false" },
             ]}
             required
           />
-          {values?.hasSpecialHealthConditions === true && (
+          {values?.hasSpecialHealthConditions === "true" && (
             <>
               <CustomSelect
                 label="Special Education Consideration"
                 name="specialHealthConditions"
                 options={options}
-                required={values?.hasSpecialHealthConditions}
+                required={values?.hasSpecialHealthConditions === "true"}
                 isMulti
                 placeholder="Select special education consideration"
               />

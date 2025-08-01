@@ -35,7 +35,7 @@ const ProgramInvoiceModal = ({
             <div className="space-y-6 overflow-y-auto flex-1">
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  Create a detailed invoice for <strong>{selectedRequest.parent_name}</strong>'s request for <strong>{selectedRequest.child_name}</strong>
+                  Create a detailed invoice for <strong>{selectedRequest.parent_name}</strong>&apos;s request for <strong>{selectedRequest.child_name}</strong>
                 </p>
                 {selectedRequest.day_care_schedule && (
                   <p className="text-sm text-gray-500">

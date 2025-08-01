@@ -26,8 +26,8 @@ const page = () => {
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Need to Pay School Fees?</h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                For parents of enrolled students, you can request an invoice for your child's school fees. 
-                We'll send you a secure payment link to complete your payment.
+                For parents of enrolled students, you can request an invoice for your child&apos;s school fees. 
+                We&apos;ll send you a secure payment link to complete your payment.
               </p>
             </div>
             <div className="text-center">

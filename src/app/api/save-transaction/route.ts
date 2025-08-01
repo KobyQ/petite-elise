@@ -7,7 +7,7 @@ interface TransactionData {
   amount: number;
   email: string;
   order_id: string;
-  details: any;
+  details: Record<string, unknown>;
 }
 
 export async function POST(request: NextRequest) {
@@ -47,12 +47,13 @@ export async function POST(request: NextRequest) {
       { message: "Transaction saved successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error saving transaction:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       {
         error: "Failed to save transaction",
-        message: error?.message || "An unexpected error occurred",
+        message: errorMessage,
       },
       { status: 500 }
     );

@@ -138,7 +138,7 @@ const RegisterYourChild = () => {
       try {
         const childData = { ...values }
 
-        if (values.hasSibling === true) {
+        if (values.hasSibling === "true") {
           // Add child to siblings and reset form
           setSiblings((prev: any) => [...prev, childData])
 

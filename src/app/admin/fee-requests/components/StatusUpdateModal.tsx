@@ -32,7 +32,7 @@ const StatusUpdateModal = ({
           <div className="space-y-4">
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">
-                Update status for <strong>{selectedRequest.parent_name}</strong>'s request for <strong>{selectedRequest.child_name}</strong>
+                Update status for <strong>{selectedRequest.parent_name}</strong>&apos;s request for <strong>{selectedRequest.child_name}</strong>
               </p>
               <p className="text-sm text-gray-500">
                 Current Status: {getStatusBadge(selectedRequest.status)}
