@@ -123,6 +123,8 @@ export async function POST(request: NextRequest) {
         status: "paid",
       };
 
+      console.log("Attempting to insert school fees payment:", schoolFeesPaymentData);
+
       const { error: paymentError } = await supabase
         .from("school_fees_payments")
         .insert(schoolFeesPaymentData);
@@ -131,6 +133,8 @@ export async function POST(request: NextRequest) {
         console.error("Error saving school fees payment:", paymentError);
         return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
       }
+      
+      console.log("Successfully saved to school_fees_payments table");
     } else {
       // Save to children table for other programs
       const childrenData = {
