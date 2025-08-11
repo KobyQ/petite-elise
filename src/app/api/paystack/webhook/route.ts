@@ -201,8 +201,26 @@ export async function POST(request: NextRequest) {
       // Handle shop orders
       console.log("Processing shop order for reference:", reference);
       console.log("Shop order data:", registrationData);
+      console.log("Items structure:", {
+        items_type: typeof registrationData.items,
+        items_is_array: Array.isArray(registrationData.items),
+        items_length: registrationData.items?.length || 0,
+        first_item: registrationData.items?.[0]
+      });
       
       try {
+        // Validate required fields
+        if (!registrationData.customer_name || !registrationData.customer_email || !registrationData.customer_phone || !registrationData.items) {
+          console.error("Missing required fields for shop order:", {
+            has_customer_name: !!registrationData.customer_name,
+            has_customer_email: !!registrationData.customer_email,
+            has_customer_phone: !!registrationData.customer_phone,
+            has_items: !!registrationData.items,
+            items_length: registrationData.items?.length || 0
+          });
+          return NextResponse.json({ error: "Missing required fields for shop order" }, { status: 400 });
+        }
+
         const shopOrderData = {
           customer_name: registrationData.customer_name,
           customer_email: registrationData.customer_email,
@@ -219,23 +237,6 @@ export async function POST(request: NextRequest) {
 
         console.log("Attempting to insert shop order:", shopOrderData);
 
-        // First, check if shop_orders table exists
-        const { error: tableCheckError } = await supabase
-          .from("shop_orders")
-          .select("id")
-          .limit(1);
-
-        if (tableCheckError) {
-          console.error("Error checking shop_orders table:", tableCheckError);
-          // Try to create the table dynamically (fallback)
-          console.log("Attempting to create shop_orders table...");
-          const { error: createTableError } = await supabase.rpc('create_shop_orders_table');
-          if (createTableError) {
-            console.error("Failed to create table:", createTableError);
-            return NextResponse.json({ error: "Shop orders table not accessible" }, { status: 500 });
-          }
-        }
-
         const { data: insertedOrder, error: shopOrderError } = await supabase
           .from("shop_orders")
           .insert(shopOrderData)
@@ -245,6 +246,12 @@ export async function POST(request: NextRequest) {
         if (shopOrderError) {
           console.error("Error saving shop order:", shopOrderError);
           console.error("Shop order data that failed:", shopOrderData);
+          console.error("Error details:", {
+            code: shopOrderError.code,
+            message: shopOrderError.message,
+            details: shopOrderError.details,
+            hint: shopOrderError.hint
+          });
           
           // Try to get more details about the error
           if (shopOrderError.code === '23505') {
@@ -269,13 +276,26 @@ export async function POST(request: NextRequest) {
         // Update product stock quantities
         for (const item of registrationData.items) {
           try {
+            // Get current stock quantity
+            const { data: product, error: fetchError } = await supabase
+              .from("products")
+              .select("stock_quantity")
+              .eq("id", item.product_id)
+              .single();
+
+            if (fetchError) {
+              console.error(`Error fetching product ${item.product_id}:`, fetchError);
+              continue;
+            }
+
+            const currentStock = product.stock_quantity || 0;
+            const newStock = Math.max(0, currentStock - item.quantity);
+
+            // Update stock quantity
             const { error: stockUpdateError } = await supabase
               .from("products")
               .update({ 
-                stock_quantity: supabase.rpc('decrease_stock', { 
-                  product_id: item.product_id, 
-                  quantity: item.quantity 
-                })
+                stock_quantity: newStock
               })
               .eq("id", item.product_id);
 
@@ -283,7 +303,7 @@ export async function POST(request: NextRequest) {
               console.error(`Error updating stock for product ${item.product_id}:`, stockUpdateError);
               // Don't fail the entire process if stock update fails
             } else {
-              console.log(`Successfully updated stock for product ${item.product_id}`);
+              console.log(`Successfully updated stock for product ${item.product_id}: ${currentStock} -> ${newStock}`);
             }
           } catch (stockError) {
             console.error(`Exception updating stock for product ${item.product_id}:`, stockError);
