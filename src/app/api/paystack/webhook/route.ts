@@ -7,11 +7,25 @@ import {
 } from "@/utils/template";
 import { transporter } from "../../../../../config/nodemailer";
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
+
+export async function GET() {
+  return NextResponse.json({ 
+    message: "Webhook endpoint is working",
+    timestamp: new Date().toISOString(),
+    env_check: {
+      has_secret_key: !!process.env.PAYSTACK_SECRET_KEY,
+      secret_key_length: process.env.PAYSTACK_SECRET_KEY?.length || 0
+    }
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("=== WEBHOOK STARTED ===");
+    console.log("Environment check - PAYSTACK_SECRET_KEY exists:", !!process.env.PAYSTACK_SECRET_KEY);
+    
     const { event, data } = await request.json();
     console.log("Webhook received:", { event, reference: data?.reference });
     
@@ -51,6 +65,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Transaction is not pending" }, { status: 400 });
     }
 
+    console.log("About to verify payment with Paystack...");
+    console.log("PAYSTACK_VERIFY_URL:", PAYSTACK_VERIFY_URL);
+    console.log("Reference:", reference);
+
     // Verify payment with Paystack
     const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
       method: "GET",
@@ -59,6 +77,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("Paystack response status:", response.status);
+    console.log("Paystack response headers:", Object.fromEntries(response.headers.entries()));
+
     const paymentData = await response.json();
     console.log("Paystack verification response:", paymentData);
 
@@ -66,6 +87,8 @@ export async function POST(request: NextRequest) {
       console.error("Payment verification failed:", paymentData);
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
     }
+
+    console.log("Payment verified successfully, updating transaction status...");
 
     // Update transaction status to prevent infinite webhook calls
     const { error: updateError } = await supabase
