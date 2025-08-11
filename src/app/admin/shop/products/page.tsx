@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import SkeletonLoader from "../../components/SkeletonLoader";
@@ -68,7 +68,7 @@ const Products = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch products from Supabase
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
 
@@ -106,11 +106,11 @@ const Products = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, categoryFilter, statusFilter]);
 
   useEffect(() => {
     fetchProducts();
-  }, [searchTerm, categoryFilter, statusFilter, featuredFilter, stockFilter, refreshKey]);
+  }, [fetchProducts]);
 
   const deleteProduct = async () => {
     if (!selectedProduct) return;

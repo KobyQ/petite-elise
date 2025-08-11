@@ -332,7 +332,7 @@ export default function RegistrationForm() {
                         <span className="text-lime-500">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
                       </div>
                       <div className="bg-lime-500/20 text-lime-400 px-2 py-1 rounded text-xs">
-                        Discount code "{discountCode.toUpperCase()}" applied!
+                        Discount code &quot;{discountCode.toUpperCase()}&quot; applied!
                       </div>
                     </div>
                   ) : (

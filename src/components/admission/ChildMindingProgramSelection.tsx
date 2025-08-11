@@ -66,7 +66,7 @@ const ChildMindingProgramSelection: React.FC<
             <strong>Childminding Program</strong> - Professional childcare services
           </p>
           <p className="text-sm text-blue-600 mt-2">
-            Safe, nurturing care for your child with flexible scheduling options to meet your family's needs.
+            Safe, nurturing care for your child with flexible scheduling options to meet your family&apos;s needs.
           </p>
         </div>
 

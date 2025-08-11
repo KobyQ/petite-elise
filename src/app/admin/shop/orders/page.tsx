@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import SkeletonLoader from "../../components/SkeletonLoader";
@@ -32,9 +32,9 @@ interface Order {
 }
 
 const orderColumns = (
-  setSelectedData: (row: any) => void,
+  handleViewOrder: (order: Order) => void,
   setIsViewOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  setIsStatusOpen: React.Dispatch<React.SetStateAction<boolean>>
+  handleUpdateStatus: (order: Order) => void
 ) => [
   {
     name: "Order #",
@@ -44,7 +44,7 @@ const orderColumns = (
   },
   {
     name: "Customer",
-    selector: (row: any) => (
+    cell: (row: any) => (
       <div>
         <div className="font-medium">{row?.customer_name ?? "N/A"}</div>
         <div className="text-sm text-gray-500">{row?.customer_email ?? "N/A"}</div>
@@ -61,7 +61,7 @@ const orderColumns = (
   },
   {
     name: "Status",
-    selector: (row: any) => (
+    cell: (row: any) => (
       <span
         className={`px-2 py-1 rounded-full text-xs font-medium ${
           row?.status === "delivered"
@@ -85,7 +85,7 @@ const orderColumns = (
   },
   {
     name: "Payment",
-    selector: (row: any) => (
+    cell: (row: any) => (
       <span
         className={`px-2 py-1 rounded-full text-xs font-medium ${
           row?.payment_status === "paid"
@@ -115,8 +115,7 @@ const orderColumns = (
       <div className="flex items-center gap-2">
         <button
           onClick={() => {
-            setSelectedData(row);
-            setIsViewOpen(true);
+            handleViewOrder(row);
           }}
           className="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-sm"
         >
@@ -124,8 +123,7 @@ const orderColumns = (
         </button>
         <button
           onClick={() => {
-            setSelectedData(row);
-            setIsStatusOpen(true);
+            handleUpdateStatus(row);
           }}
           className="text-green-500 hover:text-green-700 px-2 py-1 rounded text-sm"
         >
@@ -159,7 +157,7 @@ const Orders = () => {
   });
 
   // Fetch orders from Supabase
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     setFetchError(null);
 
@@ -195,7 +193,7 @@ const Orders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, statusFilter, paymentFilter]);
 
   // Fetch order items for selected order
   const fetchOrderItems = async (orderId: string) => {
@@ -219,7 +217,7 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [searchTerm, statusFilter, paymentFilter]);
+  }, [fetchOrders]);
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);

@@ -146,7 +146,7 @@ const Shop = () => {
   const [showCart, setShowCart] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [discountCode, setDiscountCode] = useState("");
-  const [discountData, setDiscountData] = useState<any>(null);
+  const [discountData, setDiscountData] = useState<{ discount_percentage: number; discount_amount: number } | null>(null);
   const [validatingDiscount, setValidatingDiscount] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
@@ -401,9 +401,10 @@ const Shop = () => {
       // Redirect to Paystack payment page
       window.location.href = result.data.authorization_url;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
-      toast.error(error.message || "Payment failed. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Payment failed. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setSubmittingPayment(false);
     }
@@ -445,7 +446,7 @@ const Shop = () => {
         {/* Content */}
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-5xl font-bold mb-4 drop-shadow-md">School Supplies Shop</h1>
-          <p className="text-xl mb-8 drop-shadow-md">Quality educational materials and supplies for your child's learning journey</p>
+          <p className="text-xl mb-8 drop-shadow-md">Quality educational materials and supplies for your child&apos;s learning journey</p>
           
           {/* Search Bar */}
           <div className="relative max-w-md mx-auto">
@@ -1023,7 +1024,7 @@ const Shop = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Choose Our School Supplies?</h2>
-            <p className="text-lg text-gray-600">Quality materials that support your child's educational development</p>
+            <p className="text-lg text-gray-600">Quality materials that support your child&apos;s educational development</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center">

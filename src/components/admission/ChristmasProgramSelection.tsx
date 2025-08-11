@@ -110,7 +110,6 @@ const ChristmasProgramSelection: React.FC<ClubProgramSelectionProps> = ({
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 ${
             !values.christmasCampSchedule ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
           Next
         </Button>

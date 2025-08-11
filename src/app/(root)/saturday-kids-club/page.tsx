@@ -329,7 +329,7 @@ const SaturdayKidsClub = () => {
                     <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
                   </div>
                   <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                    Discount code "{discountCode.toUpperCase()}" applied!
+                    Discount code &quot;{discountCode.toUpperCase()}&quot; applied!
                   </div>
                 </div>
               ) : (

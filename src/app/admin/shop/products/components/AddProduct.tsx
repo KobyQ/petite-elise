@@ -2,16 +2,39 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import supabase from "@/utils/supabaseClient";
 import { formatMoneyToPesewas, formatMoneyToCedis } from "@/utils/constants";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  short_description?: string;
+  price: number;
+  sale_price?: number;
+  images: string[];
+  category: string;
+  stock_quantity: number;
+  is_active: boolean;
+  is_featured: boolean;
+  weight: number;
+  dimensions: string;
+  sku: string;
+  tags: string[];
+  details?: Record<string, string>;
+  delivery?: Record<string, string>;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AddProductProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  setProducts: React.Dispatch<React.SetStateAction<any[]>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
 interface ProductDetails {
@@ -321,7 +344,7 @@ const AddProduct: React.FC<AddProductProps> = ({
         }
       });
     };
-  }, []);
+  }, [formData.images]);
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-6">
@@ -464,9 +487,11 @@ const AddProduct: React.FC<AddProductProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {formData.images.map((image, index) => (
               <div key={index} className="relative">
-                <img
+                <Image
                   src={image.preview}
                   alt={`Product ${index + 1}`}
+                  width={96}
+                  height={96}
                   className="w-full h-24 object-cover rounded border"
                 />
                 <button

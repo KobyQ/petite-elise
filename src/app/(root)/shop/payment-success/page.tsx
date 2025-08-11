@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaShoppingBag, FaEnvelope, FaPhone } from "react-icons/fa";
@@ -22,12 +22,12 @@ interface OrderDetails {
   }>;
   total_amount: number;
   discount_code?: string;
-  discount_data?: any;
+  discount_data?: { discount_percentage: number; discount_amount: number };
   status: string;
   payment_date: string;
 }
 
-const PaymentSuccess = () => {
+const PaymentSuccessContent = () => {
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,7 +116,7 @@ const PaymentSuccess = () => {
         <div className="text-center max-w-md mx-auto px-4">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Order Not Found</h1>
-          <p className="text-gray-600 mb-6">We couldn't find your order details. Please contact support.</p>
+          <p className="text-gray-600 mb-6">We couldn&apos;t find your order details. Please contact support.</p>
           <Link href="/shop">
             <Button className="bg-primary hover:bg-primary/90 text-white">
               Return to Shop
@@ -226,7 +226,7 @@ const PaymentSuccess = () => {
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-800 text-center">
-                      Discount code "{orderDetails.discount_code}" applied!
+                      Discount code &quot;{orderDetails.discount_code}&quot; applied!
                     </p>
                   </div>
                 </>
@@ -253,21 +253,21 @@ const PaymentSuccess = () => {
                 <span className="text-blue-600 font-bold">1</span>
               </div>
               <h4 className="font-semibold text-blue-800 mb-2">Order Confirmation</h4>
-              <p className="text-blue-700 text-sm">You'll receive an email confirmation with your order details</p>
+              <p className="text-blue-700 text-sm">You&apos;ll receive an email confirmation with your order details</p>
             </div>
             <div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-blue-600 font-bold">2</span>
               </div>
               <h4 className="font-semibold text-blue-800 mb-2">Order Processing</h4>
-              <p className="text-blue-700 text-sm">We'll process your order and prepare it for pickup or delivery</p>
+              <p className="text-blue-700 text-sm">We&apos;ll process your order and prepare it for pickup or delivery</p>
             </div>
             <div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-blue-600 font-bold">3</span>
               </div>
               <h4 className="font-semibold text-blue-800 mb-2">Ready for Pickup</h4>
-              <p className="text-blue-700 text-sm">We'll contact you when your order is ready for pickup</p>
+              <p className="text-blue-700 text-sm">We&apos;ll contact you when your order is ready for pickup</p>
             </div>
           </div>
         </motion.div>
@@ -298,6 +298,21 @@ const PaymentSuccess = () => {
         </motion.div>
       </div>
     </div>
+  );
+};
+
+const PaymentSuccess = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 };
 
