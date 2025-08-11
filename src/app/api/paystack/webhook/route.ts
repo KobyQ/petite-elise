@@ -7,7 +7,7 @@ import {
 } from "@/utils/template";
 import { transporter } from "../../../../../config/nodemailer";
 
-const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY ;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 
 export async function POST(request: NextRequest) {
@@ -179,52 +179,99 @@ export async function POST(request: NextRequest) {
       console.log("Processing shop order for reference:", reference);
       console.log("Shop order data:", registrationData);
       
-      const shopOrderData = {
-        customer_name: registrationData.customer_name,
-        customer_email: registrationData.customer_email,
-        customer_phone: registrationData.customer_phone,
-        items: registrationData.items,
-        total_amount: transaction.amount, // Amount in cedis
-        discount_code: registrationData.discount_code,
-        discount_data: registrationData.discount_data,
-        reference: reference,
-        order_id: transaction.order_id,
-        status: "paid",
-        payment_date: new Date().toISOString(),
-      };
+      try {
+        const shopOrderData = {
+          customer_name: registrationData.customer_name,
+          customer_email: registrationData.customer_email,
+          customer_phone: registrationData.customer_phone,
+          items: registrationData.items,
+          total_amount: transaction.amount, // Amount in cedis
+          discount_code: registrationData.discount_code,
+          discount_data: registrationData.discount_data,
+          reference: reference,
+          order_id: transaction.order_id,
+          status: "paid",
+          payment_date: new Date().toISOString(),
+        };
 
-      console.log("Attempting to insert shop order:", shopOrderData);
+        console.log("Attempting to insert shop order:", shopOrderData);
 
-      const { error: shopOrderError } = await supabase
-        .from("shop_orders")
-        .insert(shopOrderData);
+        // First, check if shop_orders table exists
+        const { error: tableCheckError } = await supabase
+          .from("shop_orders")
+          .select("id")
+          .limit(1);
 
-      if (shopOrderError) {
-        console.error("Error saving shop order:", shopOrderError);
-        return NextResponse.json({ error: "Failed to save shop order" }, { status: 500 });
-      }
-
-      console.log("Successfully saved shop order to database");
-
-      // Update product stock quantities
-      for (const item of registrationData.items) {
-        const { error: stockUpdateError } = await supabase
-          .from("products")
-          .update({ 
-            stock_quantity: supabase.rpc('decrease_stock', { 
-              product_id: item.product_id, 
-              quantity: item.quantity 
-            })
-          })
-          .eq("id", item.product_id);
-
-        if (stockUpdateError) {
-          console.error(`Error updating stock for product ${item.product_id}:`, stockUpdateError);
-          // Don't fail the entire process if stock update fails
+        if (tableCheckError) {
+          console.error("Error checking shop_orders table:", tableCheckError);
+          // Try to create the table dynamically (fallback)
+          console.log("Attempting to create shop_orders table...");
+          const { error: createTableError } = await supabase.rpc('create_shop_orders_table');
+          if (createTableError) {
+            console.error("Failed to create table:", createTableError);
+            return NextResponse.json({ error: "Shop orders table not accessible" }, { status: 500 });
+          }
         }
+
+        const { data: insertedOrder, error: shopOrderError } = await supabase
+          .from("shop_orders")
+          .insert(shopOrderData)
+          .select()
+          .single();
+
+        if (shopOrderError) {
+          console.error("Error saving shop order:", shopOrderError);
+          console.error("Shop order data that failed:", shopOrderData);
+          
+          // Try to get more details about the error
+          if (shopOrderError.code === '23505') {
+            console.error("Duplicate key error - order might already exist");
+            // Check if order already exists
+            const { data: existingOrder } = await supabase
+              .from("shop_orders")
+              .select("*")
+              .eq("reference", reference)
+              .single();
+            
+            if (existingOrder) {
+              console.log("Order already exists:", existingOrder);
+            }
+          }
+          
+          return NextResponse.json({ error: "Failed to save shop order" }, { status: 500 });
+        }
+
+        console.log("Successfully saved shop order to database:", insertedOrder);
+
+        // Update product stock quantities
+        for (const item of registrationData.items) {
+          try {
+            const { error: stockUpdateError } = await supabase
+              .from("products")
+              .update({ 
+                stock_quantity: supabase.rpc('decrease_stock', { 
+                  product_id: item.product_id, 
+                  quantity: item.quantity 
+                })
+              })
+              .eq("id", item.product_id);
+
+            if (stockUpdateError) {
+              console.error(`Error updating stock for product ${item.product_id}:`, stockUpdateError);
+              // Don't fail the entire process if stock update fails
+            } else {
+              console.log(`Successfully updated stock for product ${item.product_id}`);
+            }
+          } catch (stockError) {
+            console.error(`Exception updating stock for product ${item.product_id}:`, stockError);
+          }
+        }
+        
+        console.log("Successfully saved shop order and updated stock");
+      } catch (shopOrderException) {
+        console.error("Exception during shop order processing:", shopOrderException);
+        return NextResponse.json({ error: "Exception during shop order processing" }, { status: 500 });
       }
-      
-      console.log("Successfully saved shop order and updated stock");
     } else {
       // Save to children table for other programs
       const childrenData = {

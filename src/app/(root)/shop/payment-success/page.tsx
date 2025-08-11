@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import supabase from "@/utils/supabaseClient";
 import { formatMoneyToCedis } from "@/utils/constants";
+import { toast } from "react-toastify";
 
 interface OrderDetails {
   order_id: string;
@@ -49,8 +50,9 @@ const PaymentSuccessContent = () => {
 
   const fetchOrderDetails = async (reference: string) => {
     try {
-      // Check retry limit
+      // Check retry limit BEFORE making any API calls
       if (retryCount >= MAX_RETRIES) {
+        console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
         setError("Order processing is taking longer than expected. Please contact support with your reference number.");
         setLoading(false);
         return;
@@ -103,6 +105,13 @@ const PaymentSuccessContent = () => {
           console.log("Shop order not found yet (PGRST116), retrying in 3 seconds...");
           // Shop order not found yet, retry after delay (webhook might still be processing)
           setRetryCount(prev => prev + 1);
+          // Check retry limit again before setting timeout
+          if (retryCount + 1 >= MAX_RETRIES) {
+            console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
+            setError("Order processing is taking longer than expected. Please contact support with your reference number.");
+            setLoading(false);
+            return;
+          }
           setTimeout(() => {
             fetchOrderDetails(reference);
           }, 3000); // Retry every 3 seconds
@@ -123,6 +132,13 @@ const PaymentSuccessContent = () => {
         console.log("Shop order not found, retrying in 3 seconds...");
         // If shop order not found, retry after delay
         setRetryCount(prev => prev + 1);
+        // Check retry limit again before setting timeout
+        if (retryCount + 1 >= MAX_RETRIES) {
+          console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
+          setError("Order processing is taking longer than expected. Please contact support with your reference number.");
+          setLoading(false);
+          return;
+        }
         setTimeout(() => {
           fetchOrderDetails(reference);
         }, 3000); // Retry every 3 seconds
@@ -131,6 +147,67 @@ const PaymentSuccessContent = () => {
       console.error("Error fetching order details:", err);
       setError("Failed to fetch order details");
       setLoading(false);
+    }
+  };
+
+  // Manual fallback to create shop order if webhook failed
+  const manuallyCreateShopOrder = async () => {
+    try {
+      const reference = searchParams.get("reference") || searchParams.get("trxref");
+      if (!reference) return;
+
+      // Get transaction details
+      const { data: transaction, error: transactionError } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("reference", reference)
+        .single();
+
+      if (transactionError || !transaction) {
+        toast.error("Transaction not found");
+        return;
+      }
+
+      const registrationData = transaction.details;
+      if (!registrationData || registrationData.program_type !== "Shop Order") {
+        toast.error("Not a shop order");
+        return;
+      }
+
+      // Create shop order manually
+      const shopOrderData = {
+        customer_name: registrationData.customer_name,
+        customer_email: registrationData.customer_email,
+        customer_phone: registrationData.customer_phone,
+        items: registrationData.items,
+        total_amount: transaction.amount,
+        discount_code: registrationData.discount_code,
+        discount_data: registrationData.discount_data,
+        reference: reference,
+        order_id: transaction.order_id,
+        status: "paid",
+        payment_date: new Date().toISOString(),
+      };
+
+      const { data: createdOrder, error: createError } = await supabase
+        .from("shop_orders")
+        .insert(shopOrderData)
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating shop order manually:", createError);
+        toast.error("Failed to create order manually");
+        return;
+      }
+
+      console.log("Manually created shop order:", createdOrder);
+      setOrderDetails(createdOrder);
+      setLoading(false);
+      toast.success("Order created successfully!");
+    } catch (error) {
+      console.error("Error in manual order creation:", error);
+      toast.error("Failed to create order manually");
     }
   };
 
@@ -161,6 +238,21 @@ const PaymentSuccessContent = () => {
               Attempt {retryCount + 1} of {MAX_RETRIES} • Est. {estimatedTimeLeft}s remaining
             </p>
           </div>
+          
+          {/* Show manual retry button when getting close to limit */}
+          {retryCount >= 15 && (
+            <div className="mb-4">
+              <Button 
+                onClick={manuallyCreateShopOrder}
+                className="bg-green-600 hover:bg-green-700 text-white w-full"
+              >
+                Try Manual Order Creation
+              </Button>
+              <p className="text-xs text-gray-500 mt-2">
+                If automatic processing is taking too long, try this
+              </p>
+            </div>
+          )}
           
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
@@ -196,8 +288,14 @@ const PaymentSuccessContent = () => {
           </p>
           
           <div className="space-y-3">
+            <Button 
+              onClick={manuallyCreateShopOrder}
+              className="bg-green-600 hover:bg-green-700 text-white w-full"
+            >
+              Try Manual Order Creation
+            </Button>
             <Link href="/shop">
-              <Button className="bg-primary hover:bg-primary/90 text-white w-full">
+              <Button variant="outline" className="w-full">
                 Return to Shop
               </Button>
             </Link>
@@ -217,11 +315,20 @@ const PaymentSuccessContent = () => {
           <div className="text-6xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Payment Error</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link href="/shop">
-            <Button className="bg-primary hover:bg-primary/90 text-white">
-              Return to Shop
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={manuallyCreateShopOrder}
+              className="bg-green-600 hover:bg-green-700 text-white w-full"
+            >
+              Try Manual Order Creation
             </Button>
-          </Link>
+            <Link href="/shop">
+              <Button variant="outline" className="w-full">
+                Return to Shop
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -234,11 +341,20 @@ const PaymentSuccessContent = () => {
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Order Not Found</h1>
           <p className="text-gray-600 mb-6">We couldn&apos;t find your order details. Please contact support.</p>
-          <Link href="/shop">
-            <Button className="bg-primary hover:bg-primary/90 text-white">
-              Return to Shop
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={manuallyCreateShopOrder}
+              className="bg-green-600 hover:bg-green-700 text-white w-full"
+            >
+              Try Manual Order Creation
             </Button>
-          </Link>
+            <Link href="/shop">
+              <Button variant="outline" className="w-full">
+                Return to Shop
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
