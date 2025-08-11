@@ -22,6 +22,17 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Test: Write to a file to confirm webhook is called
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const logPath = path.join(process.cwd(), 'webhook-test.log');
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `\n[${timestamp}] WEBHOOK CALLED - POST request received\n`);
+  } catch (error) {
+    // Ignore file write errors
+  }
+
   console.log("\n\n");
   console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
   console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
@@ -30,6 +41,16 @@ export async function POST(request: NextRequest) {
   
   try {
     console.log("=== WEBHOOK STARTED ===");
+    console.log("Request received");
+    
+    // Test: Log raw request info
+    console.log("🚀 TEST: Request method:", request.method);
+    console.log("🚀 TEST: Request URL:", request.url);
+    console.log("🚀 TEST: Request headers:", Object.fromEntries(request.headers.entries()));
+    
+    const body = await request.json();
+    console.log("Request body received:", JSON.stringify(body, null, 2));
+    
     console.log("Environment check - PAYSTACK_SECRET_KEY exists:", !!process.env.PAYSTACK_SECRET_KEY);
     
     const { event, data } = await request.json();
@@ -66,48 +87,55 @@ export async function POST(request: NextRequest) {
       program_type: transaction.details?.program_type 
     });
 
-    if (transaction.status !== ETransactionStatus.pending) {
-      console.log("Transaction is not pending, status:", transaction.status);
-      return NextResponse.json({ error: "Transaction is not pending" }, { status: 400 });
+    // Allow processing of both pending and success transactions
+    // (success transactions might be from duplicate webhook calls)
+    if (transaction.status !== ETransactionStatus.pending && transaction.status !== ETransactionStatus.success) {
+      console.log("Transaction is not pending or success, status:", transaction.status);
+      return NextResponse.json({ error: "Transaction is not in valid state" }, { status: 400 });
     }
 
-    console.log("About to verify payment with Paystack...");
-    console.log("PAYSTACK_VERIFY_URL:", PAYSTACK_VERIFY_URL);
-    console.log("Reference:", reference);
+    // Only verify with Paystack if transaction is still pending
+    if (transaction.status === ETransactionStatus.pending) {
+      console.log("About to verify payment with Paystack...");
+      console.log("PAYSTACK_VERIFY_URL:", PAYSTACK_VERIFY_URL);
+      console.log("Reference:", reference);
 
-    // Verify payment with Paystack
-    const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-      },
-    });
+      // Verify payment with Paystack
+      const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        },
+      });
 
-    console.log("Paystack response status:", response.status);
-    console.log("Paystack response headers:", Object.fromEntries(response.headers.entries()));
+      console.log("Paystack response status:", response.status);
+      console.log("Paystack response headers:", Object.fromEntries(response.headers.entries()));
 
-    const paymentData = await response.json();
-    console.log("Paystack verification response:", paymentData);
+      const paymentData = await response.json();
+      console.log("Paystack verification response:", paymentData);
 
-    if (!paymentData.status || paymentData.data.status !== "success") {
-      console.error("Payment verification failed:", paymentData);
-      return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
+      if (!paymentData.status || paymentData.data.status !== "success") {
+        console.error("Payment verification failed:", paymentData);
+        return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
+      }
+
+      console.log("Payment verified successfully, updating transaction status...");
+
+      // Update transaction status to prevent infinite webhook calls
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({ status: paymentData.data.status })
+        .eq("reference", reference);
+
+      if (updateError) {
+        console.error("Error updating transaction status:", updateError);
+        return NextResponse.json({ error: "Failed to update transaction status" }, { status: 500 });
+      }
+
+      console.log("Transaction status updated to success");
+    } else {
+      console.log("Transaction already processed, continuing with registration...");
     }
-
-    console.log("Payment verified successfully, updating transaction status...");
-
-    // Update transaction status to prevent infinite webhook calls
-    const { error: updateError } = await supabase
-      .from("transactions")
-      .update({ status: paymentData.data.status })
-      .eq("reference", reference);
-
-    if (updateError) {
-      console.error("Error updating transaction status:", updateError);
-      return NextResponse.json({ error: "Failed to update transaction status" }, { status: 500 });
-    }
-
-    console.log("Transaction status updated to success");
     
     // Debug: Add response header to track webhook execution
     const webhookResponse = NextResponse.json({ success: true });
