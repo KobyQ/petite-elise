@@ -71,6 +71,48 @@ export default function RegistrationForm() {
   const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false);
   const [submittingPayment, setSubmittingPayment] = useState<boolean>(false);
   const [selectedPricing, setSelectedPricing] = useState<any>(null);
+  const [discountCode, setDiscountCode] = useState<string>("");
+  const [discountData, setDiscountData] = useState<any>(null);
+  const [validatingDiscount, setValidatingDiscount] = useState<boolean>(false);
+  const [finalAmount, setFinalAmount] = useState<number>(0);
+
+  const validateDiscountCode = async (code: string) => {
+    if (!code.trim()) {
+      setDiscountData(null);
+      return;
+    }
+
+    setValidatingDiscount(true);
+    try {
+      const { data, error } = await supabase
+        .from("discount_codes")
+        .select("*")
+        .eq("discount_code", code.trim().toUpperCase())
+        .eq("is_active", true)
+        .single();
+
+      if (error || !data) {
+        toast.error("Invalid or inactive discount code");
+        setDiscountData(null);
+        return;
+      }
+
+      setDiscountData(data);
+      toast.success(`Discount code applied! ${data.discount_percentage}% off`);
+    } catch (error) {
+      console.error("Error validating discount code:", error);
+      toast.error("Error validating discount code");
+      setDiscountData(null);
+    } finally {
+      setValidatingDiscount(false);
+    }
+  };
+
+  const calculateFinalAmount = (originalPrice: number, discount: any) => {
+    if (!discount) return originalPrice;
+    const discountAmount = (originalPrice * discount.discount_percentage) / 100;
+    return originalPrice - discountAmount;
+  };
 
   const fetchPricingForSchedule = async (schedule: string) => {
     try {
@@ -129,12 +171,23 @@ export default function RegistrationForm() {
         }
 
         setSelectedPricing(pricing);
+        
+        // Calculate final amount with discount
+        const originalAmount = pricing.price / 100; // Convert to cedis
+        const finalAmountInCedis = calculateFinalAmount(originalAmount, discountData);
+        const finalAmountInPesewas = Math.round(finalAmountInCedis * 100); // Convert back to pesewas
+        setFinalAmount(finalAmountInCedis);
 
         // Prepare registration data for payment (don't save to code-ninjas table yet)
         const registrationData = {
           ...values,
           pricing_id: pricing.id,
           program_type: "Code Ninjas Club",
+          discount_code: discountCode.trim().toUpperCase() || null,
+          discount_data: discountData,
+          original_amount: originalAmount,
+          discount_amount: discountData ? (originalAmount * discountData.discount_percentage) / 100 : 0,
+          final_amount: finalAmountInCedis,
         };
 
         // Remove dropOffNames if not needed
@@ -151,7 +204,7 @@ export default function RegistrationForm() {
           },
           body: JSON.stringify({
             email: values.email,
-            amount: pricing.price, 
+            amount: finalAmountInPesewas, // Use discounted amount in pesewas 
             callback_url: `${window.location.origin}/code-ninjas-club/verify`,
           }),
         });
@@ -164,7 +217,7 @@ export default function RegistrationForm() {
 
         // Save transaction to our database
         const { error: dbError } = await supabase.from("transactions").insert({
-          amount: pricing.price / 100, // Convert back to cedis for storage
+          amount: finalAmountInCedis, // Store final discounted amount in cedis
           reference: result.data.reference,
           paystack_response: result,
           status: "pending",
@@ -261,8 +314,32 @@ export default function RegistrationForm() {
                 <div className="bg-zinc-800 border border-lime-500/30 rounded-lg p-4 mb-6">
                   <h4 className="font-semibold text-lime-500 mb-2">Selected Plan:</h4>
                   <p className="text-gray-300">
-                    <strong>{selectedPricing.schedule}</strong> - {formatMoneyToCedis(selectedPricing.price)}
+                    <strong>{selectedPricing.schedule}</strong>
                   </p>
+                  
+                  {discountData ? (
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Original Price:</span>
+                        <span className="line-through text-gray-500">{formatMoneyToCedis(selectedPricing.price)}</span>
+                      </div>
+                      <div className="flex justify-between text-lime-400">
+                        <span>Discount ({discountData.discount_percentage}%):</span>
+                        <span>-{formatMoneyToCedis(Math.round((selectedPricing.price / 100 * discountData.discount_percentage / 100) * 100))}</span>
+                      </div>
+                      <div className="flex justify-between font-semibold text-lg border-t border-gray-600 pt-2">
+                        <span>Total:</span>
+                        <span className="text-lime-500">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
+                      </div>
+                      <div className="bg-lime-500/20 text-lime-400 px-2 py-1 rounded text-xs">
+                        Discount code "{discountCode.toUpperCase()}" applied!
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <span className="font-semibold text-lg text-gray-300">{formatMoneyToCedis(selectedPricing.price)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -570,6 +647,43 @@ export default function RegistrationForm() {
                           </div>
                         </motion.div>
                       </motion.div>
+
+                        {/* Discount Code Section */}
+                        <motion.div className="mb-8">
+                          <h3 className="text-lg text-coding font-semibold mb-4 pb-2 border-b border-zinc-800">
+                            Discount Code (Optional)
+                          </h3>
+                          <div className="flex gap-4">
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                value={discountCode}
+                                onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                                placeholder="Enter discount code"
+                                className="w-full border border-zinc-700 bg-zinc-800 text-white rounded p-3 text-sm focus:border-lime-500 focus:outline-none"
+                                disabled={validatingDiscount}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => validateDiscountCode(discountCode)}
+                              disabled={!discountCode.trim() || validatingDiscount}
+                              className="px-6 py-3 bg-lime-500 text-black rounded disabled:bg-gray-600 disabled:cursor-not-allowed text-sm font-medium hover:bg-lime-600 transition-colors"
+                            >
+                              {validatingDiscount ? "Checking..." : "Apply"}
+                            </button>
+                          </div>
+                          
+                          {discountData && (
+                            <div className="mt-4 p-4 bg-lime-500/20 border border-lime-500/30 rounded-lg">
+                              <div className="flex items-center gap-2 text-lime-400">
+                                <FiCheckCircle className="w-5 h-5" />
+                                <span className="font-medium">Discount Applied: {discountData.discount_percentage}% off</span>
+                              </div>
+                              <p className="text-lime-300 text-sm mt-1">Code: {discountData.discount_code}</p>
+                            </div>
+                          )}
+                        </motion.div>
 
                       <motion.div
                         initial={{ opacity: 0 }}

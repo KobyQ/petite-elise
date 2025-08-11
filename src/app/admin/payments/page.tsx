@@ -25,6 +25,8 @@ const PROGRAM_OPTIONS = [
   { label: "Christmas Camp", value: "Christmas Camp" },
   { label: "Childminding", value: "Childminding" },
   { label: "Code Ninjas Club", value: "Code Ninjas Club" },
+  { label: "Baby & Me", value: "Baby & Me" },
+  { label: "Developmental Playgroup", value: "Developmental Playgroup" },
 ];
 
 const SCHEDULE_OPTIONS: Record<string, string[]> = {
@@ -38,6 +40,8 @@ const SCHEDULE_OPTIONS: Record<string, string[]> = {
   "Christmas Camp": ["weekly", "daily"],
   "Childminding": ["hourly", "full day"],
   "Code Ninjas Club": ["full term"],
+  "Baby & Me": ["monthly"],
+  "Developmental Playgroup": ["monthly"],
 };
 
 export default function PaymentsPage() {
@@ -204,6 +208,8 @@ export default function PaymentsPage() {
       "Christmas Camp": [],
       "Childminding": [],
       "Code Ninjas Club": [],
+      "Baby & Me": [],
+      "Developmental Playgroup": [],
     };
 
     items?.forEach((item) => {
@@ -330,6 +336,38 @@ export default function PaymentsPage() {
           ) : (
             <CustomTable
               data={groupedData["Code Ninjas Club"]}
+              columns={pricingColumns(setSelectedItem, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Baby & Me",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} placeholder="Search by program or schedule..." />
+          {loading ? (
+            <SkeletonLoader />
+          ) : (
+            <CustomTable
+              data={groupedData["Baby & Me"]}
+              columns={pricingColumns(setSelectedItem, setIsOpen, setIsDeleteOpen)}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Developmental Playgroup",
+      content: (
+        <div>
+          <SearchBar query={searchQuery} setQuery={setSearchQuery} placeholder="Search by program or schedule..." />
+          {loading ? (
+            <SkeletonLoader />
+          ) : (
+            <CustomTable
+              data={groupedData["Developmental Playgroup"]}
               columns={pricingColumns(setSelectedItem, setIsOpen, setIsDeleteOpen)}
             />
           )}

@@ -2,6 +2,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import moment from "moment"
+import { v4 as uuidv4 } from "uuid"
 import { FormikProvider, useFormik } from "formik"
 import { toast } from "react-toastify"
 import supabase from "@/utils/supabaseClient"
@@ -14,6 +15,7 @@ import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess"
 import ClubAuthorization from "@/components/admission/ClubAuthorization"
 import BabyAndMeProgramSelection from "@/components/admission/BabyAndMeProgramSelection"
 import { sendRegistrationEmail } from "@/utils/helper"
+import { formatMoneyToCedis } from "@/utils/constants"
 
 const BabyAndMeRegistration = () => {
   const [familyId, setFamilyId] = useState<string | null>(null)
@@ -29,10 +31,87 @@ const BabyAndMeRegistration = () => {
     emailFound: boolean
     phoneFound: boolean
   } | null>(null)
+  const [paymentUrl, setPaymentUrl] = useState<string>("")
+  const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false)
+  const [submittingPayment, setSubmittingPayment] = useState<boolean>(false)
+  const [selectedPricing, setSelectedPricing] = useState<any>(null)
+  const [discountCode, setDiscountCode] = useState<string>("")
+  const [discountData, setDiscountData] = useState<any>(null)
+  const [validatingDiscount, setValidatingDiscount] = useState<boolean>(false)
+  const [finalAmount, setFinalAmount] = useState<number>(0)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentStep])
+
+  // Generate familyId on component mount
+  useEffect(() => {
+    if (!familyId) {
+      setFamilyId(uuidv4())
+    }
+  }, [familyId])
+
+  const fetchPricingForPrograms = async (programs: string[]) => {
+    try {
+      // For Baby & Me and Developmental Playgroup, both use monthly pricing
+      // We'll fetch pricing for the first program in the array
+      const program = programs[0]
+      const { data, error } = await supabase
+        .from("program_pricing")
+        .select("*")
+        .eq("program_name", program)
+        .eq("schedule", "monthly")
+        .single()
+
+      if (error) {
+        console.error("Error fetching pricing:", error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error("Error fetching pricing:", error)
+      return null
+    }
+  }
+
+  const validateDiscountCode = async (code: string) => {
+    if (!code.trim()) {
+      setDiscountData(null)
+      return
+    }
+
+    setValidatingDiscount(true)
+    try {
+      const { data, error } = await supabase
+        .from("discount_codes")
+        .select("*")
+        .eq("discount_code", code.trim().toUpperCase())
+        .eq("is_active", true)
+        .single()
+
+      if (error || !data) {
+        toast.error("Invalid or inactive discount code")
+        setDiscountData(null)
+        return
+      }
+
+      setDiscountData(data)
+      toast.success(`Discount code applied! ${data.discount_percentage}% off`)
+    } catch (error) {
+      console.error("Error validating discount code:", error)
+      toast.error("Error validating discount code")
+      setDiscountData(null)
+    } finally {
+      setValidatingDiscount(false)
+    }
+  }
+
+  const calculateFinalAmount = (originalPrice: number, discount: any) => {
+    if (!discount) return originalPrice
+    const discountAmount = (originalPrice * discount.discount_percentage) / 100
+    return originalPrice - discountAmount
+  }
 
   const fetchAllDocuments = async (parentEmail: string, parentPhoneNumber: string) => {
     try {
@@ -115,7 +194,7 @@ const BabyAndMeRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || [],
+      programs: selectedChild?.programs || ["Baby & Me"],
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
@@ -139,39 +218,164 @@ const BabyAndMeRegistration = () => {
           setCurrentStep(1)
           toast.success("Child added successfully. You can enroll another child.")
         } else {
-          const allSiblings = [...siblings, values]
-          // Submit all siblings together
-          const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
-            ...sibling,
-            familyId,
-          }))
-          const { error } = await supabase.from("children").insert(siblingsWithFamilyId)
-          if (error) throw error
-
-          const emailData = siblingsWithFamilyId[0]
-          const emailObject = {
-            childName: emailData?.childName,
-            parentEmail: emailData?.parentEmail,
-            parentPhoneNumber: emailData?.parentPhoneNumber,
-            childDOB: emailData?.childDOB,
+          // Fetch pricing for Baby & Me program
+          const pricing = await fetchPricingForPrograms(["Baby & Me"])
+          if (!pricing) {
+            toast.error("Unable to fetch pricing information. Please try again.")
+            return
           }
 
-          await sendRegistrationEmail(emailObject)
-          toast.success("Enrollment complete!")
-          setFinalSiblings(siblingsWithFamilyId)
-          setSiblings([])
-          setFamilyId(null)
-          setIsEnrollmentSuccessful(true)
+          setSelectedPricing(pricing)
+          
+          // Calculate final amount with discount
+          const originalAmount = pricing.price / 100 // Convert to cedis
+          const finalAmountInCedis = calculateFinalAmount(originalAmount, discountData)
+          const finalAmountInPesewas = Math.round(finalAmountInCedis * 100) // Convert back to pesewas
+          setFinalAmount(finalAmountInCedis)
+
+          // Prepare registration data for payment (don't save to children table yet)
+          const registrationData = {
+            ...values,
+            programs: ["Baby & Me"], // Ensure program is set
+            familyId,
+            pricing_id: pricing.id,
+            program_type: "Baby & Me",
+            discount_code: discountCode.trim().toUpperCase() || null,
+            discount_data: discountData,
+            original_amount: originalAmount,
+            discount_amount: discountData ? (originalAmount * discountData.discount_percentage) / 100 : 0,
+            final_amount: finalAmountInCedis,
+          }
+
+          // Initiate payment first - registration will be saved only after payment verification
+          setSubmittingPayment(true)
+          const response = await fetch("https://api.paystack.co/transaction/initialize", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: values.parentEmail,
+              amount: finalAmountInPesewas, // Use discounted amount in pesewas
+              callback_url: `${window.location.origin}/baby-and-me-registration/verify`,
+            }),
+          })
+
+          const result = await response.json()
+
+          if (!result.status) {
+            throw new Error(result.message || "Failed to initialize payment")
+          }
+
+          // Save transaction to our database
+          const { error: dbError } = await supabase.from("transactions").insert({
+            amount: finalAmountInCedis, // Store final discounted amount in cedis
+            reference: result.data.reference,
+            paystack_response: result,
+            status: "pending",
+            details: registrationData,
+            order_id: `BABY-AND-ME-${Date.now()}`,
+          })
+
+          if (dbError) {
+            throw new Error(`Failed to save transaction: ${dbError.message}`)
+          }
+
+          setPaymentUrl(result.data.authorization_url)
+          setIsPaymentInitiated(true)
+          toast.success("Payment initiated successfully! Please complete your payment to secure your registration.")
+          
+          // Scroll to top when payment screen is shown
+          window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       } catch (error: any) {
         toast.error(`An error occurred: ${error?.message}`)
       } finally {
         setSubmitting(false)
+        setSubmittingPayment(false)
       }
     },
     enableReinitialize: true,
     validationSchema: enrollChildSchema,
   })
+
+  if (isPaymentInitiated && paymentUrl) {
+    return (
+      <div className="min-h-screen bg-gradient-to-r from-[#ffec89] to-[#a9e2a0] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Initiated!</h2>
+          <p className="text-gray-600 mb-6">
+            Your registration is almost complete! Please complete your payment to secure your child&apos;s spot.
+          </p>
+
+          {selectedPricing && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
+              <p className="text-blue-700">
+                <strong>{selectedPricing.program_name}</strong>
+              </p>
+              
+              {discountData ? (
+                <div className="mt-3 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Original Price:</span>
+                    <span className="line-through text-gray-500">{formatMoneyToCedis(selectedPricing.price)}</span>
+                  </div>
+                  <div className="flex justify-between text-green-700">
+                    <span>Discount ({discountData.discount_percentage}%):</span>
+                    <span>-{formatMoneyToCedis(Math.round((selectedPricing.price / 100 * discountData.discount_percentage / 100) * 100))}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
+                  </div>
+                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                    Discount code "{discountCode.toUpperCase()}" applied!
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <span className="font-semibold text-lg">{formatMoneyToCedis(selectedPricing.price)}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Payment button */}
+          <a
+            href={paymentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>Continue with Paystack</span>
+          </a>
+
+          <p className="text-sm text-gray-500 mt-4">
+            You will be redirected to Paystack to complete your payment securely.
+          </p>
+
+          {/* Important notice */}
+          <div className="mt-6 bg-amber-50 border border-amber-100 rounded-lg p-4">
+            <p className="text-sm text-amber-700">
+              Your registration is not confirmed until payment is received. If you have any questions, please contact our
+              support team.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (isEnrollmentSuccessful) {
     return <EnrollmentSuccess enrolledChildren={finalSiblings} />
@@ -179,7 +383,7 @@ const BabyAndMeRegistration = () => {
 
   const { values, errors, setFieldValue, handleSubmit, isSubmitting } = formik
 
-  const totalSteps = 5
+  const totalSteps = 4
 
   const nextStep = () => setCurrentStep((prevStep) => prevStep + 1)
   const prevStep = () => setCurrentStep((prevStep) => prevStep - 1)
@@ -191,7 +395,7 @@ const BabyAndMeRegistration = () => {
     >
       <div className="max-w-5xl mx-auto px-2 md:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Enroll your Child</h2>
+          <h2 className="text-3xl md:text-4xl font-extrabold">Baby & Me Program Registration</h2>
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
@@ -204,10 +408,8 @@ const BabyAndMeRegistration = () => {
                 : currentStep === 2
                   ? "Child and Guardian Information"
                   : currentStep === 3
-                    ? "Program Selection and Schedule"
-                    : currentStep === 4
-                      ? "Health Conditions and Allergies"
-                      : "Photograph Usage Authorization"}
+                    ? "Health Conditions and Allergies"
+                    : "Photograph Usage Authorization"}
               <h5 className="text-xs md:text-base">{`Step ${currentStep} / ${totalSteps}`}</h5>
             </div>
             {currentStep === 1 && (
@@ -233,10 +435,49 @@ const BabyAndMeRegistration = () => {
                 nextStep={nextStep}
               />
             )}
-            {currentStep === 3 && <BabyAndMeProgramSelection nextStep={nextStep} prevStep={prevStep} />}
-            {currentStep === 4 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
-            {currentStep === 5 && (
-              <ClubAuthorization values={values} errors={errors} prevStep={prevStep} isSubmitting={isSubmitting} />
+
+            {currentStep === 3 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
+            {currentStep === 4 && (
+              <div>
+                {/* Discount Code Section */}
+                <div className="mb-8 p-6 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Discount Code (Optional)</h3>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                        placeholder="Enter discount code"
+                        className="w-full border rounded p-3 text-sm"
+                        disabled={validatingDiscount}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => validateDiscountCode(discountCode)}
+                      disabled={!discountCode.trim() || validatingDiscount}
+                      className="px-6 py-3 bg-primary text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                    >
+                      {validatingDiscount ? "Checking..." : "Apply"}
+                    </button>
+                  </div>
+                  
+                  {discountData && (
+                    <div className="mt-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="font-medium">Discount Applied: {discountData.discount_percentage}% off</span>
+                      </div>
+                      <p className="text-green-700 text-sm mt-1">Code: {discountData.discount_code}</p>
+                    </div>
+                  )}
+                </div>
+
+                <ClubAuthorization errors={errors} values={values} prevStep={prevStep} isSubmitting={isSubmitting || submittingPayment} />
+              </div>
             )}
           </form>
         </FormikProvider>

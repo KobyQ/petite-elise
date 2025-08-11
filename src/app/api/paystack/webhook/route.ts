@@ -147,6 +147,52 @@ export async function POST(request: NextRequest) {
       }
       
       console.log("Successfully saved to school_fees_payments table");
+    } else if (registrationData.program_type === "Shop Order") {
+      // Handle shop orders
+      const shopOrderData = {
+        customer_name: registrationData.customer_name,
+        customer_email: registrationData.customer_email,
+        customer_phone: registrationData.customer_phone,
+        items: registrationData.items,
+        total_amount: transaction.amount, // Amount in cedis
+        discount_code: registrationData.discount_code,
+        discount_data: registrationData.discount_data,
+        reference: reference,
+        order_id: transaction.order_id,
+        status: "paid",
+        payment_date: new Date().toISOString(),
+      };
+
+      console.log("Attempting to insert shop order:", shopOrderData);
+
+      const { error: shopOrderError } = await supabase
+        .from("shop_orders")
+        .insert(shopOrderData);
+
+      if (shopOrderError) {
+        console.error("Error saving shop order:", shopOrderError);
+        return NextResponse.json({ error: "Failed to save shop order" }, { status: 500 });
+      }
+
+      // Update product stock quantities
+      for (const item of registrationData.items) {
+        const { error: stockUpdateError } = await supabase
+          .from("products")
+          .update({ 
+            stock_quantity: supabase.rpc('decrease_stock', { 
+              product_id: item.product_id, 
+              quantity: item.quantity 
+            })
+          })
+          .eq("id", item.product_id);
+
+        if (stockUpdateError) {
+          console.error(`Error updating stock for product ${item.product_id}:`, stockUpdateError);
+          // Don't fail the entire process if stock update fails
+        }
+      }
+      
+      console.log("Successfully saved shop order and updated stock");
     } else {
       // Save to children table for other programs
       const childrenData = {
@@ -194,6 +240,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Update discount code usage count if a discount was applied
+    if (registrationData.discount_code && registrationData.discount_data) {
+      try {
+        const { error: discountUpdateError } = await supabase
+          .from("discount_codes")
+          .update({ 
+            usage_count: registrationData.discount_data.usage_count + 1 
+          })
+          .eq("discount_code", registrationData.discount_code);
+ 
+        if (discountUpdateError) {
+          console.error("Error updating discount code usage:", discountUpdateError);
+          // Don't fail the entire process if discount update fails
+        } else {
+          console.log(`Updated usage count for discount code: ${registrationData.discount_code}`);
+        }
+      } catch (discountError) {
+        console.error("Error updating discount code:", discountError);
+        // Don't fail the entire process if discount update fails
+      }
+    }
+
     // Send receipt email to parent and admin
     try {
       let programName = "Saturday Kids Club";
@@ -212,9 +280,18 @@ export async function POST(request: NextRequest) {
       } else if (registrationData.program_type === "Christmas Camp") {
         programName = "Christmas Camp Program";
         schedule = registrationData.christmasCampSchedule;
+      } else if (registrationData.program_type === "Baby & Me") {
+        programName = "Baby & Me Program";
+        schedule = "Monthly";
+      } else if (registrationData.program_type === "Developmental Playgroup") {
+        programName = "Developmental Playgroup Program";
+        schedule = "Monthly";
       } else if (registrationData.program_type === "School Fees") {
         programName = registrationData.programs ? registrationData.programs.join(", ") : "School Fees";
         schedule = registrationData.day_care_schedule || "N/A";
+      } else if (registrationData.program_type === "Shop Order") {
+        programName = "Shop Order";
+        schedule = `${registrationData.items?.length || 0} items`;
       }
 
       const receiptData: ReceiptData = {
@@ -235,9 +312,13 @@ export async function POST(request: NextRequest) {
       await transporter.sendMail({
         from: process.env.EMAIL,
         to: registrationData.program_type === "Code Ninjas Club" ? registrationData.email : 
-            registrationData.program_type === "School Fees" ? registrationData.email : registrationData.parentEmail,
+            registrationData.program_type === "School Fees" ? registrationData.email : 
+            registrationData.program_type === "Shop Order" ? registrationData.customer_email :
+            registrationData.parentEmail,
         subject: registrationData.program_type === "School Fees" 
           ? `Payment Receipt - School Fees Payment` 
+          : registrationData.program_type === "Shop Order"
+          ? `Payment Receipt - Shop Order #${transaction.order_id}`
           : `Payment Receipt - ${receiptData.program} Registration`,
         ...emailContent,
       });
@@ -248,6 +329,8 @@ export async function POST(request: NextRequest) {
         to: process.env.EMAIL, // Admin email
         subject: registrationData.program_type === "School Fees" 
           ? `Payment Receipt - School Fees Payment (Admin Copy)` 
+          : registrationData.program_type === "Shop Order"
+          ? `Payment Receipt - Shop Order #${transaction.order_id} (Admin Copy)`
           : `Payment Receipt - ${receiptData.program} Registration (Admin Copy)`,
         ...emailContent,
       });

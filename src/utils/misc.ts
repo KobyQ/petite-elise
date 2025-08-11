@@ -10,6 +10,8 @@ export const customStyles: TableStyles = {
   table: {
     style: {
       backgroundColor: "transparent",
+      borderRadius: "20px",
+      overflow: "hidden",
     },
   },
   header: {
@@ -29,6 +31,14 @@ export const customStyles: TableStyles = {
   },
   headCells: {
     style: {
+      backgroundColor: "#007f94",
+      color: "white",
+      "&:first-child": {
+        borderTopLeftRadius: "20px",
+      },
+      "&:last-child": {
+        borderTopRightRadius: "20px",
+      },
       "&:not(:last-of-type)": {
         borderRightStyle: "solid",
         borderRightWidth: "1px",
@@ -47,8 +57,6 @@ export const customStyles: TableStyles = {
         paddingTop: "1.5rem",
       },
       backgroundColor: "#FFFFFF",
-
-      // backgroundColor: "#d4ebfc",
     },
   },
   rows: {

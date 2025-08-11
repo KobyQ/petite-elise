@@ -21,9 +21,7 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   const [pricingOptions, setPricingOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const programOptions = [
-    { label: "Saturday Kids Club", value: "Saturday Kids Club" },
-  ];
+
 
   // Fetch pricing from admin configuration
   useEffect(() => {
@@ -56,15 +54,12 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
     fetchPricing();
   }, []);
 
-  const isSaturdayKidsClubSelected =
-    values?.programs?.includes("Saturday Kids Club");
-
-  // Effect to clear schedule when Saturday Kids Club is deselected
+  // Auto-set Saturday Kids Club program
   useEffect(() => {
-    if (!isSaturdayKidsClubSelected && values?.saturdayClubSchedule) {
-      setFieldValue("saturdayClubSchedule", "", false);
+    if (!values?.programs?.includes("Saturday Kids Club")) {
+      setFieldValue("programs", ["Saturday Kids Club"], false);
     }
-  }, [isSaturdayKidsClubSelected, values, setFieldValue]);
+  }, [values?.programs, setFieldValue]);
 
   // Get selected pricing details
   const selectedPricing = pricingOptions.find(
@@ -74,35 +69,32 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   return (
     <div>
       <div className="mb-10 mt-5">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Program</h3>
+          <p className="text-blue-700">
+            <strong>Saturday Kids Club</strong> - Weekly sessions for children aged 3-8 years
+          </p>
+          <p className="text-sm text-blue-600 mt-2">
+            Fun-filled activities including arts, crafts, games, and educational play every Saturday.
+          </p>
+        </div>
+
         <CustomSelect
-          label="Program Selection"
-          name="programs"
-          options={programOptions}
-          isMulti
-          placeholder="Select program(s) you would like to enroll your child in"
+          label="Select Schedule"
+          name="saturdayClubSchedule"
+          options={pricingOptions}
           required
+          placeholder={loading ? "Loading pricing..." : "Select a schedule"}
+          isDisabled={loading}
         />
 
-        {isSaturdayKidsClubSelected && (
-          <>
-            <CustomSelect
-              label="Select Schedule"
-              name="saturdayClubSchedule"
-              options={pricingOptions}
-              required
-              placeholder={loading ? "Loading pricing..." : "Select a schedule"}
-              isDisabled={loading}
-            />
-
-            {selectedPricing && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
-                <p className="text-blue-700">
-                  <strong>{selectedPricing.value}</strong> - {formatMoneyToCedis(selectedPricing.price)}
-                </p>
-              </div>
-            )}
-          </>
+        {selectedPricing && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-semibold text-green-800 mb-2">Selected Plan:</h4>
+            <p className="text-green-700">
+              <strong>{selectedPricing.value}</strong> - {formatMoneyToCedis(selectedPricing.price)}
+            </p>
+          </div>
         )}
       </div>
 
@@ -120,9 +112,9 @@ const SaturdayProgramSelection: React.FC<ClubProgramSelectionProps> = ({
         <Button
           type="button"
           onClick={nextStep}
-          disabled={!isSaturdayKidsClubSelected || !values?.saturdayClubSchedule}
+          disabled={!values?.saturdayClubSchedule}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 ${
-            (!isSaturdayKidsClubSelected || !values?.saturdayClubSchedule) ? "opacity-50 cursor-not-allowed" : ""
+            !values?.saturdayClubSchedule ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
           Next

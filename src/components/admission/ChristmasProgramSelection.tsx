@@ -21,9 +21,7 @@ const ChristmasProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   const [pricingOptions, setPricingOptions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const programOptions = [
-    { label: "Christmas Camp", value: "Christmas Camp" },
-  ];
+
 
   // Fetch pricing from admin configuration
   useEffect(() => {
@@ -55,42 +53,39 @@ const ChristmasProgramSelection: React.FC<ClubProgramSelectionProps> = ({
     fetchPricing();
   }, []);
 
-  const isChristmasCampSelected = values?.programs?.includes("Christmas Camp");
-
-  // Effect to clear schedule when Christmas Camp is deselected
+  // Auto-set Christmas Camp program
   useEffect(() => {
-    if (!isChristmasCampSelected && values?.christmasCampSchedule) {
-      setFieldValue("christmasCampSchedule", "", false);
+    if (!values?.programs?.includes("Christmas Camp")) {
+      setFieldValue("programs", ["Christmas Camp"], false);
     }
-  }, [isChristmasCampSelected, values, setFieldValue]);
+  }, [values?.programs, setFieldValue]);
 
   return (
     <div>
       <div className="mb-10 mt-5">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Program</h3>
+          <p className="text-blue-700">
+            <strong>Christmas Camp</strong> - Holiday camp for children during Christmas break
+          </p>
+          <p className="text-sm text-blue-600 mt-2">
+            Festive activities, games, crafts, and educational fun during the Christmas holidays.
+          </p>
+        </div>
+
         <CustomSelect
-          label="Program Selection"
-          name="programs"
-          options={programOptions}
-          isMulti
-          placeholder="Select program(s) you would like to enroll your child in"
+          label="Select Schedule"
+          name="christmasCampSchedule"
+          options={pricingOptions}
+          isDisabled={loading}
           required
+          placeholder={loading ? "Loading schedules..." : "Select a schedule"}
         />
 
-        {isChristmasCampSelected && (
-          <CustomSelect
-            label="Select Schedule"
-            name="christmasCampSchedule"
-            options={pricingOptions}
-            isDisabled={loading}
-            required
-            placeholder={loading ? "Loading schedules..." : "Select a schedule"}
-          />
-        )}
-
-        {isChristmasCampSelected && values.christmasCampSchedule && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
-            <p className="text-blue-700">
+        {values.christmasCampSchedule && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-semibold text-green-800 mb-2">Selected Plan:</h4>
+            <p className="text-green-700">
               <strong>{values.christmasCampSchedule}</strong>
             </p>
           </div>
@@ -112,6 +107,9 @@ const ChristmasProgramSelection: React.FC<ClubProgramSelectionProps> = ({
           type="button"
           onClick={nextStep}
           disabled={!values.christmasCampSchedule}
+          className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 ${
+            !values.christmasCampSchedule ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           className={`w-full lg:w-1/3 py-3 font-bold rounded-lg shadow-lg border-2 text-white bg-gradient-to-r from-[#008C7E] to-[#00B597] border-[#00B597] hover:opacity-90 `}
         >
           Next

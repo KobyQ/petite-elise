@@ -34,10 +34,52 @@ const SaturdayKidsClub = () => {
   const [isPaymentInitiated, setIsPaymentInitiated] = useState<boolean>(false)
   const [submittingPayment, setSubmittingPayment] = useState<boolean>(false)
   const [selectedPricing, setSelectedPricing] = useState<any>(null)
+  const [discountCode, setDiscountCode] = useState<string>("")
+  const [discountData, setDiscountData] = useState<any>(null)
+  const [validatingDiscount, setValidatingDiscount] = useState<boolean>(false)
+  const [finalAmount, setFinalAmount] = useState<number>(0)
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [currentStep])
+
+  const validateDiscountCode = async (code: string) => {
+    if (!code.trim()) {
+      setDiscountData(null)
+      return
+    }
+
+    setValidatingDiscount(true)
+    try {
+      const { data, error } = await supabase
+        .from("discount_codes")
+        .select("*")
+        .eq("discount_code", code.trim().toUpperCase())
+        .eq("is_active", true)
+        .single()
+
+      if (error || !data) {
+        toast.error("Invalid or inactive discount code")
+        setDiscountData(null)
+        return
+      }
+
+      setDiscountData(data)
+      toast.success(`Discount code applied! ${data.discount_percentage}% off`)
+    } catch (error) {
+      console.error("Error validating discount code:", error)
+      toast.error("Error validating discount code")
+      setDiscountData(null)
+    } finally {
+      setValidatingDiscount(false)
+    }
+  }
+
+  const calculateFinalAmount = (originalPrice: number, discount: any) => {
+    if (!discount) return originalPrice
+    const discountAmount = (originalPrice * discount.discount_percentage) / 100
+    return originalPrice - discountAmount
+  }
 
   const fetchAllDocuments = async (parentEmail: string, parentPhoneNumber: string) => {
     try {
@@ -142,7 +184,7 @@ const SaturdayKidsClub = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || [],
+      programs: selectedChild?.programs || ["Saturday Kids Club"],
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
       summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",
@@ -176,13 +218,25 @@ const SaturdayKidsClub = () => {
           }
 
           setSelectedPricing(pricing)
+          
+          // Calculate final amount with discount
+          const originalAmount = pricing.price / 100 // Convert to cedis
+          const finalAmountInCedis = calculateFinalAmount(originalAmount, discountData)
+          const finalAmountInPesewas = Math.round(finalAmountInCedis * 100) // Convert back to pesewas
+          setFinalAmount(finalAmountInCedis)
 
           // Prepare registration data for payment (don't save to children table yet)
           const registrationData = {
             ...values,
+            programs: ["Saturday Kids Club"], // Ensure program is set
             familyId,
             pricing_id: pricing.id,
             program_type: "Saturday Kids Club",
+            discount_code: discountCode.trim().toUpperCase() || null,
+            discount_data: discountData,
+            original_amount: originalAmount,
+            discount_amount: discountData ? (originalAmount * discountData.discount_percentage) / 100 : 0,
+            final_amount: finalAmountInCedis,
           }
 
           // Initiate payment first - registration will be saved only after payment verification
@@ -195,7 +249,7 @@ const SaturdayKidsClub = () => {
             },
             body: JSON.stringify({
               email: values.parentEmail,
-              amount: pricing.price, // Already in pesewas from database
+              amount: finalAmountInPesewas, // Use discounted amount in pesewas
               callback_url: `${window.location.origin}/saturday-kids-club/verify`,
             }),
           })
@@ -208,7 +262,7 @@ const SaturdayKidsClub = () => {
 
           // Save transaction to our database
           const { error: dbError } = await supabase.from("transactions").insert({
-            amount: pricing.price / 100, // Convert back to cedis for storage
+            amount: finalAmountInCedis, // Store final discounted amount in cedis
             reference: result.data.reference,
             paystack_response: result,
             status: "pending",
@@ -257,8 +311,32 @@ const SaturdayKidsClub = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
               <p className="text-blue-700">
-                <strong>{selectedPricing.schedule}</strong> - {formatMoneyToCedis(selectedPricing.price)}
+                <strong>{selectedPricing.schedule}</strong>
               </p>
+              
+              {discountData ? (
+                <div className="mt-3 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Original Price:</span>
+                    <span className="line-through text-gray-500">{formatMoneyToCedis(selectedPricing.price)}</span>
+                  </div>
+                  <div className="flex justify-between text-green-700">
+                    <span>Discount ({discountData.discount_percentage}%):</span>
+                    <span>-{formatMoneyToCedis(Math.round((selectedPricing.price / 100 * discountData.discount_percentage / 100) * 100))}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
+                  </div>
+                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                    Discount code "{discountCode.toUpperCase()}" applied!
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <span className="font-semibold text-lg">{formatMoneyToCedis(selectedPricing.price)}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -267,7 +345,7 @@ const SaturdayKidsClub = () => {
             href={paymentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-300 inline-block flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -322,7 +400,7 @@ const SaturdayKidsClub = () => {
                 : currentStep === 2
                   ? "Child and Guardian Information"
                   : currentStep === 3
-                    ? "Program Selection and Schedule"
+                    ? "Schedule Selection"
                     : currentStep === 4
                       ? "Health Conditions and Allergies"
                       : "Photograph Usage Authorization"}
@@ -360,13 +438,52 @@ const SaturdayKidsClub = () => {
               />
             )}
             {currentStep === 4 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
-            {currentStep === 5 && (
-              <ClubAuthorization 
-                values={values} 
-                errors={errors} 
-                prevStep={prevStep} 
-                isSubmitting={isSubmitting || submittingPayment}
-              />
+                        {currentStep === 5 && (
+              <div>
+                {/* Discount Code Section */}
+                <div className="mb-8 p-6 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Discount Code (Optional)</h3>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                        placeholder="Enter discount code"
+                        className="w-full border rounded p-3 text-sm"
+                        disabled={validatingDiscount}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => validateDiscountCode(discountCode)}
+                      disabled={!discountCode.trim() || validatingDiscount}
+                      className="px-6 py-3 bg-primary text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium"
+                    >
+                      {validatingDiscount ? "Checking..." : "Apply"}
+                    </button>
+                  </div>
+                  
+                  {discountData && (
+                    <div className="mt-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="font-medium">Discount Applied: {discountData.discount_percentage}% off</span>
+                      </div>
+                      <p className="text-green-700 text-sm mt-1">Code: {discountData.discount_code}</p>
+                    </div>
+                  )}
+                </div>
+
+                <ClubAuthorization 
+                  values={values} 
+                  errors={errors} 
+                  prevStep={prevStep}
+                  isSubmitting={isSubmitting || submittingPayment} 
+                />
+              </div>
             )}
           </form>
         </FormikProvider>

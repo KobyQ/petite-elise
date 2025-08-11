@@ -10,6 +10,8 @@ const Navbar = () => {
     { name: "Dashboard", path: "/admin/dashboard" },
     { name: "Students", path: "/admin/students" },
     { name: "Code Ninjas", path: "/admin/code-ninjas" },
+    { name: "Fee Requests", path: "/admin/fee-requests" },
+    { name: "Discount Codes", path: "/admin/discount-codes" },
     { name: "Payments", path: "/admin/payments" },
     { name: "Users", path: "/admin/users" },
   ];

@@ -31,6 +31,7 @@ const ProgramSelection: React.FC<ProgramSelectionProps> = ({
   ];
 
   const isDaycareSelected = values?.programs?.includes("Daycare");
+  const isPreschoolSelected = values?.programs?.includes("Preschool");
 
   // Effect to clear schedule when Daycare is deselected
   useEffect(() => {
@@ -38,6 +39,27 @@ const ProgramSelection: React.FC<ProgramSelectionProps> = ({
       setFieldValue("schedule", "", false);
     }
   }, [isDaycareSelected, values, setFieldValue]);
+
+  // Effect to prevent selecting both Daycare and Preschool
+  useEffect(() => {
+    if (values?.programs && values.programs.length > 0) {
+      const hasBotthDaycareAndPreschool = values.programs.includes("Daycare") && values.programs.includes("Preschool");
+      
+      if (hasBotthDaycareAndPreschool) {
+        // Remove the first occurrence (keep the most recent selection)
+        const updatedPrograms = values.programs.filter((program: string, index: number) => {
+          if (program === "Daycare" && values.programs.indexOf("Preschool") > values.programs.indexOf("Daycare")) {
+            return false;
+          }
+          if (program === "Preschool" && values.programs.indexOf("Daycare") > values.programs.indexOf("Preschool")) {
+            return false;
+          }
+          return true;
+        });
+        setFieldValue("programs", updatedPrograms, false);
+      }
+    }
+  }, [values?.programs, setFieldValue]);
 
   return (
     <div>
@@ -50,6 +72,14 @@ const ProgramSelection: React.FC<ProgramSelectionProps> = ({
           placeholder="Select program(s) you would like to enroll your child in"
           required
         />
+        
+        {(isDaycareSelected && isPreschoolSelected) && (
+          <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700">
+              ⚠️ Note: You cannot select both Daycare and Preschool. Please choose one.
+            </p>
+          </div>
+        )}
 
         {isDaycareSelected && (
           <CustomSelect

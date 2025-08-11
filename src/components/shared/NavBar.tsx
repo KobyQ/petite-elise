@@ -33,6 +33,7 @@ const NavBar: React.FC = () => {
           <Link href="/" className={`hover:text-secondary transition-all duration-300 ${pathname === "/" ? "text-secondary font-bold" : ""}`}>Home</Link>
           <Link href="/about" className={`hover:text-secondary transition-all duration-300 ${pathname === "/about" ? "text-secondary font-bold" : ""}`}>About</Link>
           <Link href="/programs" className={`hover:text-secondary transition-all duration-300 ${pathname === "/programs" ? "text-secondary font-bold" : ""}`}>Programs</Link>
+          <Link href="/shop" className={`hover:text-secondary transition-all duration-300 ${pathname === "/shop" ? "text-secondary font-bold" : ""}`}>Shop</Link>
           <Link href="/trustees" className={`hover:text-secondary transition-all duration-300 ${pathname === "/trustees" ? "text-secondary font-bold" : ""}`}>Trustees</Link>
           
           {/* Clubs Dropdown */}
@@ -70,6 +71,7 @@ const NavBar: React.FC = () => {
               <Link href="/" onClick={closeMenu} className="text-white hover:text-secondary transition-all duration-300">Home</Link>
               <Link href="/about" onClick={closeMenu} className="text-white hover:text-secondary transition-all duration-300">About</Link>
               <Link href="/programs" onClick={closeMenu} className="text-white hover:text-secondary transition-all duration-300">Programs</Link>
+              <Link href="/shop" onClick={closeMenu} className="text-white hover:text-secondary transition-all duration-300">Shop</Link>
               <Link href="/trustees" onClick={closeMenu} className="text-white hover:text-secondary transition-all duration-300">Trustees</Link>
               
               {/* Clubs Dropdown */}
