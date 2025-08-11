@@ -113,6 +113,9 @@ export async function POST(request: NextRequest) {
     console.log("Processing registration for program type:", registrationData.program_type);
     console.log("Full registration data:", JSON.stringify(registrationData, null, 2));
 
+    // Debug: Check if we reach this point
+    console.log("DEBUG: About to check program types...");
+    
     // Save registration based on program type
     if (registrationData.program_type === "Code Ninjas Club") {
       // Save to code-ninjas table
@@ -144,6 +147,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
+      console.log("DEBUG: Reached School Fees section!");
       console.log("=== SCHOOL FEES PAYMENT PROCESSING ===");
       console.log("Registration data for school fees:", {
         program_type: registrationData.program_type,
