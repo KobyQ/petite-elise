@@ -32,6 +32,8 @@ const PaymentSuccessContent = () => {
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 20; // Maximum 20 retries (60 seconds total)
 
   useEffect(() => {
     const reference = searchParams.get("reference");
@@ -47,6 +49,15 @@ const PaymentSuccessContent = () => {
 
   const fetchOrderDetails = async (reference: string) => {
     try {
+      // Check retry limit
+      if (retryCount >= MAX_RETRIES) {
+        setError("Order processing is taking longer than expected. Please contact support with your reference number.");
+        setLoading(false);
+        return;
+      }
+
+      console.log(`Attempt ${retryCount + 1}: Fetching order details for reference: ${reference}`);
+
       // First try to find the transaction
       const { data: transaction, error: transactionError } = await supabase
         .from("transactions")
@@ -55,10 +66,30 @@ const PaymentSuccessContent = () => {
         .single();
 
       if (transactionError || !transaction) {
+        console.error("Transaction lookup error:", transactionError);
         setError("Order not found");
         setLoading(false);
         return;
       }
+
+      console.log("Transaction found:", { 
+        status: transaction.status, 
+        order_id: transaction.order_id,
+        amount: transaction.amount 
+      });
+
+      // Check if transaction is successful
+      if (transaction.status !== "success") {
+        console.log(`Transaction status is ${transaction.status}, retrying in 3 seconds...`);
+        // If transaction is still pending, retry after delay
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => {
+          fetchOrderDetails(reference);
+        }, 3000); // Retry every 3 seconds
+        return;
+      }
+
+      console.log("Transaction is successful, looking for shop order...");
 
       // Then try to find the shop order
       const { data: shopOrder, error: shopOrderError } = await supabase
@@ -67,27 +98,113 @@ const PaymentSuccessContent = () => {
         .eq("reference", reference)
         .single();
 
-      if (shopOrderError || !shopOrder) {
-        setError("Shop order details not found");
-        setLoading(false);
-        return;
+      if (shopOrderError) {
+        if (shopOrderError.code === "PGRST116") {
+          console.log("Shop order not found yet (PGRST116), retrying in 3 seconds...");
+          // Shop order not found yet, retry after delay (webhook might still be processing)
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => {
+            fetchOrderDetails(reference);
+          }, 3000); // Retry every 3 seconds
+          return;
+        } else {
+          console.error("Shop order lookup error:", shopOrderError);
+          setError(shopOrderError.message);
+          setLoading(false);
+          return;
+        }
       }
 
-      setOrderDetails(shopOrder);
+      if (shopOrder) {
+        console.log("Shop order found successfully:", shopOrder);
+        setOrderDetails(shopOrder);
+        setLoading(false);
+      } else {
+        console.log("Shop order not found, retrying in 3 seconds...");
+        // If shop order not found, retry after delay
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => {
+          fetchOrderDetails(reference);
+        }, 3000); // Retry every 3 seconds
+      }
     } catch (err) {
       console.error("Error fetching order details:", err);
       setError("Failed to fetch order details");
-    } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
+    const estimatedTimeLeft = Math.max(0, MAX_RETRIES - retryCount) * 3;
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto px-4">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your order details...</p>
+          <h2 className="text-2xl font-bold text-gray-800 mt-6 mb-4">Processing Your Order</h2>
+          <p className="text-gray-600 mb-4">
+            We&apos;re currently processing your payment and preparing your order details.
+          </p>
+          <p className="text-gray-600 text-sm mb-4">
+            This usually takes less than a minute. Please don&apos;t close this page.
+          </p>
+          
+          {/* Progress indicator */}
+          <div className="mb-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(retryCount / MAX_RETRIES) * 100}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              Attempt {retryCount + 1} of {MAX_RETRIES} • Est. {estimatedTimeLeft}s remaining
+            </p>
+          </div>
+          
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <span className="font-medium">Reference:</span> {searchParams.get("reference") || searchParams.get("trxref")}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && error.includes("Order processing is taking longer than expected")) {
+    // Show a helpful message with transaction details
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-6xl mb-4">⏳</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Order Processing Delayed</h1>
+          <p className="text-gray-600 mb-6">
+            Your payment was successful, but order processing is taking longer than expected.
+          </p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h4 className="font-semibold text-blue-800 mb-2">Payment Confirmed:</h4>
+            <div className="space-y-1 text-sm text-blue-700">
+              <p><strong>Reference:</strong> {searchParams.get("reference") || searchParams.get("trxref")}</p>
+              <p><strong>Status:</strong> Payment Successful</p>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-500 mb-6">
+            Please contact support with your reference number if you need immediate assistance.
+          </p>
+          
+          <div className="space-y-3">
+            <Link href="/shop">
+              <Button className="bg-primary hover:bg-primary/90 text-white w-full">
+                Return to Shop
+              </Button>
+            </Link>
+            <p className="text-xs text-gray-400">
+              Support: support@petiteelise.com
+            </p>
+          </div>
         </div>
       </div>
     );

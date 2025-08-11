@@ -7,17 +7,26 @@ import {
 } from "@/utils/template";
 import { transporter } from "../../../../../config/nodemailer";
 
-const NEXT_PUBLIC_PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY ;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 
 export async function POST(request: NextRequest) {
   try {
     const { event, data } = await request.json();
+    console.log("Webhook received:", { event, reference: data?.reference });
+    
     if (event !== "charge.success") {
+      console.log("Invalid webhook event:", event);
       throw new Error("Invalid event")
     }
 
     const reference = data.reference;
+    if (!reference) {
+      console.error("No reference in webhook data");
+      return NextResponse.json({ error: "No reference provided" }, { status: 400 });
+    }
+
+    console.log("Processing webhook for reference:", reference);
 
     // Retrieve transaction from Supabase
     const { data: transaction, error: transactionError } = await supabase
@@ -27,10 +36,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (transactionError || !transaction) {
+      console.error("Transaction not found for reference:", reference, transactionError);
       return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
+    console.log("Transaction found:", { 
+      id: transaction.id, 
+      status: transaction.status, 
+      program_type: transaction.details?.program_type 
+    });
+
     if (transaction.status !== ETransactionStatus.pending) {
+      console.log("Transaction is not pending, status:", transaction.status);
       return NextResponse.json({ error: "Transaction is not pending" }, { status: 400 });
     }
 
@@ -38,13 +55,15 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
       },
     });
 
     const paymentData = await response.json();
+    console.log("Paystack verification response:", paymentData);
 
     if (!paymentData.status || paymentData.data.status !== "success") {
+      console.error("Payment verification failed:", paymentData);
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
     }
 
@@ -59,8 +78,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update transaction status" }, { status: 500 });
     }
 
+    console.log("Transaction status updated to success");
+
     // Extract registration data from transaction details
     const registrationData = transaction.details;
+    if (!registrationData) {
+      console.error("No registration data in transaction");
+      return NextResponse.json({ error: "No registration data found" }, { status: 400 });
+    }
+
+    console.log("Processing registration for program type:", registrationData.program_type);
 
     // Save registration based on program type
     if (registrationData.program_type === "Code Ninjas Club") {
@@ -149,6 +176,9 @@ export async function POST(request: NextRequest) {
       console.log("Successfully saved to school_fees_payments table");
     } else if (registrationData.program_type === "Shop Order") {
       // Handle shop orders
+      console.log("Processing shop order for reference:", reference);
+      console.log("Shop order data:", registrationData);
+      
       const shopOrderData = {
         customer_name: registrationData.customer_name,
         customer_email: registrationData.customer_email,
@@ -173,6 +203,8 @@ export async function POST(request: NextRequest) {
         console.error("Error saving shop order:", shopOrderError);
         return NextResponse.json({ error: "Failed to save shop order" }, { status: 500 });
       }
+
+      console.log("Successfully saved shop order to database");
 
       // Update product stock quantities
       for (const item of registrationData.items) {
