@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Processing registration for program type:", registrationData.program_type);
+    console.log("Full registration data:", JSON.stringify(registrationData, null, 2));
 
     // Save registration based on program type
     if (registrationData.program_type === "Code Ninjas Club") {
@@ -143,12 +144,28 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
+      console.log("=== SCHOOL FEES PAYMENT PROCESSING ===");
+      console.log("Registration data for school fees:", {
+        program_type: registrationData.program_type,
+        request_id: registrationData.request_id,
+        parentName: registrationData.parentName,
+        childName: registrationData.childName,
+        programs: registrationData.programs,
+        dayCareSchedule: registrationData.dayCareSchedule
+      });
+      
       // Fetch fee request details to get missing fields
       const { data: feeRequest, error: feeRequestError } = await supabase
         .from("fee_requests")
         .select("*")
         .eq("id", registrationData.request_id)
         .single();
+
+      console.log("Fee request lookup result:", {
+        request_id: registrationData.request_id,
+        feeRequest: feeRequest,
+        error: feeRequestError
+      });
 
       if (feeRequestError || !feeRequest) {
         console.error("Error fetching fee request:", feeRequestError);
@@ -185,18 +202,33 @@ export async function POST(request: NextRequest) {
         status: "paid",
       };
 
-      console.log("Attempting to insert school fees payment:", schoolFeesPaymentData);
+      console.log("=== SCHOOL FEES PAYMENT DATA ===");
+      console.log("Attempting to insert school fees payment:", JSON.stringify(schoolFeesPaymentData, null, 2));
+      console.log("Table: school_fees_payments");
+      console.log("Transaction amount:", transaction.amount);
+      console.log("Reference:", reference);
+      console.log("Order ID:", transaction.order_id);
 
       const { error: paymentError } = await supabase
         .from("school_fees_payments")
         .insert(schoolFeesPaymentData);
 
+      console.log("=== SCHOOL FEES PAYMENT INSERTION RESULT ===");
+      console.log("Payment error:", paymentError);
+      
       if (paymentError) {
         console.error("Error saving school fees payment:", paymentError);
+        console.error("Error details:", {
+          code: paymentError.code,
+          message: paymentError.message,
+          details: paymentError.details,
+          hint: paymentError.hint
+        });
         return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
       }
       
       console.log("Successfully saved to school_fees_payments table");
+      console.log("=== END SCHOOL FEES PAYMENT PROCESSING ===");
     } else if (registrationData.program_type === "Shop Order") {
       // Handle shop orders
       console.log("Processing shop order for reference:", reference);

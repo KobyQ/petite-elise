@@ -73,10 +73,10 @@ const PaymentSuccessContent = () => {
         return;
       }
 
-      console.log("Transaction found:", { 
-        status: transaction.status, 
+      console.log("Transaction found:", {
+        status: transaction.status,
         order_id: transaction.order_id,
-        amount: transaction.amount 
+        amount: transaction.amount
       });
 
       // Check if transaction is successful
@@ -157,7 +157,7 @@ const PaymentSuccessContent = () => {
 
   if (loading) {
     const estimatedTimeLeft = Math.max(0, MAX_RETRIES - retryCount) * 3;
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
@@ -169,11 +169,11 @@ const PaymentSuccessContent = () => {
           <p className="text-gray-600 text-sm mb-4">
             This usually takes less than a minute. Please don&apos;t close this page.
           </p>
-          
+
           {/* Progress indicator */}
           <div className="mb-4">
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(retryCount / MAX_RETRIES) * 100}%` }}
               ></div>
@@ -182,7 +182,7 @@ const PaymentSuccessContent = () => {
               Attempt {retryCount + 1} of {MAX_RETRIES} • Est. {estimatedTimeLeft}s remaining
             </p>
           </div>
-          
+
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <span className="font-medium">Reference:</span> {searchParams.get("reference") || searchParams.get("trxref")}
@@ -203,7 +203,7 @@ const PaymentSuccessContent = () => {
           <p className="text-gray-600 mb-6">
             Your payment was successful, but order processing is taking longer than expected.
           </p>
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h4 className="font-semibold text-blue-800 mb-2">Payment Confirmed:</h4>
             <div className="space-y-1 text-sm text-blue-700">
@@ -211,11 +211,11 @@ const PaymentSuccessContent = () => {
               <p><strong>Status:</strong> Payment Successful</p>
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-500 mb-6">
             Please contact support with your reference number if you need immediate assistance.
           </p>
-          
+
           <div className="space-y-3">
             <Link href="/shop">
               <Button variant="outline" className="w-full">
@@ -223,7 +223,7 @@ const PaymentSuccessContent = () => {
               </Button>
             </Link>
             <p className="text-xs text-gray-400">
-              Support: support@petiteelise.com
+              Support: info@petiteelise.com
             </p>
           </div>
         </div>
@@ -238,7 +238,7 @@ const PaymentSuccessContent = () => {
           <div className="text-6xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Payment Error</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          
+
           <div className="space-y-3">
             <Link href="/shop">
               <Button variant="outline" className="w-full">
@@ -258,7 +258,7 @@ const PaymentSuccessContent = () => {
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Order Not Found</h1>
           <p className="text-gray-600 mb-6">We couldn&apos;t find your order details. Please contact support.</p>
-          
+
           <div className="space-y-3">
             <Link href="/shop">
               <Button variant="outline" className="w-full">
@@ -344,10 +344,10 @@ const PaymentSuccessContent = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">
-                      {formatMoneyToCedis(item.price * item.quantity)}
+                      {formatMoneyToCedis((item.price * item.quantity) * 100)}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {formatMoneyToCedis(item.price)} each
+                      {formatMoneyToCedis(item.price * 100)} each
                     </p>
                   </div>
                 </div>
@@ -362,11 +362,11 @@ const PaymentSuccessContent = () => {
                 <>
                   <div className="flex justify-between text-sm">
                     <span>Subtotal:</span>
-                    <span>{formatMoneyToCedis(orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0))}</span>
+                    <span>{formatMoneyToCedis(orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) * 100)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Discount ({orderDetails.discount_data.discount_percentage}%):</span>
-                    <span>-{formatMoneyToCedis(orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) - orderDetails.total_amount)}</span>
+                    <span>-{formatMoneyToCedis((orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) - orderDetails.total_amount) * 100)}</span>
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-800 text-center">
@@ -377,7 +377,7 @@ const PaymentSuccessContent = () => {
               )}
               <div className="flex justify-between text-xl font-bold border-t pt-3">
                 <span>Total:</span>
-                <span className="text-primary">{formatMoneyToCedis(orderDetails.total_amount)}</span>
+                <span className="text-primary">{formatMoneyToCedis(orderDetails.total_amount * 100)}</span>
               </div>
             </div>
           </div>
@@ -423,20 +423,21 @@ const PaymentSuccessContent = () => {
           transition={{ delay: 0.6 }}
           className="text-center space-y-4"
         >
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
             <Link href="/shop">
               <Button variant="outline" className="w-full sm:w-auto">
                 Continue Shopping
               </Button>
             </Link>
-            <Button className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto">
-              Download Receipt
-            </Button>
+            <Link href="/">
+              <Button className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto">
+                Go Home
+              </Button></Link>
           </div>
           <p className="text-sm text-gray-500">
             Need help? Contact us at{" "}
-            <a href="mailto:support@petiteelise.com" className="text-primary hover:underline">
-              support@petiteelise.com
+            <a href="mailto:info@petiteelise.com" className="text-primary hover:underline">
+              info@petiteelise.com
             </a>
           </p>
         </motion.div>
