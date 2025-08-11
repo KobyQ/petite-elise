@@ -22,6 +22,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  console.log("\n\n");
+  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
+  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
+  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
+  console.log("\n\n");
+  
   try {
     console.log("=== WEBHOOK STARTED ===");
     console.log("Environment check - PAYSTACK_SECRET_KEY exists:", !!process.env.PAYSTACK_SECRET_KEY);
@@ -102,6 +108,11 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Transaction status updated to success");
+    
+    // Debug: Add response header to track webhook execution
+    const webhookResponse = NextResponse.json({ success: true });
+    webhookResponse.headers.set('X-Webhook-Executed', 'true');
+    webhookResponse.headers.set('X-Reference', reference);
 
     // Extract registration data from transaction details
     const registrationData = transaction.details;
@@ -110,11 +121,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No registration data found" }, { status: 400 });
     }
 
+    console.log("🚀 DEBUG: Registration data extracted successfully");
+    console.log("🚀 DEBUG: Program type found:", registrationData.program_type);
+    console.log("🚀 DEBUG: Full registration data keys:", Object.keys(registrationData));
+    
     console.log("Processing registration for program type:", registrationData.program_type);
     console.log("Full registration data:", JSON.stringify(registrationData, null, 2));
 
-    // Debug: Check if we reach this point
     console.log("DEBUG: About to check program types...");
+    
+    // Debug: Log the exact comparison
+    console.log("🚀 DEBUG: Comparing program_type:", registrationData.program_type);
+    console.log("🚀 DEBUG: Is it 'School Fees'?", registrationData.program_type === "School Fees");
+    console.log("🚀 DEBUG: Is it 'Code Ninjas Club'?", registrationData.program_type === "Code Ninjas Club");
+    console.log("🚀 DEBUG: Is it 'Shop Order'?", registrationData.program_type === "Shop Order");
     
     // Save registration based on program type
     if (registrationData.program_type === "Code Ninjas Club") {
@@ -147,6 +167,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
+      console.log("🚀🚀🚀 SUCCESS: REACHED SCHOOL FEES SECTION! 🚀🚀🚀");
       console.log("DEBUG: Reached School Fees section!");
       console.log("=== SCHOOL FEES PAYMENT PROCESSING ===");
       console.log("Registration data for school fees:", {
