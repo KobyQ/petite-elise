@@ -344,10 +344,10 @@ const PaymentSuccessContent = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">
-                      {formatMoneyToCedis((item.price * item.quantity) * 100)}
+                      {formatMoneyToCedis(item.price * item.quantity)}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {formatMoneyToCedis(item.price * 100)} each
+                      {formatMoneyToCedis(item.price)} each
                     </p>
                   </div>
                 </div>
@@ -362,11 +362,11 @@ const PaymentSuccessContent = () => {
                 <>
                   <div className="flex justify-between text-sm">
                     <span>Subtotal:</span>
-                    <span>{formatMoneyToCedis(orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) * 100)}</span>
+                    <span>{formatMoneyToCedis(orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0))}</span>
                   </div>
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Discount ({orderDetails.discount_data.discount_percentage}%):</span>
-                    <span>-{formatMoneyToCedis((orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) - orderDetails.total_amount) * 100)}</span>
+                    <span>-{formatMoneyToCedis((orderDetails.items.reduce((total, item) => total + (item.price * item.quantity), 0) - orderDetails.total_amount))}</span>
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-800 text-center">
@@ -377,7 +377,7 @@ const PaymentSuccessContent = () => {
               )}
               <div className="flex justify-between text-xl font-bold border-t pt-3">
                 <span>Total:</span>
-                <span className="text-primary">{formatMoneyToCedis(orderDetails.total_amount * 100)}</span>
+                <span className="text-primary">{formatMoneyToCedis(orderDetails.total_amount)}</span>
               </div>
             </div>
           </div>

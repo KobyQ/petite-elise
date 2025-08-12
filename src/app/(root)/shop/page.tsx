@@ -276,13 +276,13 @@ const Shop = () => {
   };
 
   const getCartTotal = () => {
-    // Product prices are stored in pesewas, convert to cedis first
-    const subtotalInCedis = cart.reduce((total, item) => total + ((item.product.price / 100) * item.quantity), 0);
+    // Product prices are stored in pesewas, calculate total in pesewas
+    const subtotalInPesewas = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
     if (discountData) {
-      const discount = (subtotalInCedis * discountData.discount_percentage) / 100;
-      return subtotalInCedis - discount;
+      const discount = (subtotalInPesewas * discountData.discount_percentage) / 100;
+      return subtotalInPesewas - discount;
     }
-    return subtotalInCedis;
+    return subtotalInPesewas;
   };
 
 
@@ -337,20 +337,19 @@ const Shop = () => {
     setSubmittingPayment(true);
 
     try {
-      // Calculate total amount in pesewas (Paystack expects amount in kobo)
-      const totalAmountInCedis = getCartTotal();
-      const totalAmountInPesewas = Math.round(totalAmountInCedis * 100);
+      // getCartTotal() now returns amount in pesewas, so we don't need to multiply by 100
+      const totalAmountInPesewas = getCartTotal();
 
       // Prepare order data
       const orderData = {
         items: cart.map(item => ({
           product_id: item.product.id,
           quantity: item.quantity,
-          price: item.product.price / 100, // Convert pesewas to cedis for storage
+          price: item.product.price, // Keep in pesewas for consistency
           name: item.product.name,
           images: item.product.images
         })),
-        total_amount: totalAmountInCedis,
+        total_amount: totalAmountInPesewas, // Store in pesewas to match Paystack
         discount_code: discountCode.trim().toUpperCase() || null,
         discount_data: discountData,
         customer_name: customerInfo.name,
@@ -373,7 +372,8 @@ const Shop = () => {
           metadata: {
             order_type: "shop_order",
             customer_name: customerInfo.name,
-            customer_phone: customerInfo.phone
+            customer_phone: customerInfo.phone,
+            amount_in_cedis: totalAmountInPesewas / 100
           }
         }),
       });
@@ -386,7 +386,7 @@ const Shop = () => {
 
       // Save transaction to our database
       const { error: dbError } = await supabase.from("transactions").insert({
-        amount: totalAmountInCedis,
+        amount: totalAmountInPesewas, // Store in pesewas to match Paystack
         reference: result.data.reference,
         paystack_response: result,
         status: "pending",
@@ -656,11 +656,11 @@ const Shop = () => {
                      <div className="border-t pt-4 mb-4">
                        <div className="flex justify-between text-lg font-semibold">
                          <span>Total:</span>
-                         <span className="text-primary">{formatMoneyToCedis(getCartTotal() * 100)}</span>
+                         <span className="text-primary">{formatMoneyToCedis(getCartTotal())}</span>
                        </div>
                        {discountData && (
                          <div className="text-sm text-gray-500 text-right">
-                           You saved {formatMoneyToCedis(cart.reduce((total, item) => total + ((item.product.price / 100) * item.quantity), 0) - getCartTotal())}
+                           You saved {formatMoneyToCedis(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal())}
                          </div>
                        )}
                      </div>
@@ -898,14 +898,14 @@ const Shop = () => {
                        <div className="border-t pt-2 mt-2">
                          <div className="flex justify-between text-green-600">
                            <span>Discount ({discountData.discount_percentage}%)</span>
-                           <span>-{formatMoneyToCedis(cart.reduce((total, item) => total + ((item.product.price / 100) * item.quantity), 0) - getCartTotal())}</span>
+                           <span>-{formatMoneyToCedis(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal())}</span>
                          </div>
                        </div>
                      )}
                                          <div className="border-t pt-2 mt-2 font-semibold">
                        <div className="flex justify-between">
                          <span>Total:</span>
-                         <span className="text-primary">{formatMoneyToCedis(getCartTotal() * 100)}</span>
+                         <span className="text-primary">{formatMoneyToCedis(getCartTotal())}</span>
                        </div>
                      </div>
                   </div>

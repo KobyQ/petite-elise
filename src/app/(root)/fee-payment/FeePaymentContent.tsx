@@ -70,8 +70,12 @@ export default function FeePaymentContent() {
       // Generate Paystack payment link
       const paymentData = {
         email: feeRequest.email,
-        amount: Math.round((feeRequest.invoice_amount || 0) * 100), // Convert cedis to pesewas
+        amount: feeRequest.invoice_amount || 0, // invoice_amount should be stored in pesewas
         callback_url: `${window.location.origin}/fee-payment/verify`,
+        metadata: {
+          amount_in_cedis: (feeRequest.invoice_amount || 0) / 100, // Convert to cedis for display
+          order_type: "school_fees"
+        }
       };
 
       const response = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -89,23 +93,23 @@ export default function FeePaymentContent() {
         throw new Error(result.message || "Failed to initialize payment");
       }
 
-      // Save transaction to our database
-      const { error: dbError } = await supabase.from("transactions").insert({
-        amount: feeRequest.invoice_amount || 0, // Already in cedis
-        reference: result.data.reference,
-        paystack_response: result,
-        status: "pending",
-        details: {
-          parentName: feeRequest.parent_name,
-          childName: feeRequest.child_name,
-          programs: feeRequest.programs,
-          dayCareSchedule: feeRequest.day_care_schedule,
-          program_type: "School Fees",
-          request_id: feeRequest.id,
-          email: feeRequest.email, // Add email to transaction details
-        },
-        order_id: `FEE_${feeRequest.id}`,
-      });
+             // Save transaction to our database
+       const { error: dbError } = await supabase.from("transactions").insert({
+         amount: feeRequest.invoice_amount || 0, // Store in pesewas to match Paystack
+         reference: result.data.reference,
+         paystack_response: result,
+         status: "pending",
+         details: {
+           parentName: feeRequest.parent_name,
+           childName: feeRequest.child_name,
+           programs: feeRequest.programs,
+           dayCareSchedule: feeRequest.day_care_schedule,
+           program_type: "School Fees",
+           request_id: feeRequest.id,
+           email: feeRequest.email,
+         },
+         order_id: `FEE_${feeRequest.id}`,
+       });
 
       if (dbError) {
         throw new Error(`Failed to save transaction: ${dbError.message}`);
