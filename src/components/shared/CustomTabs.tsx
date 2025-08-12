@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface TabItem {
   label: string;
+  value?: string;
   content: React.ReactNode;
 }
 
@@ -9,14 +10,35 @@ interface TabsProps {
   tabs: TabItem[];
   activeColor?: string;
   inactiveColor?: string;
+  onTabChange?: (tabValue: string) => void;
+  defaultTab?: string;
 }
 
 const CustomTabs: React.FC<TabsProps> = ({
   tabs,
   activeColor = "text-blue-500",
   inactiveColor = "text-gray-500",
+  onTabChange,
+  defaultTab,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
+
+  // Set initial active tab based on defaultTab value
+  useEffect(() => {
+    if (defaultTab) {
+      const tabIndex = tabs.findIndex(tab => tab.value === defaultTab);
+      if (tabIndex !== -1) {
+        setActiveTab(tabIndex);
+      }
+    }
+  }, [defaultTab, tabs]);
+
+  const handleTabClick = (index: number, tab: TabItem) => {
+    setActiveTab(index);
+    if (onTabChange && tab.value) {
+      onTabChange(tab.value);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -24,7 +46,7 @@ const CustomTabs: React.FC<TabsProps> = ({
         {tabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActiveTab(index)}
+            onClick={() => handleTabClick(index, tab)}
             className={`py-2 px-4 text-sm font-medium transition-colors duration-200 border-b-2 ${
               index === activeTab
                 ? `${activeColor} border-blue-500`

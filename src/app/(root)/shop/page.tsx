@@ -146,7 +146,7 @@ const Shop = () => {
   const [showCart, setShowCart] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [discountCode, setDiscountCode] = useState("");
-  const [discountData, setDiscountData] = useState<{ discount_percentage: number; discount_amount: number } | null>(null);
+  const [discountData, setDiscountData] = useState<{ discount_percentage: number; is_active: boolean; usage_count: number } | null>(null);
   const [validatingDiscount, setValidatingDiscount] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
@@ -280,7 +280,10 @@ const Shop = () => {
     const subtotalInPesewas = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
     if (discountData) {
       const discount = (subtotalInPesewas * discountData.discount_percentage) / 100;
-      return subtotalInPesewas - discount;
+      // Round to nearest integer to ensure Paystack compatibility
+      const finalAmount = Math.round(subtotalInPesewas - discount);
+      // Ensure amount is at least 1 pesewa (minimum Paystack amount)
+      return Math.max(1, finalAmount);
     }
     return subtotalInPesewas;
   };
@@ -304,6 +307,13 @@ const Shop = () => {
 
       if (error || !data) {
         toast.error("Invalid or inactive discount code");
+        setDiscountData(null);
+        return;
+      }
+
+      // Validate discount percentage
+      if (!data.discount_percentage || data.discount_percentage <= 0 || data.discount_percentage > 100) {
+        toast.error("Invalid discount percentage");
         setDiscountData(null);
         return;
       }
@@ -339,6 +349,11 @@ const Shop = () => {
     try {
       // getCartTotal() now returns amount in pesewas, so we don't need to multiply by 100
       const totalAmountInPesewas = getCartTotal();
+
+      // Validate amount before proceeding
+      if (totalAmountInPesewas <= 0 || !Number.isInteger(totalAmountInPesewas)) {
+        throw new Error("Invalid amount calculated. Please try again.");
+      }
 
       // Prepare order data
       const orderData = {
@@ -660,7 +675,7 @@ const Shop = () => {
                        </div>
                        {discountData && (
                          <div className="text-sm text-gray-500 text-right">
-                           You saved {formatMoneyToCedis(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal())}
+                           You saved {formatMoneyToCedis(Math.round(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal()))}
                          </div>
                        )}
                      </div>
@@ -898,7 +913,7 @@ const Shop = () => {
                        <div className="border-t pt-2 mt-2">
                          <div className="flex justify-between text-green-600">
                            <span>Discount ({discountData.discount_percentage}%)</span>
-                           <span>-{formatMoneyToCedis(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal())}</span>
+                           <span>-{formatMoneyToCedis(Math.round(cart.reduce((total, item) => total + (item.product.price * item.quantity), 0) - getCartTotal()))}</span>
                          </div>
                        </div>
                      )}

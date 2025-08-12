@@ -21,7 +21,6 @@ const ViewProduct: React.FC<ViewProductProps> = ({
 }) => {
   if (!product) return null;
 
-  console.log(product);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-2xl bg-white border border-gray-300 rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">
