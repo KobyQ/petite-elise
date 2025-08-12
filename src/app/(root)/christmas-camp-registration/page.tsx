@@ -263,11 +263,6 @@ const ChristmasCampRegistration = () => {
             }),
           })
 
-          console.log("response", response, {
-            email: values.parentEmail,
-            amount: pricing.price, // Already in pesewas from database
-            callback_url: `${window.location.origin}/christmas-camp-registration/verify`,
-          })
 
           const result = await response.json()
 

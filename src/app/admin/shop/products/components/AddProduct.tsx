@@ -139,7 +139,6 @@ const AddProduct: React.FC<AddProductProps> = ({
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${image.file.name}`;
         const filePath = `${fileName}`;
         
-        console.log(`Uploading ${image.file.name} to storage...`);
         
         const { data, error } = await supabase.storage
           .from('product-images')
@@ -158,7 +157,6 @@ const AddProduct: React.FC<AddProductProps> = ({
           .from('product-images')
           .getPublicUrl(filePath);
         
-        console.log(`Successfully uploaded ${image.file.name}:`, urlData.publicUrl);
         uploadedUrls.push(urlData.publicUrl);
         
       } catch (error: any) {
@@ -229,8 +227,7 @@ const AddProduct: React.FC<AddProductProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form submission started...');
-    console.log('Form data:', formData);
+  
     
     // Final validation
     if (!formData.name.trim()) {
@@ -256,10 +253,8 @@ const AddProduct: React.FC<AddProductProps> = ({
     setLoading(true);
 
     try {
-      console.log('Starting image uploads...');
       // Upload images to storage first
       const imageUrls = await uploadImagesToStorage();
-      console.log('Image uploads completed:', imageUrls);
       
       // Convert price to pesewas for backend storage
       const priceInPesewas = formatMoneyToPesewas(parseFloat(formData.price));
@@ -278,7 +273,6 @@ const AddProduct: React.FC<AddProductProps> = ({
         details: Object.keys(formData.details).length > 0 ? formData.details : null,
       };
 
-      console.log('Creating product with data:', productData);
 
       const { data, error } = await supabase
         .from("products")
@@ -294,7 +288,6 @@ const AddProduct: React.FC<AddProductProps> = ({
         throw error;
       }
 
-      console.log('Product created successfully:', data);
 
       toast.success("Product created successfully!", {
         position: "top-right",

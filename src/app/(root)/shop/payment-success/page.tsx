@@ -51,13 +51,11 @@ const PaymentSuccessContent = () => {
     try {
       // Check retry limit BEFORE making any API calls
       if (retryCount >= MAX_RETRIES) {
-        console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
         setError("Order processing is taking longer than expected. Please contact support with your reference number.");
         setLoading(false);
         return;
       }
 
-      console.log(`Attempt ${retryCount + 1}: Fetching order details for reference: ${reference}`);
 
       // First try to find the transaction
       const { data: transaction, error: transactionError } = await supabase
@@ -73,15 +71,10 @@ const PaymentSuccessContent = () => {
         return;
       }
 
-      console.log("Transaction found:", {
-        status: transaction.status,
-        order_id: transaction.order_id,
-        amount: transaction.amount
-      });
+   
 
       // Check if transaction is successful
       if (transaction.status !== "success") {
-        console.log(`Transaction status is ${transaction.status}, retrying in 3 seconds...`);
         // If transaction is still pending, retry after delay
         setRetryCount(prev => prev + 1);
         setTimeout(() => {
@@ -90,7 +83,6 @@ const PaymentSuccessContent = () => {
         return;
       }
 
-      console.log("Transaction is successful, looking for shop order...");
 
       // Then try to find the shop order
       const { data: shopOrder, error: shopOrderError } = await supabase
@@ -101,12 +93,10 @@ const PaymentSuccessContent = () => {
 
       if (shopOrderError) {
         if (shopOrderError.code === "PGRST116") {
-          console.log("Shop order not found yet (PGRST116), retrying in 3 seconds...");
           // Shop order not found yet, retry after delay (webhook might still be processing)
           setRetryCount(prev => prev + 1);
           // Check retry limit again before setting timeout
           if (retryCount + 1 >= MAX_RETRIES) {
-            console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
             setError("Order processing is taking longer than expected. Please contact support with your reference number.");
             setLoading(false);
             return;
@@ -116,7 +106,6 @@ const PaymentSuccessContent = () => {
           }, 3000); // Retry every 3 seconds
           return;
         } else {
-          console.error("Shop order lookup error:", shopOrderError);
           setError(shopOrderError.message);
           setLoading(false);
           return;
@@ -124,16 +113,13 @@ const PaymentSuccessContent = () => {
       }
 
       if (shopOrder) {
-        console.log("Shop order found successfully:", shopOrder);
         setOrderDetails(shopOrder);
         setLoading(false);
       } else {
-        console.log("Shop order not found, retrying in 3 seconds...");
         // If shop order not found, retry after delay
         setRetryCount(prev => prev + 1);
         // Check retry limit again before setting timeout
         if (retryCount + 1 >= MAX_RETRIES) {
-          console.log(`Max retries (${MAX_RETRIES}) reached, stopping retry loop`);
           setError("Order processing is taking longer than expected. Please contact support with your reference number.");
           setLoading(false);
           return;
