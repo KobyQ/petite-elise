@@ -226,8 +226,15 @@ const AddProduct: React.FC<AddProductProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
-  
+    console.log("Form submitted - current step:", currentStep);
+    
+    // Only allow submission on step 3
+    if (currentStep !== 3) {
+      console.log("Preventing submission - not on step 3");
+      return;
+    }
     
     // Final validation
     if (!formData.name.trim()) {
@@ -374,7 +381,6 @@ const AddProduct: React.FC<AddProductProps> = ({
             onChange={handleInputChange}
             className="w-full border rounded p-2"
             placeholder="Enter product name"
-            required
           />
         </div>
 
@@ -385,7 +391,6 @@ const AddProduct: React.FC<AddProductProps> = ({
             value={formData.category}
             onChange={handleInputChange}
             className="w-full border rounded p-2"
-            required
           >
             <option value="">Select Category</option>
             {categories.map((category) => (
@@ -407,7 +412,6 @@ const AddProduct: React.FC<AddProductProps> = ({
             placeholder="0.00"
             min="0"
             step="0.01"
-            required
           />
         </div>
 
@@ -436,7 +440,6 @@ const AddProduct: React.FC<AddProductProps> = ({
             className="w-full border rounded p-2"
             placeholder="0"
             min="0"
-            required
           />
         </div>
       </div>
@@ -591,7 +594,12 @@ const AddProduct: React.FC<AddProductProps> = ({
         
         {renderStepIndicator()}
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate onKeyDown={(e) => {
+          if (e.key === 'Enter' && currentStep !== 3) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}>
           {renderCurrentStep()}
 
           <div className="flex justify-between pt-4 border-t">
@@ -616,7 +624,8 @@ const AddProduct: React.FC<AddProductProps> = ({
                 </Button>
               ) : (
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={loading}
                   className="text-white"
                   title={loading ? "Please wait for uploads to finish" : undefined}

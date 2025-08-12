@@ -21,6 +21,7 @@ const ViewProduct: React.FC<ViewProductProps> = ({
 }) => {
   if (!product) return null;
 
+  console.log(product);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-2xl bg-white border border-gray-300 rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -86,6 +87,11 @@ const ViewProduct: React.FC<ViewProductProps> = ({
             <div>
               <label className="block font-semibold text-gray-700 mb-1">Price</label>
               <p className="text-gray-900 text-lg font-bold">{formatMoneyToCedis(product.price)}</p>
+              {product.discount_percentage && (
+                <p className="text-sm text-green-600 font-medium">
+                  {product.discount_percentage}% off
+                </p>
+              )}
             </div>
 
             <div>
@@ -101,20 +107,7 @@ const ViewProduct: React.FC<ViewProductProps> = ({
               </p>
             </div>
 
-            <div>
-              <label className="block font-semibold text-gray-700 mb-1">SKU</label>
-              <p className="text-gray-900 font-mono">{product.sku || "N/A"}</p>
-            </div>
 
-            <div>
-              <label className="block font-semibold text-gray-700 mb-1">Weight</label>
-              <p className="text-gray-900">{product.weight ? `${product.weight} kg` : "N/A"}</p>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-gray-700 mb-1">Dimensions</label>
-              <p className="text-gray-900">{product.dimensions || "N/A"}</p>
-            </div>
 
             <div>
               <label className="block font-semibold text-gray-700 mb-1">Status</label>
@@ -142,6 +135,21 @@ const ViewProduct: React.FC<ViewProductProps> = ({
             <div>
               <label className="block font-semibold text-gray-700 mb-1">Description</label>
               <p className="text-gray-900 whitespace-pre-wrap">{product.description}</p>
+            </div>
+          )}
+
+          {/* Product Details */}
+          {product.details && typeof product.details === 'object' && Object.keys(product.details).length > 0 && (
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1">Product Details</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(product.details).map(([key, value]) => (
+                  <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                    <span className="block font-medium text-gray-700 mb-1">{key}</span>
+                    <span className="text-gray-900">{value as string}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -175,20 +183,7 @@ const ViewProduct: React.FC<ViewProductProps> = ({
             </div>
           </div>
 
-          {/* Product URL if available */}
-          {product.image_url && (
-            <div>
-              <label className="block font-semibold text-gray-700 mb-1">Image URL</label>
-              <a 
-                href={product.image_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline break-all"
-              >
-                {product.image_url}
-              </a>
-            </div>
-          )}
+
         </div>
 
         <div className="flex justify-end mt-6">
