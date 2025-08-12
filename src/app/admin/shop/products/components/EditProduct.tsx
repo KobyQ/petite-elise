@@ -107,7 +107,7 @@ const EditProduct: React.FC<EditProductProps> = ({
           .order("name");
         
         if (data) {
-          setCategories(data.map(cat => cat.name));
+          setCategories(data.map((cat: { name: string }) => cat.name));
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -640,7 +640,7 @@ const EditProduct: React.FC<EditProductProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={async (open) => {
+    <Dialog open={isOpen} onOpenChange={async (open: boolean) => {
       if (!open) {
         setIsOpen(false);
         resetForm();
