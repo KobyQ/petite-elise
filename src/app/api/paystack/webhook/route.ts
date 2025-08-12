@@ -100,8 +100,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
-      console.log("Processing School Fees payment for request_id:", registrationData.request_id);
-      
       // Fetch fee request details to get missing fields
       const { data: feeRequest, error: feeRequestError } = await supabase
         .from("fee_requests")
@@ -110,23 +108,18 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (feeRequestError || !feeRequest) {
-        console.error("Fee request fetch error:", feeRequestError);
         return NextResponse.json({ error: "Failed to fetch fee request details" }, { status: 500 });
       }
-      
-      console.log("Fee request fetched successfully:", feeRequest);
 
       // Update fee request status to paid
       const { error: updateError } = await supabase
         .from("fee_requests")
-        .update({
-          status: "paid",
-          paid_at: new Date().toISOString(),
-        })
+        .update({ status: "paid" })
         .eq("id", registrationData.request_id);
 
       if (updateError) {
-        return NextResponse.json({ error: "Failed to update fee request" }, { status: 500 });
+        // Don't fail the entire process if status update fails
+        // Continue processing the payment
       }
 
       // Save to school_fees_payments table
@@ -134,7 +127,7 @@ export async function POST(request: NextRequest) {
         request_id: registrationData.request_id,
         parent_name: registrationData.parentName,
         child_name: registrationData.childName,
-        email: registrationData.email || feeRequest.email, 
+        email: registrationData.email || feeRequest.email,
         phone_number: feeRequest.phone_number,
         programs: registrationData.programs,
         day_care_schedule: registrationData.dayCareSchedule || null,
@@ -144,27 +137,14 @@ export async function POST(request: NextRequest) {
         order_id: transaction.order_id,
         status: "paid",
       };
-      
-      console.log("Prepared school fees payment data:", schoolFeesPaymentData);
 
-      console.log("Attempting to insert school fees payment:", schoolFeesPaymentData);
-      
-      const { data: insertedPayment, error: paymentError } = await supabase
+      const { error: paymentError } = await supabase
         .from("school_fees_payments")
-        .insert(schoolFeesPaymentData)
-        .select()
-        .single();
+        .insert(schoolFeesPaymentData);
       
       if (paymentError) {
-        console.error("School fees payment insert error:", paymentError);
-        return NextResponse.json({ 
-          error: "Failed to save school fees payment", 
-          details: paymentError.message,
-          code: paymentError.code 
-        }, { status: 500 });
+        return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
       }
-      
-      console.log("School fees payment inserted successfully:", insertedPayment);
     } else if (registrationData.program_type === "Shop Order") {
       // Handle shop orders
       try {
