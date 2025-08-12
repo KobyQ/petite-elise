@@ -46,7 +46,7 @@ const VerifyPageContent = () => {
           // If transaction is still pending, retry after delay
           setTimeout(() => {
             verifyTransaction()
-          }, 5000) // Reduced delay to 5 seconds
+          }, 5000) 
           return
         }
 

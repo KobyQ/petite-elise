@@ -100,6 +100,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
+      console.log("Processing School Fees payment for request_id:", registrationData.request_id);
+      
       // Fetch fee request details to get missing fields
       const { data: feeRequest, error: feeRequestError } = await supabase
         .from("fee_requests")
@@ -108,8 +110,11 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (feeRequestError || !feeRequest) {
+        console.error("Fee request fetch error:", feeRequestError);
         return NextResponse.json({ error: "Failed to fetch fee request details" }, { status: 500 });
       }
+      
+      console.log("Fee request fetched successfully:", feeRequest);
 
       // Update fee request status to paid
       const { error: updateError } = await supabase
@@ -129,24 +134,37 @@ export async function POST(request: NextRequest) {
         request_id: registrationData.request_id,
         parent_name: registrationData.parentName,
         child_name: registrationData.childName,
-        email: feeRequest.email,
+        email: registrationData.email || feeRequest.email, 
         phone_number: feeRequest.phone_number,
         programs: registrationData.programs,
-        day_care_schedule: registrationData.dayCareSchedule,
+        day_care_schedule: registrationData.dayCareSchedule || null,
         additional_notes: feeRequest.additional_notes || "",
         amount: transaction.amount, // Amount in cedis
         reference: reference,
         order_id: transaction.order_id,
         status: "paid",
       };
+      
+      console.log("Prepared school fees payment data:", schoolFeesPaymentData);
 
-      const { error: paymentError } = await supabase
+      console.log("Attempting to insert school fees payment:", schoolFeesPaymentData);
+      
+      const { data: insertedPayment, error: paymentError } = await supabase
         .from("school_fees_payments")
-        .insert(schoolFeesPaymentData);
+        .insert(schoolFeesPaymentData)
+        .select()
+        .single();
       
       if (paymentError) {
-        return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
+        console.error("School fees payment insert error:", paymentError);
+        return NextResponse.json({ 
+          error: "Failed to save school fees payment", 
+          details: paymentError.message,
+          code: paymentError.code 
+        }, { status: 500 });
       }
+      
+      console.log("School fees payment inserted successfully:", insertedPayment);
     } else if (registrationData.program_type === "Shop Order") {
       // Handle shop orders
       try {

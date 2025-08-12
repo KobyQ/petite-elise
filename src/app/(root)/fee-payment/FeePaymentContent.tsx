@@ -70,7 +70,7 @@ export default function FeePaymentContent() {
       // Generate Paystack payment link
       const paymentData = {
         email: feeRequest.email,
-        amount: feeRequest.invoice_amount || 0, // Already in pesewas
+        amount: Math.round((feeRequest.invoice_amount || 0) * 100), // Convert cedis to pesewas
         callback_url: `${window.location.origin}/fee-payment/verify`,
       };
 
@@ -102,6 +102,7 @@ export default function FeePaymentContent() {
           dayCareSchedule: feeRequest.day_care_schedule,
           program_type: "School Fees",
           request_id: feeRequest.id,
+          email: feeRequest.email, // Add email to transaction details
         },
         order_id: `FEE_${feeRequest.id}`,
       });
