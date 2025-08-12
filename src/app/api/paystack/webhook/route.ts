@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
         programs: registrationData.programs,
         day_care_schedule: registrationData.dayCareSchedule || null,
         additional_notes: feeRequest.additional_notes || "",
-        amount: transaction.amount, // Amount in cedis
+        amount: transaction.amount, // Amount in pesewas (as stored by Paystack)
         reference: reference,
         order_id: transaction.order_id,
         status: "paid",
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
           customer_email: registrationData.customer_email,
           customer_phone: registrationData.customer_phone,
           items: registrationData.items,
-          total_amount: transaction.amount, // Amount in cedis
+          total_amount: transaction.amount, // Amount in pesewas (as stored by Paystack)
           discount_code: registrationData.discount_code,
           discount_data: registrationData.discount_data,
           reference: reference,
@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
 
       const receiptData: ReceiptData = {
         order_id: transaction.order_id,
-        amount: transaction.amount, // This is in cedis
+        amount: transaction.amount / 100, // Convert from pesewas to cedis for display
         program_type: registrationData.program_type,
         paymentDate: new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format
         parentName: registrationData.parentName,

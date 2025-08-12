@@ -197,7 +197,7 @@ const VerifyPageContent = () => {
               {feeRequest.day_care_schedule && (
                 <p><strong>Schedule:</strong> {feeRequest.day_care_schedule}</p>
               )}
-              <p><strong>Amount:</strong> GH₵ {feeRequest.amount || 0}</p>
+              <p><strong>Amount:</strong> GH₵ {(feeRequest.amount || 0) / 100}</p>
               <p><strong>Reference:</strong> {ref}</p>
             </div>
           </div>
