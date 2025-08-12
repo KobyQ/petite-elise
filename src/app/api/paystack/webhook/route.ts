@@ -10,64 +10,18 @@ import { transporter } from "../../../../../config/nodemailer";
 const PAYSTACK_SECRET_KEY = process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY;
 const PAYSTACK_VERIFY_URL = "https://api.paystack.co/transaction/verify";
 
-export async function GET() {
-  return NextResponse.json({ 
-    message: "Webhook endpoint is working",
-    timestamp: new Date().toISOString(),
-    env_check: {
-      has_secret_key: !!process.env.PAYSTACK_SECRET_KEY,
-      secret_key_length: process.env.PAYSTACK_SECRET_KEY?.length || 0
-    }
-  });
-}
-
 export async function POST(request: NextRequest) {
-  // Test: Write to a file to confirm webhook is called
   try {
-    const fs = require('fs');
-    const path = require('path');
-    const logPath = path.join(process.cwd(), 'webhook-test.log');
-    const timestamp = new Date().toISOString();
-    fs.appendFileSync(logPath, `\n[${timestamp}] WEBHOOK CALLED - POST request received\n`);
-  } catch (error) {
-    // Ignore file write errors
-  }
-
-  console.log("\n\n");
-  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
-  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
-  console.log("🚀🚀🚀 WEBHOOK CALLED 🚀🚀🚀");
-  console.log("\n\n");
-  
-  try {
-    console.log("=== WEBHOOK STARTED ===");
-    console.log("Request received");
-    
-    // Test: Log raw request info
-    console.log("🚀 TEST: Request method:", request.method);
-    console.log("🚀 TEST: Request URL:", request.url);
-    console.log("🚀 TEST: Request headers:", Object.fromEntries(request.headers.entries()));
-    
-    const body = await request.json();
-    console.log("Request body received:", JSON.stringify(body, null, 2));
-    
-    console.log("Environment check - PAYSTACK_SECRET_KEY exists:", !!process.env.PAYSTACK_SECRET_KEY);
-    
     const { event, data } = await request.json();
-    console.log("Webhook received:", { event, reference: data?.reference });
     
     if (event !== "charge.success") {
-      console.log("Invalid webhook event:", event);
       throw new Error("Invalid event")
     }
 
     const reference = data.reference;
     if (!reference) {
-      console.error("No reference in webhook data");
       return NextResponse.json({ error: "No reference provided" }, { status: 400 });
     }
-
-    console.log("Processing webhook for reference:", reference);
 
     // Retrieve transaction from Supabase
     const { data: transaction, error: transactionError } = await supabase
@@ -77,24 +31,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (transactionError || !transaction) {
-      console.error("Transaction not found for reference:", reference, transactionError);
       return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
-    console.log("Transaction found:", { 
-      id: transaction.id, 
-      status: transaction.status, 
-      program_type: transaction.details?.program_type 
-    });
-
     if (transaction.status !== ETransactionStatus.pending) {
-      console.log("Transaction is not pending, status:", transaction.status);
       return NextResponse.json({ error: "Transaction is not pending" }, { status: 400 });
     }
-
-    console.log("About to verify payment with Paystack...");
-    console.log("PAYSTACK_VERIFY_URL:", PAYSTACK_VERIFY_URL);
-    console.log("Reference:", reference);
 
     // Verify payment with Paystack
     const response = await fetch(`${PAYSTACK_VERIFY_URL}/${reference}`, {
@@ -104,18 +46,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("Paystack response status:", response.status);
-    console.log("Paystack response headers:", Object.fromEntries(response.headers.entries()));
-
     const paymentData = await response.json();
-    console.log("Paystack verification response:", paymentData);
 
     if (!paymentData.status || paymentData.data.status !== "success") {
-      console.error("Payment verification failed:", paymentData);
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
     }
-
-    console.log("Payment verified successfully, updating transaction status...");
 
     // Update transaction status to prevent infinite webhook calls
     const { error: updateError } = await supabase
@@ -124,38 +59,16 @@ export async function POST(request: NextRequest) {
       .eq("reference", reference);
 
     if (updateError) {
-      console.error("Error updating transaction status:", updateError);
       return NextResponse.json({ error: "Failed to update transaction status" }, { status: 500 });
     }
-
-    console.log("Transaction status updated to success");
     
-    // Debug: Add response header to track webhook execution
-    const webhookResponse = NextResponse.json({ success: true });
-    webhookResponse.headers.set('X-Webhook-Executed', 'true');
-    webhookResponse.headers.set('X-Reference', reference);
+   
 
     // Extract registration data from transaction details
     const registrationData = transaction.details;
     if (!registrationData) {
-      console.error("No registration data in transaction");
       return NextResponse.json({ error: "No registration data found" }, { status: 400 });
     }
-
-    console.log("🚀 DEBUG: Registration data extracted successfully");
-    console.log("🚀 DEBUG: Program type found:", registrationData.program_type);
-    console.log("🚀 DEBUG: Full registration data keys:", Object.keys(registrationData));
-    
-    console.log("Processing registration for program type:", registrationData.program_type);
-    console.log("Full registration data:", JSON.stringify(registrationData, null, 2));
-
-    console.log("DEBUG: About to check program types...");
-    
-    // Debug: Log the exact comparison
-    console.log("🚀 DEBUG: Comparing program_type:", registrationData.program_type);
-    console.log("🚀 DEBUG: Is it 'School Fees'?", registrationData.program_type === "School Fees");
-    console.log("🚀 DEBUG: Is it 'Code Ninjas Club'?", registrationData.program_type === "Code Ninjas Club");
-    console.log("🚀 DEBUG: Is it 'Shop Order'?", registrationData.program_type === "Shop Order");
     
     // Save registration based on program type
     if (registrationData.program_type === "Code Ninjas Club") {
@@ -184,22 +97,9 @@ export async function POST(request: NextRequest) {
         .insert(codeNinjasData);
 
       if (registrationError) {
-        console.error("Registration error:", registrationError);
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     } else if (registrationData.program_type === "School Fees") {
-      console.log("🚀🚀🚀 SUCCESS: REACHED SCHOOL FEES SECTION! 🚀🚀🚀");
-      console.log("DEBUG: Reached School Fees section!");
-      console.log("=== SCHOOL FEES PAYMENT PROCESSING ===");
-      console.log("Registration data for school fees:", {
-        program_type: registrationData.program_type,
-        request_id: registrationData.request_id,
-        parentName: registrationData.parentName,
-        childName: registrationData.childName,
-        programs: registrationData.programs,
-        dayCareSchedule: registrationData.dayCareSchedule
-      });
-      
       // Fetch fee request details to get missing fields
       const { data: feeRequest, error: feeRequestError } = await supabase
         .from("fee_requests")
@@ -207,14 +107,7 @@ export async function POST(request: NextRequest) {
         .eq("id", registrationData.request_id)
         .single();
 
-      console.log("Fee request lookup result:", {
-        request_id: registrationData.request_id,
-        feeRequest: feeRequest,
-        error: feeRequestError
-      });
-
       if (feeRequestError || !feeRequest) {
-        console.error("Error fetching fee request:", feeRequestError);
         return NextResponse.json({ error: "Failed to fetch fee request details" }, { status: 500 });
       }
 
@@ -228,7 +121,6 @@ export async function POST(request: NextRequest) {
         .eq("id", registrationData.request_id);
 
       if (updateError) {
-        console.error("Error updating fee request:", updateError);
         return NextResponse.json({ error: "Failed to update fee request" }, { status: 500 });
       }
 
@@ -248,54 +140,18 @@ export async function POST(request: NextRequest) {
         status: "paid",
       };
 
-      console.log("=== SCHOOL FEES PAYMENT DATA ===");
-      console.log("Attempting to insert school fees payment:", JSON.stringify(schoolFeesPaymentData, null, 2));
-      console.log("Table: school_fees_payments");
-      console.log("Transaction amount:", transaction.amount);
-      console.log("Reference:", reference);
-      console.log("Order ID:", transaction.order_id);
-
       const { error: paymentError } = await supabase
         .from("school_fees_payments")
         .insert(schoolFeesPaymentData);
-
-      console.log("=== SCHOOL FEES PAYMENT INSERTION RESULT ===");
-      console.log("Payment error:", paymentError);
       
       if (paymentError) {
-        console.error("Error saving school fees payment:", paymentError);
-        console.error("Error details:", {
-          code: paymentError.code,
-          message: paymentError.message,
-          details: paymentError.details,
-          hint: paymentError.hint
-        });
         return NextResponse.json({ error: "Failed to save school fees payment" }, { status: 500 });
       }
-      
-      console.log("Successfully saved to school_fees_payments table");
-      console.log("=== END SCHOOL FEES PAYMENT PROCESSING ===");
     } else if (registrationData.program_type === "Shop Order") {
       // Handle shop orders
-      console.log("Processing shop order for reference:", reference);
-      console.log("Shop order data:", registrationData);
-      console.log("Items structure:", {
-        items_type: typeof registrationData.items,
-        items_is_array: Array.isArray(registrationData.items),
-        items_length: registrationData.items?.length || 0,
-        first_item: registrationData.items?.[0]
-      });
-      
       try {
         // Validate required fields
         if (!registrationData.customer_name || !registrationData.customer_email || !registrationData.customer_phone || !registrationData.items) {
-          console.error("Missing required fields for shop order:", {
-            has_customer_name: !!registrationData.customer_name,
-            has_customer_email: !!registrationData.customer_email,
-            has_customer_phone: !!registrationData.customer_phone,
-            has_items: !!registrationData.items,
-            items_length: registrationData.items?.length || 0
-          });
           return NextResponse.json({ error: "Missing required fields for shop order" }, { status: 400 });
         }
 
@@ -313,8 +169,6 @@ export async function POST(request: NextRequest) {
           payment_date: new Date().toISOString(),
         };
 
-        console.log("Attempting to insert shop order:", shopOrderData);
-
         const { data: insertedOrder, error: shopOrderError } = await supabase
           .from("shop_orders")
           .insert(shopOrderData)
@@ -322,34 +176,8 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (shopOrderError) {
-          console.error("Error saving shop order:", shopOrderError);
-          console.error("Shop order data that failed:", shopOrderData);
-          console.error("Error details:", {
-            code: shopOrderError.code,
-            message: shopOrderError.message,
-            details: shopOrderError.details,
-            hint: shopOrderError.hint
-          });
-          
-          // Try to get more details about the error
-          if (shopOrderError.code === '23505') {
-            console.error("Duplicate key error - order might already exist");
-            // Check if order already exists
-            const { data: existingOrder } = await supabase
-              .from("shop_orders")
-              .select("*")
-              .eq("reference", reference)
-              .single();
-            
-            if (existingOrder) {
-              console.log("Order already exists:", existingOrder);
-            }
-          }
-          
           return NextResponse.json({ error: "Failed to save shop order" }, { status: 500 });
         }
-
-        console.log("Successfully saved shop order to database:", insertedOrder);
 
         // Update product stock quantities
         for (const item of registrationData.items) {
@@ -362,7 +190,6 @@ export async function POST(request: NextRequest) {
               .single();
 
             if (fetchError) {
-              console.error(`Error fetching product ${item.product_id}:`, fetchError);
               continue;
             }
 
@@ -378,19 +205,13 @@ export async function POST(request: NextRequest) {
               .eq("id", item.product_id);
 
             if (stockUpdateError) {
-              console.error(`Error updating stock for product ${item.product_id}:`, stockUpdateError);
               // Don't fail the entire process if stock update fails
-            } else {
-              console.log(`Successfully updated stock for product ${item.product_id}: ${currentStock} -> ${newStock}`);
             }
           } catch (stockError) {
-            console.error(`Exception updating stock for product ${item.product_id}:`, stockError);
+            // Continue processing other items
           }
         }
-        
-        console.log("Successfully saved shop order and updated stock");
       } catch (shopOrderException) {
-        console.error("Exception during shop order processing:", shopOrderException);
         return NextResponse.json({ error: "Exception during shop order processing" }, { status: 500 });
       }
     } else {
@@ -435,7 +256,6 @@ export async function POST(request: NextRequest) {
         .insert(childrenData);
 
       if (registrationError) {
-        console.error("Registration error:", registrationError);
         return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
       }
     }
@@ -451,13 +271,9 @@ export async function POST(request: NextRequest) {
           .eq("discount_code", registrationData.discount_code);
  
         if (discountUpdateError) {
-          console.error("Error updating discount code usage:", discountUpdateError);
           // Don't fail the entire process if discount update fails
-        } else {
-          console.log(`Updated usage count for discount code: ${registrationData.discount_code}`);
         }
       } catch (discountError) {
-        console.error("Error updating discount code:", discountError);
         // Don't fail the entire process if discount update fails
       }
     }
@@ -536,11 +352,8 @@ export async function POST(request: NextRequest) {
       });
 
     } catch (receiptError) {
-      console.error("Receipt email sending error:", receiptError);
       // Don't fail the webhook if receipt email fails
     }
-
-
 
     return NextResponse.json({
       success: true,
@@ -548,7 +361,6 @@ export async function POST(request: NextRequest) {
       message: "Payment verified and registration completed successfully",
     });
   } catch (error: unknown) {
-    console.error("Error verifying payment:", error);
     const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json(
       {
