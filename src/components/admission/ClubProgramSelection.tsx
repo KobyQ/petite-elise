@@ -42,10 +42,9 @@ const ClubProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   ];
 
   const summerCampSchedule = [
-    { label: "Daily", value: "Daily" },
-    { label: "Weekly", value: "Weekly" },
-    { label: "Monthly", value: "Monthly" },
-    { label: "Termly", value: "Termly" },
+    { label: "Daily", value: "daily" },
+    { label: "Weekly", value: "weekly" },
+    { label: "Full Month", value: "full month" },
   ];
 
   const isSaturdayKidsClubSelected =
@@ -91,7 +90,7 @@ const ClubProgramSelection: React.FC<ClubProgramSelectionProps> = ({
         {isSummerCampSelected && (
           <CustomSelect
             label="Select Schedule"
-            name="dayCareSchedule"
+            name="summerCampSchedule"
             options={summerCampSchedule}
             required
             placeholder="Select a schedule"

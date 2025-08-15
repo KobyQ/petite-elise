@@ -21,9 +21,14 @@ const SummerCampProgramSelection: React.FC<ClubProgramSelectionProps> = ({
   const [pricingOptions, setPricingOptions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const programOptions = [
-    { label: "Summer Camp", value: "Summer Camp" },
-  ];
+  // Ensure Summer Camp is always selected
+  useEffect(() => {
+    if (!values.programs || !values.programs.includes("Summer Camp")) {
+      setFieldValue("programs", ["Summer Camp"], false);
+    }
+  }, [values.programs, setFieldValue]);
+
+
 
   // Fetch pricing from admin configuration
   useEffect(() => {
@@ -55,39 +60,32 @@ const SummerCampProgramSelection: React.FC<ClubProgramSelectionProps> = ({
     fetchPricing();
   }, []);
 
-  const isSummerCampSelected = values?.programs?.includes("Summer Camp");
 
-  // Effect to clear schedule when Summer Camp is deselected
-  useEffect(() => {
-    if (!isSummerCampSelected && values?.summerCampSchedule) {
-      setFieldValue("summerCampSchedule", "", false);
-    }
-  }, [isSummerCampSelected, values, setFieldValue]);
 
   return (
     <div>
       <div className="mb-10 mt-5">
+        {/* Show selected program (read-only) */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Selected Program
+          </label>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <span className="text-blue-800 font-medium">Summer Camp</span>
+          </div>
+        </div>
+
+        {/* Schedule selection */}
         <CustomSelect
-          label="Program Selection"
-          name="programs"
-          options={programOptions}
-          isMulti
-          placeholder="Select program(s) you would like to enroll your child in"
+          label="Select Schedule"
+          name="summerCampSchedule"
+          options={pricingOptions}
+          isDisabled={loading}
           required
+          placeholder={loading ? "Loading schedules..." : "Select a schedule"}
         />
 
-        {isSummerCampSelected && (
-          <CustomSelect
-            label="Select Schedule"
-            name="summerCampSchedule"
-            options={pricingOptions}
-            isDisabled={loading}
-            required
-            placeholder={loading ? "Loading schedules..." : "Select a schedule"}
-          />
-        )}
-
-        {isSummerCampSelected && values.summerCampSchedule && (
+        {values.summerCampSchedule && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
             <p className="text-blue-700">

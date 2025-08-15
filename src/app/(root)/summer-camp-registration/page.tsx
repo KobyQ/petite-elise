@@ -11,6 +11,7 @@ import { enrollChildSchema } from "@/utils/validations"
 import ExistingInfoCheck from "@/components/admission/ExistingInfoCheck"
 import ChildAndGuardianInfo from "@/components/admission/ChildAndGuardianInfo"
 import ClubChildHealthConditions from "@/components/admission/ClubChildHealthConditions"
+import SummerCampProgramSelection from "@/components/admission/SummerCampProgramSelection"
 import EnrollmentSuccess from "@/components/admission/EnrollmentSuccess"
 import ClubAuthorization from "@/components/admission/ClubAuthorization"
 import { sendRegistrationEmail } from "@/utils/helper"
@@ -192,7 +193,7 @@ const SummerCampRegistration = () => {
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
       programs: selectedChild?.programs || ["Summer Camp"],
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
-      summerCampSchedule: selectedChild?.summerCampSchedule || "monthly",
+      summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
@@ -216,8 +217,13 @@ const SummerCampRegistration = () => {
           setCurrentStep(1)
           toast.success("Child added successfully. You can enroll another child.")
         } else {
-          // Fetch pricing for Summer Camp monthly schedule
-          const pricing = await fetchPricingForSchedule("monthly")
+          // Fetch pricing for Summer Camp selected schedule
+          if (!values.summerCampSchedule) {
+            toast.error("Please select a Summer Camp schedule")
+            return
+          }
+          
+          const pricing = await fetchPricingForSchedule(values.summerCampSchedule)
           if (!pricing) {
             toast.error("Unable to fetch pricing information. Please try again.")
             return
@@ -235,7 +241,7 @@ const SummerCampRegistration = () => {
           const registrationData = {
             ...values,
             programs: ["Summer Camp"], // Ensure program is set
-            summerCampSchedule: "monthly", // Set default schedule
+            summerCampSchedule: values.summerCampSchedule, // Use selected schedule
             familyId,
             pricing_id: pricing.id,
             program_type: "Summer Camp",
@@ -382,7 +388,7 @@ const SummerCampRegistration = () => {
 
   const { values, errors, setFieldValue, handleSubmit, isSubmitting } = formik
 
-  const totalSteps = 4
+  const totalSteps = 5
 
   const nextStep = () => setCurrentStep((prevStep) => prevStep + 1)
   const prevStep = () => setCurrentStep((prevStep) => prevStep - 1)
@@ -402,11 +408,13 @@ const SummerCampRegistration = () => {
         <FormikProvider value={formik}>
           <form onSubmit={handleSubmit} className="bg-white p-4 md:p-10 rounded-3xl shadow-lg">
             <div className="flex justify-between w-full font-bold">
-              {currentStep === 1
-                ? "Existing Child Check"
-                : currentStep === 2
-                  ? "Child and Guardian Information"
-                  : currentStep === 3
+                          {currentStep === 1
+              ? "Existing Child Check"
+              : currentStep === 2
+                ? "Child and Guardian Information"
+                : currentStep === 3
+                  ? "Summer Camp Schedule Selection"
+                  : currentStep === 4
                     ? "Health Conditions and Allergies"
                     : "Photograph Usage Authorization"}
               <h5 className="text-xs md:text-base">{`Step ${currentStep} / ${totalSteps}`}</h5>
@@ -435,8 +443,16 @@ const SummerCampRegistration = () => {
               />
             )}
 
-            {currentStep === 3 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
-            {currentStep === 4 && (
+            {currentStep === 3 && (
+              <SummerCampProgramSelection
+                values={values}
+                nextStep={nextStep}
+                prevStep={prevStep}
+                setFieldValue={setFieldValue}
+              />
+            )}
+            {currentStep === 4 && <ClubChildHealthConditions values={values} nextStep={nextStep} prevStep={prevStep} />}
+            {currentStep === 5 && (
               <div>
                 {/* Discount Code Section */}
                 <div className="mb-8 p-6 bg-gray-50 rounded-lg">
