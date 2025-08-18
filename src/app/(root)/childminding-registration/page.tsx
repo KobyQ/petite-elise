@@ -267,7 +267,7 @@ const ChildMindingRegistration = () => {
 
           // Save transaction to our database
           const { error: dbError } = await supabase.from("transactions").insert({
-            amount: finalAmountInCedis, // Store final discounted amount in cedis
+            amount: finalAmountInPesewas, // Store final discounted amount in pesewas to match Paystack
             reference: result.data.reference,
             paystack_response: result,
             status: "pending",

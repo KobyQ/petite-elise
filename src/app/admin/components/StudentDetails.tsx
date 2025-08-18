@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modal";
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   FaUserAlt,
   FaPhoneAlt,
   FaClipboardList,
   FaBirthdayCake,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 import { MdPlace } from "react-icons/md";
+import supabase from "@/utils/supabaseClient";
 
 const StudentDetails = ({
   isOpen,
@@ -18,6 +20,79 @@ const StudentDetails = ({
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   data: any;
 }) => {
+  const [transaction, setTransaction] = useState<any | null>(null);
+  const [isTxnLoading, setIsTxnLoading] = useState<boolean>(false);
+  const [txnError, setTxnError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTransaction = async () => {
+      if (!data?.reference) return;
+      setIsTxnLoading(true);
+      setTxnError(null);
+      try {
+        const { data: txn, error } = await supabase
+          .from("transactions")
+          .select("amount, details, reference, order_id")
+          .eq("reference", data.reference)
+          .maybeSingle();
+        if (error) {
+          setTxnError(error.message);
+          setTransaction(null);
+        } else {
+          setTransaction(txn);
+        }
+      } catch (e: any) {
+        setTxnError(e?.message || "Failed to load transaction");
+        setTransaction(null);
+      } finally {
+        setIsTxnLoading(false);
+      }
+    };
+
+    fetchTransaction();
+  }, [data?.reference]);
+
+  const computeAmountCedis = () => {
+    if (!transaction) return null;
+    // All amounts are now stored in pesewas, so convert to cedis for display
+    if (typeof transaction?.amount === "number") return transaction.amount / 100;
+    return null;
+  };
+
+  const computeSchedulePaid = () => {
+    const d = transaction?.details || {};
+    const programType = d?.program_type;
+    if (!programType) return null;
+    switch (programType) {
+      case "Code Ninjas Club":
+        return d?.schedule || null;
+      case "Childminding":
+        return d?.childMindingSchedule || null;
+      case "Summer Camp":
+        return d?.summerCampSchedule || null;
+      case "Christmas Camp":
+        return d?.christmasCampSchedule || null;
+      case "Saturday Kids Club":
+        return d?.saturdayClubSchedule || null;
+      case "Baby & Me":
+      case "Developmental Playgroup":
+        return "Monthly";
+      default:
+        return (
+          d?.dayCareSchedule ||
+          d?.schedule ||
+          d?.saturdayClubSchedule ||
+          d?.summerCampSchedule ||
+          d?.christmasCampSchedule ||
+          null
+        );
+    }
+  };
+
+  const paidAmount = computeAmountCedis();
+  const paidSchedule = computeSchedulePaid();
+  const paidProgram = transaction?.details?.program_type || null;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
@@ -39,6 +114,37 @@ const StudentDetails = ({
 
         {/* Content */}
         <div className=" overflow-y-auto p-6 space-y-6 bg-gray-50">
+          {/* Payment */}
+          <section className="border-b pb-10">
+            <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+              <FaMoneyBillWave className="text-blue-500" />
+              Payment
+            </h3>
+            <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+              <p>
+                <strong>Amount Paid:</strong>{" "}
+                {isTxnLoading
+                  ? "Loading..."
+                  : paidAmount != null
+                  ? `GHS ${paidAmount.toFixed(2)}`
+                  : "N/A"}
+              </p>
+              <p>
+                <strong>Program:</strong> {paidProgram || "N/A"}
+              </p>
+              <p>
+                <strong>Paid Schedule:</strong>{" "}
+                {isTxnLoading ? "Loading..." : paidSchedule || "N/A"}
+              </p>
+              <p>
+                <strong>Reference:</strong> {data?.reference || "N/A"}
+              </p>
+            </div>
+            {txnError && (
+              <p className="text-red-600 text-sm mt-2">{txnError}</p>
+            )}
+          </section>
+
           {/* General Information */}
           <section className="border-b pb-10">
             <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
@@ -171,6 +277,18 @@ const StudentDetails = ({
                     {data?.saturdayClubSchedule || "N/A"}
                   </p>
                 )}{" "}
+                {data?.summerCampSchedule && (
+                  <p>
+                    <strong>Summer Camp Schedule:</strong>{" "}
+                    {data?.summerCampSchedule || "N/A"}
+                  </p>
+                )}{" "}
+                {data?.christmasCampSchedule && (
+                  <p>
+                    <strong>Christmas Camp Schedule:</strong>{" "}
+                    {data?.christmasCampSchedule || "N/A"}
+                  </p>
+                )}
                 {data?.childMindingSchedule && (
                   <p>
                     <strong>SChildminding Schedule:</strong>{" "}

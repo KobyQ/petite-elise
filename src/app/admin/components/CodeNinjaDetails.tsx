@@ -3,7 +3,9 @@
 
 "use client";
 import { Dialog, DialogContent } from "@/components/ui/modal";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { FaMoneyBillWave } from "react-icons/fa";
+import supabase from "@/utils/supabaseClient";
 
 const CodeNinjaDetails = ({
   isOpen,
@@ -14,6 +16,46 @@ const CodeNinjaDetails = ({
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   data: any;
 }) => {
+  const [transaction, setTransaction] = useState<any | null>(null);
+  const [isTxnLoading, setIsTxnLoading] = useState<boolean>(false);
+  const [txnError, setTxnError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTransaction = async () => {
+      if (!data?.reference) return;
+      setIsTxnLoading(true);
+      setTxnError(null);
+      try {
+        const { data: txn, error } = await supabase
+          .from("transactions")
+          .select("amount, details, reference, order_id")
+          .eq("reference", data.reference)
+          .maybeSingle();
+        if (error) {
+          setTxnError(error.message);
+          setTransaction(null);
+        } else {
+          setTransaction(txn);
+        }
+      } catch (e: any) {
+        setTxnError(e?.message || "Failed to load transaction");
+        setTransaction(null);
+      } finally {
+        setIsTxnLoading(false);
+      }
+    };
+
+    fetchTransaction();
+  }, [data?.reference]);
+
+  const computeAmountCedis = () => {
+    if (!transaction) return null;
+    // All amounts are now stored in pesewas, so convert to cedis for display
+    if (typeof transaction?.amount === "number") return transaction.amount / 100;
+    return null;
+  };
+
+  const paidAmount = computeAmountCedis();
   
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -28,11 +70,37 @@ const CodeNinjaDetails = ({
           </button>
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">
-          <div>
-            <p className="text-sm text-gray-500">Child Name</p>
-            <p className="font-semibold text-lg">{data.childName}</p>
-          </div>
+        <div className="p-6 space-y-6">
+          {/* Payment Section */}
+          <section className="border-b pb-6">
+            <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-4">
+              <FaMoneyBillWave className="text-blue-500" />
+              Payment
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <p>
+                <strong>Amount Paid:</strong>{" "}
+                {isTxnLoading
+                  ? "Loading..."
+                  : paidAmount != null
+                  ? `GHS ${paidAmount.toFixed(2)}`
+                  : "N/A"}
+              </p>
+              <p>
+                <strong>Reference:</strong> {data?.reference || "N/A"}
+              </p>
+            </div>
+            {txnError && (
+              <p className="text-red-600 text-sm mt-2">{txnError}</p>
+            )}
+          </section>
+
+          {/* General Information */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-gray-500">Child Name</p>
+              <p className="font-semibold text-lg">{data.childName}</p>
+            </div>
           <div>
             <p className="text-sm text-gray-500">Age Group</p>
             <p className="font-semibold text-lg">{data.ageGroup}</p>
@@ -99,6 +167,7 @@ const CodeNinjaDetails = ({
             <p className="text-sm text-gray-500">Registration Date</p>
             <p className="font-semibold text-lg">{new Date(data.created_at).toLocaleString()}</p>
           </div>
+          </section>
         </div>
       </DialogContent>
     </Dialog>

@@ -308,12 +308,8 @@ export async function POST(request: NextRequest) {
         schedule = `${registrationData.items?.length || 0} items`;
       }
 
-      // Determine display amount in cedis: prefer final_amount from registration details when present (already in cedis),
-      // otherwise fall back to dividing stored amount (assumed pesewas) by 100.
-      const displayAmountCedis =
-        typeof registrationData.final_amount === "number"
-          ? registrationData.final_amount
-          : transaction.amount / 100;
+      // All amounts are now stored in pesewas, so convert to cedis for display
+      const displayAmountCedis = transaction.amount / 100;
 
       const receiptData: ReceiptData = {
         order_id: transaction.order_id,
