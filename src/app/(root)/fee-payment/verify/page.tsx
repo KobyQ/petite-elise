@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import supabase from "@/utils/supabaseClient"
+import { formatMoneyToCedis } from "@/utils/constants"
 import { LuLoader, LuTriangleAlert } from "react-icons/lu"
 import { IoHome } from "react-icons/io5"
 import { BsArrowLeft } from "react-icons/bs"
@@ -197,7 +198,7 @@ const VerifyPageContent = () => {
               {feeRequest.day_care_schedule && (
                 <p><strong>Schedule:</strong> {feeRequest.day_care_schedule}</p>
               )}
-              <p><strong>Amount:</strong> GH₵ {(feeRequest.amount || 0) / 100}</p>
+              <p><strong>Amount:</strong> {formatMoneyToCedis(feeRequest.amount || 0)}</p>
               <p><strong>Reference:</strong> {ref}</p>
             </div>
           </div>

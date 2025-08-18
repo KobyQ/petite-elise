@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { FiCheckCircle } from "react-icons/fi";
 import Link from "next/link";
+import { formatMoneyToCedis } from "@/utils/constants";
 
 interface PaymentDetails {
   reference: string;
@@ -83,7 +84,7 @@ export default function PaymentSuccessContent() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Amount</p>
-                    <p className="text-gray-900">GHS {(paymentDetails.amount / 100).toFixed(2)}</p>
+                    <p className="text-gray-900">{formatMoneyToCedis(paymentDetails.amount)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Program</p>
