@@ -330,7 +330,7 @@ const BabyAndMeRegistration = () => {
           
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Initiated!</h2>
           <p className="text-gray-600 mb-6">
-            Your registration is almost complete! Please complete your payment to secure your children's spots.
+            Your registration is almost complete! Please complete your payment to secure your children&apos;s spots.
           </p>
 
           {/* Show summary of all children */}
@@ -366,7 +366,7 @@ const BabyAndMeRegistration = () => {
                   <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
                 </div>
                 <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                  Discount code "{discountCode.toUpperCase()}" applied!
+                  Discount code &ldquo;{discountCode.toUpperCase()}&rdquo; applied!
                 </div>
               </div>
             ) : (
