@@ -10,11 +10,20 @@ import { LuLoader, LuTriangleAlert } from "react-icons/lu"
 import { IoHome } from "react-icons/io5"
 import { BsArrowLeft } from "react-icons/bs"
 
+interface RegistrationData {
+  childName: string;
+  parentName: string;
+  parentEmail: string;
+  childMindingSchedule: string;
+  reference: string;
+  familyId?: string;
+}
+
 const VerifyPageContent = () => {
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [registration, setRegistration] = useState<any>(null)
+  const [registration, setRegistration] = useState<RegistrationData | null>(null)
 
   const ref = searchParams.get("reference")
 
@@ -26,7 +35,6 @@ const VerifyPageContent = () => {
           setLoading(false)
           return
         }
-
 
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
@@ -42,7 +50,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
         // Check if transaction is successful
         if (transaction.status !== "success") {
           // If transaction is still pending, retry after delay
@@ -52,29 +59,51 @@ const VerifyPageContent = () => {
           return
         }
 
-        // Look for registration in children table
-        const { data: registrationData, error: registrationError } = await supabase
-          .from("children")
-          .select("*")
-          .eq("reference", ref)
-          .maybeSingle()
-
-
-        if (registrationError && registrationError.code !== "PGRST116") {
-          console.error("Registration lookup error:", registrationError)
-          setError(registrationError.message)
-          setLoading(false)
-          return
-        }
-  
-        if (registrationData) {
-          setRegistration(registrationData)
+        // Extract registration details from transaction
+        const transactionDetails = transaction.details
+        if (transactionDetails && transactionDetails.children && Array.isArray(transactionDetails.children)) {
+          // This is a sibling registration - use the first child for display
+          const firstChild = transactionDetails.children[0]
+          setRegistration({
+            childName: firstChild.childName,
+            parentName: firstChild.parentName,
+            parentEmail: firstChild.parentEmail,
+            childMindingSchedule: firstChild.childMindingSchedule,
+            reference: ref,
+            familyId: transactionDetails.familyId,
+          })
           setLoading(false)
         } else {
-          // If registration not found, retry after delay
-          setTimeout(() => {
-            verifyTransaction()
-          }, 5000) // Reduced delay to 5 seconds
+          // Look for single registration in children table (fallback for old registrations)
+          const { data: registrationData, error: registrationError } = await supabase
+            .from("children")
+            .select("*")
+            .eq("reference", ref)
+            .maybeSingle()
+
+          if (registrationError && registrationError.code !== "PGRST116") {
+            console.error("Registration lookup error:", registrationError)
+            setError(registrationError.message)
+            setLoading(false)
+            return
+          }
+    
+          if (registrationData) {
+            setRegistration({
+              childName: registrationData.childName,
+              parentName: registrationData.parentName,
+              parentEmail: registrationData.parentEmail,
+              childMindingSchedule: registrationData.childMindingSchedule,
+              reference: ref,
+              familyId: registrationData.familyId,
+            })
+            setLoading(false)
+          } else {
+            // If registration not found, retry after delay
+            setTimeout(() => {
+              verifyTransaction()
+            }, 5000) // Reduced delay to 5 seconds
+          }
         }
       } catch (error) {
         console.error("Verification error:", error)
@@ -85,8 +114,6 @@ const VerifyPageContent = () => {
 
     verifyTransaction()
   }, [ref])
-
-
 
   if (loading) {
     return (
@@ -110,12 +137,12 @@ const VerifyPageContent = () => {
           </div>
 
           <h2 className="text-2xl md:text-3xl font-playfair font-bold text-deep-green mb-3 md:mb-4">
-            Verifying Your Booking
+            Verifying Your Childminding Registration
           </h2>
 
           <div className="space-y-2 md:space-y-4 mb-6 md:mb-8">
             <p className="text-sm md:text-base text-deep-green/80">
-              We&apos;re currently processing your transaction and preparing your tour booking details.
+              We&apos;re currently processing your transaction and preparing your Childminding registration details.
             </p>
             <p className="text-sm md:text-base text-deep-green/80">
               This usually takes less than a minute. Please don&apos;t close this page.
@@ -127,8 +154,6 @@ const VerifyPageContent = () => {
               <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-gold animate-pulse"></div>
               <span className="text-deep-green">Verifying payment...</span>
             </div>
-
-          
           </div>
 
           <div className="mt-6 md:mt-8 text-xs md:text-sm text-deep-green/60">
@@ -167,10 +192,10 @@ const VerifyPageContent = () => {
               </button>
             </Link>
 
-            <Link href="/building-blocks-club" className="flex-1">
+            <Link href="/childminding-registration" className="flex-1">
               <button className="w-full py-2.5 md:py-3 bg-gold text-deep-green rounded-xl font-medium hover:bg-gold-dark transition-all duration-300 flex items-center justify-center text-sm md:text-base">
                 <BsArrowLeft className="mr-2 h-4 w-4" />
-                Browse Building Blocks Programs
+                Try Registration Again
               </button>
             </Link>
           </div>
@@ -181,52 +206,52 @@ const VerifyPageContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#ffec89] to-[#a9e2a0] flex items-center justify-center p-4">
-    <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Complete!</h2>
-      <p className="text-gray-600 mb-6">
-        Thank you for registering your child for Childminding Program. Your payment has been confirmed.
-      </p>
-
-      {registration && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-          <h4 className="font-semibold text-blue-800 mb-2">Registration Details:</h4>
-          <div className="space-y-1 text-sm text-blue-700">
-            <p><strong>Child:</strong> {registration.childName}</p>
-            <p><strong>Parent:</strong> {registration.parentName}</p>
-            <p><strong>Email:</strong> {registration.parentEmail}</p>
-            <p><strong>Program:</strong> Childminding Program</p>
-            <p><strong>Schedule:</strong> {registration.childMindingSchedule}</p>
-            <p><strong>Reference:</strong> {registration.reference}</p>
-          </div>
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
         </div>
-      )}
+        
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Complete!</h2>
+        <p className="text-gray-600 mb-6">
+          Thank you for registering your child for Childminding Program. Your payment has been confirmed and your registration is complete.
+        </p>
 
-      <div className="space-y-3">
-        <Link
-          href="/"
-          className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 inline-block"
-        >
-          Return Home
-        </Link>
-        <Link
-          href="/building-blocks-club"
-          className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-300 inline-block"
-        >
-          View Other Programs
-        </Link>
+        {registration && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
+            <h4 className="font-semibold text-blue-800 mb-2">Registration Details:</h4>
+            <div className="space-y-1 text-sm text-gray-700">
+              <p><strong>Child:</strong> {registration.childName}</p>
+              <p><strong>Parent:</strong> {registration.parentName}</p>
+              <p><strong>Email:</strong> {registration.parentEmail}</p>
+              <p><strong>Program:</strong> Childminding Program</p>
+              <p><strong>Schedule:</strong> {registration.childMindingSchedule}</p>
+              <p><strong>Reference:</strong> {registration.reference}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <Link
+            href="/"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 inline-block"
+          >
+            Return Home
+          </Link>
+          <Link
+            href="/building-blocks-club"
+            className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-300 inline-block"
+          >
+            View Other Programs
+          </Link>
+        </div>
+
+        <p className="text-sm text-gray-500 mt-6">
+          A confirmation email has been sent to your registered email address.
+        </p>
       </div>
-
-      <p className="text-sm text-gray-500 mt-6">
-        A confirmation email has been sent to your registered email address.
-      </p>
     </div>
-  </div>
   )
 }
 

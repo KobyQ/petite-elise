@@ -212,73 +212,662 @@ export async function POST(request: NextRequest) {
       } catch (shopOrderException) {
         return NextResponse.json({ error: "Exception during shop order processing" }, { status: 500 });
       }
-    } else if (registrationData.program_type === "Christmas Camp") {
-      // Handle Christmas Camp registrations (including siblings)
-      if (registrationData.children && Array.isArray(registrationData.children)) {
-        // Multiple children registration - save each as individual record
-        console.log("Processing Christmas Camp children:", registrationData.children.length);
-        for (const child of registrationData.children) {
+          } else if (registrationData.program_type === "Christmas Camp") {
+        // Handle Christmas Camp registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Christmas Camp children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Christmas Camp"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                christmasCampSchedule: child.christmasCampSchedule,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
+              }, { status: 500 });
+            }
+          }
+        } else {
+          // Single child registration (fallback for old format)
           const childrenData = {
-            childName: child.childName || "",
-            childDOB: child.childDOB || "",
-            childAge: child.childAge || "",
-            parentName: child.parentName || "",
-            parentEmail: child.parentEmail || "",
-            parentPhoneNumber: child.parentPhoneNumber || "",
-            parentWhatsappNumber: child.parentWhatsappNumber || "",
-            address: child.address || "",
-            emergencyContactName: child.emergencyContactName || "",
-            emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
-            emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
-            emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
-            dropChildOffSelf: child.dropChildOffSelf || "",
-            dropOffNames: child.dropOffNames || [],
-            programs: child.programs || ["Christmas Camp"],
-            dayCareSchedule: child.dayCareSchedule || "",
-            hasAllergies: child.hasAllergies || "",
-            allergies: child.allergies || [],
-            hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
-            specialHealthConditions: child.specialHealthConditions || [],
-            photographUsageConsent: child.photographUsageConsent || "",
-            feeding: child.feeding || "",
-            hasSibling: child.hasSibling || "",
-            saturdayClubSchedule: child.saturdayClubSchedule || "",
-            summerCampSchedule: child.summerCampSchedule || "",
-            familyId: registrationData.familyId || "",
-            childMindingSchedule: child.childMindingSchedule || "",
-            christmasCampSchedule: child.christmasCampSchedule || "",
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
             is_active: true,
             order_id: transaction.order_id,
             reference: reference,
           };
 
-          try {
-            console.log(`Inserting child: ${child.childName}`, { 
-              childName: child.childName,
-              christmasCampSchedule: child.christmasCampSchedule,
-              familyId: registrationData.familyId 
-            });
-            
-            const { error: registrationError } = await supabase
-              .from("children")
-              .insert(childrenData);
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
 
-            if (registrationError) {
-              console.error(`Database error for ${child.childName}:`, registrationError);
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+          }
+        }
+      } else if (registrationData.program_type === "Childminding") {
+        // Handle Childminding registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Childminding children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Childminding"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                childMindingSchedule: child.childMindingSchedule,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
               return NextResponse.json({ 
-                error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
               }, { status: 500 });
             }
-          } catch (insertError: unknown) {
-            console.error(`Insert error for ${child.childName}:`, insertError);
-            const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
-            return NextResponse.json({ 
-              error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
-            }, { status: 500 });
+          }
+        } else {
+          // Single child registration (fallback for old format)
+          const childrenData = {
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+          }
+                }
+      } else if (registrationData.program_type === "Baby & Me") {
+        // Handle Baby & Me registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Baby & Me children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Baby & Me"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                programs: child.programs,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
+              }, { status: 500 });
+            }
+          }
+        } else {
+          // Single child registration (fallback for old format)
+          const childrenData = {
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+          }
+        }
+      } else if (registrationData.program_type === "Developmental Playgroup") {
+        // Handle Developmental Playgroup registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Developmental Playgroup children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Developmental Playgroup"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                programs: child.programs,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
+              }, { status: 500 });
+            }
+          }
+        } else {
+          // Single child registration (fallback for old format)
+          const childrenData = {
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+          }
+        }
+      } else if (registrationData.program_type === "Summer Camp") {
+        // Handle Summer Camp registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Summer Camp children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Summer Camp"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                summerCampSchedule: child.summerCampSchedule,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
+              }, { status: 500 });
+            }
+          }
+        } else {
+          // Single child registration (fallback for old format)
+          const childrenData = {
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+          }
+        }
+      } else if (registrationData.program_type === "Saturday Kids Club") {
+        // Handle Saturday Kids Club registrations (including siblings)
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children registration - save each as individual record
+          console.log("Processing Saturday Kids Club children:", registrationData.children.length);
+          for (const child of registrationData.children) {
+            const childrenData = {
+              childName: child.childName || "",
+              childDOB: child.childDOB || "",
+              childAge: child.childAge || "",
+              parentName: child.parentName || "",
+              parentEmail: child.parentEmail || "",
+              parentPhoneNumber: child.parentPhoneNumber || "",
+              parentWhatsappNumber: child.parentWhatsappNumber || "",
+              address: child.address || "",
+              emergencyContactName: child.emergencyContactName || "",
+              emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+              emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+              emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+              dropChildOffSelf: child.dropChildOffSelf || "",
+              dropOffNames: child.dropOffNames || [],
+              programs: child.programs || ["Saturday Kids Club"],
+              dayCareSchedule: child.dayCareSchedule || "",
+              hasAllergies: child.hasAllergies || "",
+              allergies: child.allergies || [],
+              hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+              specialHealthConditions: child.specialHealthConditions || [],
+              photographUsageConsent: child.photographUsageConsent || "",
+              feeding: child.feeding || "",
+              hasSibling: child.hasSibling || "",
+              saturdayClubSchedule: child.saturdayClubSchedule || "",
+              summerCampSchedule: child.summerCampSchedule || "",
+              familyId: registrationData.familyId || "",
+              childMindingSchedule: child.childMindingSchedule || "",
+              christmasCampSchedule: child.christmasCampSchedule || "",
+              is_active: true,
+              order_id: transaction.order_id,
+              reference: reference,
+            };
+
+            try {
+              console.log(`Inserting child: ${child.childName}`, { 
+                childName: child.childName,
+                saturdayClubSchedule: child.saturdayClubSchedule,
+                familyId: registrationData.familyId 
+              });
+              
+              const { error: registrationError } = await supabase
+                .from("children")
+                .insert(childrenData);
+
+              if (registrationError) {
+                console.error(`Database error for ${child.childName}:`, registrationError);
+                return NextResponse.json({ 
+                  error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+                }, { status: 500 });
+              }
+            } catch (insertError: unknown) {
+              console.error(`Insert error for ${child.childName}:`, insertError);
+              const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
+              }, { status: 500 });
+            }
+          }
+        } else {
+          // Single child registration (fallback for old format)
+          const childrenData = {
+            childName: registrationData.childName,
+            childDOB: registrationData.childDOB,
+            childAge: registrationData.childAge,
+            parentName: registrationData.parentName,
+            parentEmail: registrationData.parentEmail,
+            parentPhoneNumber: registrationData.parentPhoneNumber,
+            parentWhatsappNumber: registrationData.parentWhatsappNumber,
+            address: registrationData.address,
+            emergencyContactName: registrationData.emergencyContactName,
+            emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+            dropChildOffSelf: registrationData.dropChildOffSelf,
+            dropOffNames: registrationData.dropOffNames,
+            programs: registrationData.programs,
+            dayCareSchedule: registrationData.dayCareSchedule,
+            hasAllergies: registrationData.hasAllergies,
+            allergies: registrationData.allergies,
+            hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+            specialHealthConditions: registrationData.specialHealthConditions,
+            photographUsageConsent: registrationData.photographUsageConsent,
+            feeding: registrationData.feeding,
+            hasSibling: registrationData.hasSibling,
+            saturdayClubSchedule: registrationData.saturdayClubSchedule,
+            summerCampSchedule: registrationData.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: registrationData.childMindingSchedule,
+            christmasCampSchedule: registrationData.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
           }
         }
       } else {
-        // Single child registration (fallback for old format)
+        // Save to children table for other programs
         const childrenData = {
           childName: registrationData.childName,
           childDOB: registrationData.childDOB,
@@ -320,50 +909,6 @@ export async function POST(request: NextRequest) {
         if (registrationError) {
           return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
         }
-      }
-    } else {
-      // Save to children table for other programs
-      const childrenData = {
-        childName: registrationData.childName,
-        childDOB: registrationData.childDOB,
-        childAge: registrationData.childAge,
-        parentName: registrationData.parentName,
-        parentEmail: registrationData.parentEmail,
-        parentPhoneNumber: registrationData.parentPhoneNumber,
-        parentWhatsappNumber: registrationData.parentWhatsappNumber,
-        address: registrationData.address,
-        emergencyContactName: registrationData.emergencyContactName,
-        emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
-        emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
-        emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
-        dropChildOffSelf: registrationData.dropChildOffSelf,
-        dropOffNames: registrationData.dropOffNames,
-        programs: registrationData.programs,
-        dayCareSchedule: registrationData.dayCareSchedule,
-        hasAllergies: registrationData.hasAllergies,
-        allergies: registrationData.allergies,
-        hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
-        specialHealthConditions: registrationData.specialHealthConditions,
-        photographUsageConsent: registrationData.photographUsageConsent,
-        feeding: registrationData.feeding,
-                            hasSibling: registrationData.hasSibling,
-        saturdayClubSchedule: registrationData.saturdayClubSchedule,
-        summerCampSchedule: registrationData.summerCampSchedule,
-        familyId: registrationData.familyId,
-        childMindingSchedule: registrationData.childMindingSchedule,
-        christmasCampSchedule: registrationData.christmasCampSchedule,
-        is_active: true,
-        order_id: transaction.order_id,
-        reference: reference,
-      };
-
-      const { error: registrationError } = await supabase
-        .from("children")
-        .insert(childrenData);
-
-      if (registrationError) {
-        return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
-      }
     }
 
     // Update discount code usage count if a discount was applied

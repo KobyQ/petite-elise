@@ -207,47 +207,66 @@ const BabyAndMeRegistration = () => {
         const childData = { ...values }
 
         if (values.hasSibling === "true") {
-          // Add child to siblings and reset form
+          // Add child to siblings and reset form for next child
           setSiblings((prev: any) => [...prev, childData])
 
+          // Reset form for next child (discount code remains applied)
           setFieldValue("childName", "")
           setFieldValue("childDOB", "")
           setFieldValue("childAge", "")
           setFieldValue("hasSibling", "")
+          setFieldValue("hasAllergies", "")
+          setFieldValue("allergies", [])
+          setFieldValue("hasSpecialHealthConditions", "")
+          setFieldValue("specialHealthConditions", [])
+          setFieldValue("photographUsageConsent", "")
 
           setCurrentStep(1)
-          toast.success("Child added successfully. You can enroll another child.")
+          toast.success("Child added successfully. Please fill in details for the next child.")
         } else {
-          // Fetch pricing for Baby & Me program
-          const pricing = await fetchPricingForPrograms(["Baby & Me"])
-          if (!pricing) {
-            toast.error("Unable to fetch pricing information. Please try again.")
+          // Final submission - process all siblings including current child
+          const allChildren = [...siblings, childData]
+          
+          if (allChildren.length === 0) {
+            toast.error("No children to register")
             return
           }
 
-          setSelectedPricing(pricing)
-          
-          // Calculate final amount with discount
-          const originalAmount = pricing.price / 100 // Convert to cedis
-          const finalAmountInCedis = calculateFinalAmount(originalAmount, discountData)
+          // Calculate total amount for all children
+          let totalOriginalAmount = 0
+          const childrenWithPricing = []
+
+          for (const child of allChildren) {
+            const pricing = await fetchPricingForPrograms(["Baby & Me"])
+            if (!pricing) {
+              toast.error(`Unable to fetch pricing for ${child.childName}. Please try again.`)
+              return
+            }
+            
+            const childAmount = pricing.price / 100 // Convert to cedis
+            totalOriginalAmount += childAmount
+            childrenWithPricing.push({ ...child, pricing, amount: childAmount })
+          }
+
+          // Apply discount to total amount (not per child)
+          // One discount code applies to the total cost for all children
+          const finalAmountInCedis = calculateFinalAmount(totalOriginalAmount, discountData)
           const finalAmountInPesewas = Math.round(finalAmountInCedis * 100) // Convert back to pesewas
           setFinalAmount(finalAmountInCedis)
 
-          // Prepare registration data for payment (don't save to children table yet)
+          // Store children data for payment verification
           const registrationData = {
-            ...values,
-            programs: ["Baby & Me"], // Ensure program is set
+            children: childrenWithPricing,
             familyId,
-            pricing_id: pricing.id,
-            program_type: "Baby & Me",
             discount_code: discountCode.trim().toUpperCase() || null,
             discount_data: discountData,
-            original_amount: originalAmount,
-            discount_amount: discountData ? (originalAmount * discountData.discount_percentage) / 100 : 0,
+            original_amount: totalOriginalAmount,
+            discount_amount: discountData ? (totalOriginalAmount * discountData.discount_percentage) / 100 : 0,
             final_amount: finalAmountInCedis,
+            program_type: "Baby & Me",
           }
 
-          // Initiate payment first - registration will be saved only after payment verification
+          // Initiate payment
           setSubmittingPayment(true)
           const response = await fetch("https://api.paystack.co/transaction/initialize", {
             method: "POST",
@@ -257,7 +276,7 @@ const BabyAndMeRegistration = () => {
             },
             body: JSON.stringify({
               email: values.parentEmail,
-              amount: finalAmountInPesewas, // Use discounted amount in pesewas
+              amount: finalAmountInPesewas,
               callback_url: `${window.location.origin}/baby-and-me-registration/verify`,
             }),
           })
@@ -268,9 +287,9 @@ const BabyAndMeRegistration = () => {
             throw new Error(result.message || "Failed to initialize payment")
           }
 
-          // Save transaction to our database
+          // Save transaction to database
           const { error: dbError } = await supabase.from("transactions").insert({
-            amount: finalAmountInPesewas, // Store final discounted amount in pesewas to match Paystack
+            amount: finalAmountInPesewas,
             reference: result.data.reference,
             paystack_response: result,
             status: "pending",
@@ -284,9 +303,8 @@ const BabyAndMeRegistration = () => {
 
           setPaymentUrl(result.data.authorization_url)
           setIsPaymentInitiated(true)
-          toast.success("Payment initiated successfully! Please complete your payment to secure your registration.")
-          
-          // Scroll to top when payment screen is shown
+          toast.success("Payment initiated successfully! Please complete your payment to secure your registrations.")
+
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }
       } catch (error: any) {
@@ -312,41 +330,51 @@ const BabyAndMeRegistration = () => {
           
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Initiated!</h2>
           <p className="text-gray-600 mb-6">
-            Your registration is almost complete! Please complete your payment to secure your child&apos;s spot.
+            Your registration is almost complete! Please complete your payment to secure your children's spots.
           </p>
 
-          {selectedPricing && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-800 mb-2">Selected Plan:</h4>
-              <p className="text-blue-700">
-                <strong>{selectedPricing.program_name}</strong>
-              </p>
-              
-              {discountData ? (
-                <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Original Price:</span>
-                    <span className="line-through text-gray-500">{formatMoneyToCedis(selectedPricing.price)}</span>
+          {/* Show summary of all children */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h4 className="font-semibold text-blue-800 mb-2">Registration Summary:</h4>
+            {siblings.length > 0 && (
+              <div className="space-y-2 text-sm">
+                {siblings.map((child, index) => (
+                  <div key={index} className="flex justify-between text-blue-700">
+                    <span>{child.childName}:</span>
+                    <span>Baby & Me Program</span>
                   </div>
-                  <div className="flex justify-between text-green-700">
-                    <span>Discount ({discountData.discount_percentage}%):</span>
-                    <span>-{formatMoneyToCedis(Math.round((selectedPricing.price / 100 * discountData.discount_percentage / 100) * 100))}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                    <span>Total:</span>
-                    <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
-                  </div>
-                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                    Discount code &quot;{discountCode.toUpperCase()}&quot; applied!
-                  </div>
+                ))}
+                <div className="flex justify-between text-blue-700">
+                  <span>{formik.values.childName}:</span>
+                  <span>Baby & Me Program</span>
                 </div>
-              ) : (
-                <div className="mt-2">
-                  <span className="font-semibold text-lg">{formatMoneyToCedis(selectedPricing.price)}</span>
+              </div>
+            )}
+            
+            {discountData ? (
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Original Total:</span>
+                  <span className="line-through text-gray-500">{formatMoneyToCedis(Math.round(finalAmount * 100 / (1 - discountData.discount_percentage / 100)))}</span>
                 </div>
-              )}
-            </div>
-          )}
+                <div className="flex justify-between text-green-700">
+                  <span>Discount ({discountData.discount_percentage}%):</span>
+                  <span>-{formatMoneyToCedis(Math.round((finalAmount * 100 / (1 - discountData.discount_percentage / 100)) * (discountData.discount_percentage / 100)))}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                  <span>Total:</span>
+                  <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
+                </div>
+                <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                  Discount code "{discountCode.toUpperCase()}" applied!
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2">
+                <span className="font-semibold text-lg">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
+              </div>
+            )}
+          </div>
 
           {/* Payment button */}
           <a
@@ -399,7 +427,18 @@ const BabyAndMeRegistration = () => {
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
+          
+          {/* Show enrolled siblings count */}
+          {siblings.length > 0 && (
+            <div className="mt-4 bg-blue-100 border border-blue-300 rounded-lg p-3 inline-block">
+              <p className="text-blue-800 font-medium">
+                {siblings.length} child{siblings.length > 1 ? 'ren' : ''} already added. 
+                {siblings.length === 1 ? ' Add one more child or complete registration.' : ' Complete registration.'}
+              </p>
+            </div>
+          )}
         </div>
+        
         <FormikProvider value={formik}>
           <form onSubmit={handleSubmit} className="bg-white p-4 md:p-10 rounded-3xl shadow-lg">
             <div className="flex justify-between w-full font-bold">
@@ -412,6 +451,22 @@ const BabyAndMeRegistration = () => {
                     : "Photograph Usage Authorization"}
               <h5 className="text-xs md:text-base">{`Step ${currentStep} / ${totalSteps}`}</h5>
             </div>
+            
+            {/* Show enrolled siblings summary */}
+            {siblings.length > 0 && currentStep > 1 && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Enrolled Children:</h4>
+                <div className="space-y-1 text-sm">
+                  {siblings.map((child, index) => (
+                    <div key={index} className="flex justify-between text-green-700">
+                      <span>{child.childName}</span>
+                      <span className="font-medium">Baby & Me Program</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {currentStep === 1 && (
               <ExistingInfoCheck
                 isChildAlreadyEnrolled={isChildAlreadyEnrolled}
@@ -442,6 +497,9 @@ const BabyAndMeRegistration = () => {
                 {/* Discount Code Section */}
                 <div className="mb-8 p-6 bg-gray-50 rounded-lg">
                   <h3 className="text-lg font-semibold mb-4">Discount Code (Optional)</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Note: Discount code applies to the total amount for all children being registered.
+                  </p>
                   <div className="flex gap-4">
                     <div className="flex-1">
                       <input
@@ -472,6 +530,9 @@ const BabyAndMeRegistration = () => {
                         <span className="font-medium">Discount Applied: {discountData.discount_percentage}% off</span>
                       </div>
                       <p className="text-green-700 text-sm mt-1">Code: {discountData.discount_code}</p>
+                      <p className="text-green-700 text-sm mt-1">
+                        This discount will be applied to the total cost for all children.
+                      </p>
                     </div>
                   )}
                 </div>

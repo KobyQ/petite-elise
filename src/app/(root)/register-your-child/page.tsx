@@ -139,27 +139,43 @@ const RegisterYourChild = () => {
         const childData = { ...values }
 
         if (values.hasSibling === "true") {
-          // Add child to siblings and reset form
+          // Add child to siblings and reset form for next child
           setSiblings((prev: any) => [...prev, childData])
 
+          // Reset form for next child (keep parent information)
           setFieldValue("childName", "")
           setFieldValue("childDOB", "")
           setFieldValue("childAge", "")
+          setFieldValue("programs", [])
+          setFieldValue("dayCareSchedule", "")
+          setFieldValue("feeding", "")
           setFieldValue("hasSibling", "")
+          setFieldValue("hasAllergies", "")
+          setFieldValue("allergies", [])
+          setFieldValue("hasSpecialHealthConditions", "")
+          setFieldValue("specialHealthConditions", [])
+          setFieldValue("photographUsageConsent", "")
 
           setCurrentStep(1)
-          toast.success("Child added successfully. You can enroll another child.")
+          toast.success("Child added successfully. Please fill in details for the next child.")
         } else {
           const allSiblings = [...siblings, values]
+          
+          if (allSiblings.length === 0) {
+            toast.error("No children to register")
+            return
+          }
+
           // Submit all siblings together
           const siblingsWithFamilyId = allSiblings?.map((sibling) => ({
             ...sibling,
             familyId,
           }))
+          
           const { error } = await supabase.from("children").insert(siblingsWithFamilyId)
           if (error) throw error
+          
           // Send a request to the registration API to trigger email
-
           const emailData = siblingsWithFamilyId[0]
           const emailObject = {
             childName: emailData?.childName,
@@ -208,7 +224,18 @@ const RegisterYourChild = () => {
           <p className="mt-4 text-md md:text-lg text-gray-600">
             Fill out the form below to get started on your child&apos;s amazing journey with us!
           </p>
+          
+          {/* Show enrolled siblings count */}
+          {siblings.length > 0 && (
+            <div className="mt-4 bg-blue-100 border border-blue-300 rounded-lg p-3 inline-block">
+              <p className="text-blue-800 font-medium">
+                {siblings.length} child{siblings.length > 1 ? 'ren' : ''} already added. 
+                {siblings.length === 1 ? ' Add one more child or complete registration.' : ' Complete registration.'}
+              </p>
+            </div>
+          )}
         </div>
+        
         <FormikProvider value={formik}>
           <form onSubmit={handleSubmit} className="bg-white p-4 md:p-10 rounded-3xl shadow-lg">
             <div className="flex justify-between w-full font-bold">
@@ -223,6 +250,25 @@ const RegisterYourChild = () => {
                       : "Required Documents and Photograph Usage Authorization"}
               <h5 className="text-xs md:text-base">{`Step ${currentStep} / ${totalSteps}`}</h5>
             </div>
+            
+            {/* Show enrolled siblings summary */}
+            {siblings.length > 0 && currentStep > 1 && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Enrolled Children:</h4>
+                <div className="space-y-1 text-sm">
+                  {siblings.map((child, index) => (
+                    <div key={index} className="flex justify-between text-green-700">
+                      <span>{child.childName}</span>
+                      <span className="font-medium">
+                        {child.programs?.length > 0 ? child.programs.join(", ") : "No programs selected"}
+                        {child.dayCareSchedule && ` - ${child.dayCareSchedule}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {currentStep === 1 && (
               <ExistingInfoCheck
                 isChildAlreadyEnrolled={isChildAlreadyEnrolled}

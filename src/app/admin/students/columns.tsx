@@ -27,7 +27,6 @@ export const userColumns = (
     name: "Child's Age",
     selector: (row: any) => row?.childAge,
   },
-
   {
     name: "Date Registered",
     selector: (row: any) => moment(row?.created_at)?.format("lll"),

@@ -7,6 +7,7 @@ import {
   FaClipboardList,
   FaBirthdayCake,
   FaMoneyBillWave,
+  FaUsers,
 } from "react-icons/fa";
 import { MdPlace } from "react-icons/md";
 import supabase from "@/utils/supabaseClient";
@@ -23,6 +24,8 @@ const StudentDetails = ({
   const [transaction, setTransaction] = useState<any | null>(null);
   const [isTxnLoading, setIsTxnLoading] = useState<boolean>(false);
   const [txnError, setTxnError] = useState<string | null>(null);
+  const [siblings, setSiblings] = useState<any[]>([]);
+  const [isSiblingsLoading, setIsSiblingsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchTransaction = async () => {
@@ -51,6 +54,32 @@ const StudentDetails = ({
 
     fetchTransaction();
   }, [data?.reference]);
+
+  // Fetch siblings if this child has a familyId
+  useEffect(() => {
+    const fetchSiblings = async () => {
+      if (!data?.familyId) return;
+      setIsSiblingsLoading(true);
+      try {
+        const { data: siblingsData, error } = await supabase
+          .from("children")
+          .select("childName, programs, created_at")
+          .eq("familyId", data.familyId)
+          .eq("is_active", true)
+          .order("created_at", { ascending: true });
+
+        if (!error && siblingsData) {
+          setSiblings(siblingsData);
+        }
+      } catch (e) {
+        console.error("Failed to fetch siblings:", e);
+      } finally {
+        setIsSiblingsLoading(false);
+      }
+    };
+
+    fetchSiblings();
+  }, [data?.familyId]);
 
   const computeAmountCedis = () => {
     if (!transaction) return null;
@@ -92,6 +121,11 @@ const StudentDetails = ({
   const paidAmount = computeAmountCedis();
   const paidSchedule = computeSchedulePaid();
   const paidProgram = transaction?.details?.program_type || null;
+  
+  // Check if this is a sibling registration
+  const isSiblingRegistration = transaction?.details?.children && Array.isArray(transaction.details.children) && transaction.details.children.length > 1;
+  const totalChildrenInPayment = isSiblingRegistration ? transaction.details.children.length : 1;
+  const amountPerChild = isSiblingRegistration && paidAmount ? paidAmount / totalChildrenInPayment : paidAmount;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -121,14 +155,41 @@ const StudentDetails = ({
               Payment
             </h3>
             <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
-              <p>
-                <strong>Amount Paid:</strong>{" "}
-                {isTxnLoading
-                  ? "Loading..."
-                  : paidAmount != null
-                  ? `GHS ${paidAmount.toFixed(2)}`
-                  : "N/A"}
-              </p>
+              {isSiblingRegistration ? (
+                <>
+                  <p>
+                    <strong>Total Payment Amount:</strong>{" "}
+                    {isTxnLoading
+                      ? "Loading..."
+                      : paidAmount != null
+                      ? `GHS ${paidAmount.toFixed(2)}`
+                      : "N/A"}
+                  </p>
+                  <p>
+                    <strong>Amount Per Child:</strong>{" "}
+                    {isTxnLoading
+                      ? "Loading..."
+                      : amountPerChild != null
+                      ? `GHS ${amountPerChild.toFixed(2)}`
+                      : "N/A"}
+                  </p>
+                  <p>
+                    <strong>Total Children in Payment:</strong> {totalChildrenInPayment}
+                  </p>
+                  <p className="col-span-2 bg-blue-50 p-2 rounded border border-blue-200">
+                    <strong>Note:</strong> This is a sibling registration. The total payment covers {totalChildrenInPayment} child{totalChildrenInPayment > 1 ? 'ren' : ''}.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  <strong>Amount Paid:</strong>{" "}
+                  {isTxnLoading
+                    ? "Loading..."
+                    : paidAmount != null
+                    ? `GHS ${paidAmount.toFixed(2)}`
+                    : "N/A"}
+                </p>
+              )}
               <p>
                 <strong>Program:</strong> {paidProgram || "N/A"}
               </p>
@@ -144,6 +205,41 @@ const StudentDetails = ({
               <p className="text-red-600 text-sm mt-2">{txnError}</p>
             )}
           </section>
+
+          {/* Siblings Information */}
+          {isSiblingRegistration && (
+            <section className="border-b pb-10">
+              <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+                <FaUsers className="text-blue-500" />
+                Children in This Payment
+              </h3>
+              <div className="mt-2 space-y-2">
+                <div className="space-y-2">
+                  {transaction.details.children.map((child: any, index: number) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded border">
+                      <span className="font-medium text-blue-600">
+                        {child.childName === data.childName ? "→ " : ""}
+                        {child.childName}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {child.programs?.join(", ") || "No programs"}
+                      </span>
+                      {child.childName === data.childName && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          Current Child
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  <strong>Note:</strong> All children above share the same payment transaction.
+                </p>
+              </div>
+            </section>
+          )}
+
+
 
           {/* General Information */}
           <section className="border-b pb-10">
@@ -291,7 +387,7 @@ const StudentDetails = ({
                 )}
                 {data?.childMindingSchedule && (
                   <p>
-                    <strong>SChildminding Schedule:</strong>{" "}
+                    <strong>Childminding Schedule:</strong>{" "}
                     {data?.childMindingSchedule || "N/A"}
                   </p>
                 )}

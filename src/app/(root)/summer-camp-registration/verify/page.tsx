@@ -16,6 +16,7 @@ interface RegistrationData {
   parentEmail: string;
   summerCampSchedule: string;
   reference: string;
+  familyId?: string;
 }
 
 const VerifyPageContent = () => {
@@ -35,7 +36,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
           .from("transactions")
@@ -50,7 +50,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
         // Check if transaction is successful
         if (transaction.status !== "success") {
           // If transaction is still pending, retry after delay
@@ -60,29 +59,51 @@ const VerifyPageContent = () => {
           return
         }
 
-        // Look for registration in children table
-        const { data: registrationData, error: registrationError } = await supabase
-          .from("children")
-          .select("*")
-          .eq("reference", ref)
-          .maybeSingle()
-
-
-        if (registrationError && registrationError.code !== "PGRST116") {
-          console.error("Registration lookup error:", registrationError)
-          setError(registrationError.message)
-          setLoading(false)
-          return
-        }
-  
-        if (registrationData) {
-          setRegistration(registrationData)
+        // Extract registration details from transaction
+        const transactionDetails = transaction.details
+        if (transactionDetails && transactionDetails.children && Array.isArray(transactionDetails.children)) {
+          // This is a sibling registration - use the first child for display
+          const firstChild = transactionDetails.children[0]
+          setRegistration({
+            childName: firstChild.childName,
+            parentName: firstChild.parentName,
+            parentEmail: firstChild.parentEmail,
+            summerCampSchedule: firstChild.summerCampSchedule,
+            reference: ref,
+            familyId: transactionDetails.familyId,
+          })
           setLoading(false)
         } else {
-          // If registration not found, retry after delay
-          setTimeout(() => {
-            verifyTransaction()
-          }, 5000) // Reduced delay to 5 seconds
+          // Look for single registration in children table (fallback for old registrations)
+          const { data: registrationData, error: registrationError } = await supabase
+            .from("children")
+            .select("*")
+            .eq("reference", ref)
+            .maybeSingle()
+
+          if (registrationError && registrationError.code !== "PGRST116") {
+            console.error("Registration lookup error:", registrationError)
+            setError(registrationError.message)
+            setLoading(false)
+            return
+          }
+    
+          if (registrationData) {
+            setRegistration({
+              childName: registrationData.childName,
+              parentName: registrationData.parentName,
+              parentEmail: registrationData.parentEmail,
+              summerCampSchedule: registrationData.summerCampSchedule,
+              reference: ref,
+              familyId: registrationData.familyId,
+            })
+            setLoading(false)
+          } else {
+            // If registration not found, retry after delay
+            setTimeout(() => {
+              verifyTransaction()
+            }, 5000) // Reduced delay to 5 seconds
+          }
         }
       } catch (error) {
         console.error("Verification error:", error)
