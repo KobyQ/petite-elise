@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaShoppingBag, FaEnvelope, FaPhone } from "react-icons/fa";
@@ -35,19 +35,7 @@ const PaymentSuccessContent = () => {
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 20; // Maximum 20 retries (60 seconds total)
 
-  useEffect(() => {
-    const reference = searchParams.get("reference");
-    const trxref = searchParams.get("trxref");
-
-    if (reference || trxref) {
-      fetchOrderDetails(reference || trxref || "");
-    } else {
-      setError("No payment reference found");
-      setLoading(false);
-    }
-  }, [searchParams]);
-
-  const fetchOrderDetails = async (reference: string) => {
+  const fetchOrderDetails = useCallback(async (reference: string) => {
     try {
       // Check retry limit BEFORE making any API calls
       if (retryCount >= MAX_RETRIES) {
@@ -133,7 +121,19 @@ const PaymentSuccessContent = () => {
       setError("Failed to fetch order details");
       setLoading(false);
     }
-  };
+  }, [retryCount]);
+
+  useEffect(() => {
+    const reference = searchParams.get("reference");
+    const trxref = searchParams.get("trxref");
+
+    if (reference || trxref) {
+      fetchOrderDetails(reference || trxref || "");
+    } else {
+      setError("No payment reference found");
+      setLoading(false);
+    }
+  }, [searchParams, fetchOrderDetails]);
 
   // Manual fallback to create shop order if webhook failed
   const manuallyCreateShopOrder = async () => {

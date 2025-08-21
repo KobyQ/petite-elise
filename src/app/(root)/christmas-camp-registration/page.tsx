@@ -248,7 +248,7 @@ const ChristmasCampRegistration = () => {
             if (!child.christmasCampSchedule) continue
             const pricing = await fetchPricingForSchedule(child.christmasCampSchedule)
             if (!pricing) {
-              toast.error(`Unable to fetch pricing for ${child.childName}'s schedule. Please try again.`)
+              toast.error(`Unable to fetch pricing for ${child.childName}&apos;s schedule. Please try again.`)
               return
             }
             
@@ -338,7 +338,7 @@ const ChristmasCampRegistration = () => {
 
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Initiated!</h2>
           <p className="text-gray-600 mb-6">
-            Your registration is almost complete! Please complete your payment to secure your children's spots.
+            Your registration is almost complete! Please complete your payment to secure your children&apos;s spots.
           </p>
 
           {/* Show summary of all children */}
@@ -374,7 +374,7 @@ const ChristmasCampRegistration = () => {
                   <span className="text-green-600">{formatMoneyToCedis(Math.round(finalAmount * 100))}</span>
                 </div>
                 <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                  Discount code "{discountCode.toUpperCase()}" applied!
+                  Discount code &quot;{discountCode.toUpperCase()}&quot; applied!
                 </div>
               </div>
             ) : (

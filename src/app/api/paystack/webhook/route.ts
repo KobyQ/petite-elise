@@ -388,7 +388,7 @@ export async function POST(request: NextRequest) {
         programName = "Christmas Camp Program";
         if (registrationData.children && Array.isArray(registrationData.children)) {
           // Multiple children - show all schedules
-          const schedules = registrationData.children.map((child: any) => child.christmasCampSchedule).filter(Boolean);
+          const schedules = registrationData.children.map((child: { christmasCampSchedule?: string }) => child.christmasCampSchedule).filter(Boolean);
           schedule = schedules.length > 1 ? `${schedules.length} children: ${schedules.join(", ")}` : schedules[0] || "N/A";
         } else {
           schedule = registrationData.christmasCampSchedule;
