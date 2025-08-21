@@ -210,7 +210,7 @@ const ChristmasCampRegistration = () => {
           // Add child to siblings and reset form for next child
           setSiblings((prev: any) => [...prev, childData])
 
-          // Reset form for next child
+          // Reset form for next child (discount code remains applied)
           setFieldValue("childName", "")
           setFieldValue("childDOB", "")
           setFieldValue("childAge", "")
@@ -257,7 +257,8 @@ const ChristmasCampRegistration = () => {
             childrenWithPricing.push({ ...child, pricing, amount: childAmount })
           }
 
-          // Apply discount to total amount
+          // Apply discount to total amount (not per child)
+          // One discount code applies to the total cost for all children
           const finalAmountInCedis = calculateFinalAmount(totalOriginalAmount, discountData)
           const finalAmountInPesewas = Math.round(finalAmountInCedis * 100) // Convert back to pesewas
           setFinalAmount(finalAmountInCedis)
@@ -361,6 +362,9 @@ const ChristmasCampRegistration = () => {
             
             {discountData ? (
               <div className="mt-3 space-y-2 text-sm">
+                <p className="text-xs text-green-700 mb-2 italic">
+                  Discount applied to total cost for all children
+                </p>
                 <div className="flex justify-between">
                   <span>Original Total:</span>
                   <span className="line-through text-gray-500">{formatMoneyToCedis(Math.round(finalAmount * 100 / (1 - discountData.discount_percentage / 100)))}</span>
@@ -514,6 +518,9 @@ const ChristmasCampRegistration = () => {
                 {/* Discount Code Section */}
                 <div className="mb-8 p-6 bg-gray-50 rounded-lg">
                   <h3 className="text-lg font-semibold mb-4">Discount Code (Optional)</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Note: Discount code applies to the total amount for all children being registered.
+                  </p>
                   <div className="flex gap-4">
                     <div className="flex-1">
                       <input
@@ -544,6 +551,9 @@ const ChristmasCampRegistration = () => {
                         <span className="font-medium">Discount Applied: {discountData.discount_percentage}% off</span>
                       </div>
                       <p className="text-green-700 text-sm mt-1">Code: {discountData.discount_code}</p>
+                      <p className="text-green-700 text-sm mt-1">
+                        This discount will be applied to the total cost for all children.
+                      </p>
                     </div>
                   )}
                 </div>

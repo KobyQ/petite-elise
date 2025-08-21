@@ -216,48 +216,65 @@ export async function POST(request: NextRequest) {
       // Handle Christmas Camp registrations (including siblings)
       if (registrationData.children && Array.isArray(registrationData.children)) {
         // Multiple children registration - save each as individual record
+        console.log("Processing Christmas Camp children:", registrationData.children.length);
         for (const child of registrationData.children) {
           const childrenData = {
-            childName: child.childName,
-            childDOB: child.childDOB,
-            childAge: child.childAge,
-            parentName: child.parentName,
-            parentEmail: child.parentEmail,
-            parentPhoneNumber: child.parentPhoneNumber,
-            parentWhatsappNumber: child.parentWhatsappNumber,
-            address: child.address,
-            emergencyContactName: child.emergencyContactName,
-            emergencyContactPhoneNumber: child.emergencyContactPhoneNumber,
-            emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber,
-            emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild,
-            dropChildOffSelf: child.dropChildOffSelf,
-            dropOffNames: child.dropOffNames,
-            programs: child.programs,
-            dayCareSchedule: child.dayCareSchedule,
-            hasAllergies: child.hasAllergies,
-            allergies: child.allergies,
-            hasSpecialHealthConditions: child.hasSpecialHealthConditions,
-            specialHealthConditions: child.specialHealthConditions,
-            photographUsageConsent: child.photographUsageConsent,
-            feeding: child.feeding,
-            hasSiblings: child.hasSibling,
+            childName: child.childName || "",
+            childDOB: child.childDOB || "",
+            childAge: child.childAge || "",
+            parentName: child.parentName || "",
+            parentEmail: child.parentEmail || "",
+            parentPhoneNumber: child.parentPhoneNumber || "",
+            parentWhatsappNumber: child.parentWhatsappNumber || "",
+            address: child.address || "",
+            emergencyContactName: child.emergencyContactName || "",
+            emergencyContactPhoneNumber: child.emergencyContactPhoneNumber || "",
+            emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber || "",
+            emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild || "",
+            dropChildOffSelf: child.dropChildOffSelf || "",
+            dropOffNames: child.dropOffNames || [],
+            programs: child.programs || ["Christmas Camp"],
+            dayCareSchedule: child.dayCareSchedule || "",
+            hasAllergies: child.hasAllergies || "",
+            allergies: child.allergies || [],
+            hasSpecialHealthConditions: child.hasSpecialHealthConditions || "",
+            specialHealthConditions: child.specialHealthConditions || [],
+            photographUsageConsent: child.photographUsageConsent || "",
+            feeding: child.feeding || "",
+            hasSiblings: child.hasSibling || "",
             sibling: child.hasSibling === "true" ? "Yes" : "No",
-            saturdayClubSchedule: child.saturdayClubSchedule,
-            summerCampSchedule: child.summerCampSchedule,
-            familyId: registrationData.familyId,
-            childMindingSchedule: child.childMindingSchedule,
-            christmasCampSchedule: child.christmasCampSchedule,
+            saturdayClubSchedule: child.saturdayClubSchedule || "",
+            summerCampSchedule: child.summerCampSchedule || "",
+            familyId: registrationData.familyId || "",
+            childMindingSchedule: child.childMindingSchedule || "",
+            christmasCampSchedule: child.christmasCampSchedule || "",
             is_active: true,
             order_id: transaction.order_id,
             reference: reference,
           };
 
-          const { error: registrationError } = await supabase
-            .from("children")
-            .insert(childrenData);
+          try {
+            console.log(`Inserting child: ${child.childName}`, { 
+              childName: child.childName,
+              christmasCampSchedule: child.christmasCampSchedule,
+              familyId: registrationData.familyId 
+            });
+            
+            const { error: registrationError } = await supabase
+              .from("children")
+              .insert(childrenData);
 
-          if (registrationError) {
-            return NextResponse.json({ error: `Failed to save registration for ${child.childName}` }, { status: 500 });
+            if (registrationError) {
+              console.error(`Database error for ${child.childName}:`, registrationError);
+              return NextResponse.json({ 
+                error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
+              }, { status: 500 });
+            }
+          } catch (insertError: any) {
+            console.error(`Insert error for ${child.childName}:`, insertError);
+            return NextResponse.json({ 
+              error: `Failed to save registration for ${child.childName}: ${insertError?.message || 'Unknown error'}` 
+            }, { status: 500 });
           }
         }
       } else {
