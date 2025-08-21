@@ -270,10 +270,11 @@ export async function POST(request: NextRequest) {
                 error: `Failed to save registration for ${child.childName}: ${registrationError.message}` 
               }, { status: 500 });
             }
-          } catch (insertError: any) {
+          } catch (insertError: unknown) {
             console.error(`Insert error for ${child.childName}:`, insertError);
+            const errorMessage = insertError instanceof Error ? insertError.message : 'Unknown error';
             return NextResponse.json({ 
-              error: `Failed to save registration for ${child.childName}: ${insertError?.message || 'Unknown error'}` 
+              error: `Failed to save registration for ${child.childName}: ${errorMessage}` 
             }, { status: 500 });
           }
         }
