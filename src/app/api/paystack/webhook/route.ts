@@ -212,6 +212,99 @@ export async function POST(request: NextRequest) {
       } catch (shopOrderException) {
         return NextResponse.json({ error: "Exception during shop order processing" }, { status: 500 });
       }
+    } else if (registrationData.program_type === "Christmas Camp") {
+      // Handle Christmas Camp registrations (including siblings)
+      if (registrationData.children && Array.isArray(registrationData.children)) {
+        // Multiple children registration - save each as individual record
+        for (const child of registrationData.children) {
+          const childrenData = {
+            childName: child.childName,
+            childDOB: child.childDOB,
+            childAge: child.childAge,
+            parentName: child.parentName,
+            parentEmail: child.parentEmail,
+            parentPhoneNumber: child.parentPhoneNumber,
+            parentWhatsappNumber: child.parentWhatsappNumber,
+            address: child.address,
+            emergencyContactName: child.emergencyContactName,
+            emergencyContactPhoneNumber: child.emergencyContactPhoneNumber,
+            emergencyContactWhatsappNumber: child.emergencyContactWhatsappNumber,
+            emergencyContactRelationshipToChild: child.emergencyContactRelationshipToChild,
+            dropChildOffSelf: child.dropChildOffSelf,
+            dropOffNames: child.dropOffNames,
+            programs: child.programs,
+            dayCareSchedule: child.dayCareSchedule,
+            hasAllergies: child.hasAllergies,
+            allergies: child.allergies,
+            hasSpecialHealthConditions: child.hasSpecialHealthConditions,
+            specialHealthConditions: child.specialHealthConditions,
+            photographUsageConsent: child.photographUsageConsent,
+            feeding: child.feeding,
+            hasSiblings: child.hasSibling,
+            sibling: child.hasSibling === "true" ? "Yes" : "No",
+            saturdayClubSchedule: child.saturdayClubSchedule,
+            summerCampSchedule: child.summerCampSchedule,
+            familyId: registrationData.familyId,
+            childMindingSchedule: child.childMindingSchedule,
+            christmasCampSchedule: child.christmasCampSchedule,
+            is_active: true,
+            order_id: transaction.order_id,
+            reference: reference,
+          };
+
+          const { error: registrationError } = await supabase
+            .from("children")
+            .insert(childrenData);
+
+          if (registrationError) {
+            return NextResponse.json({ error: `Failed to save registration for ${child.childName}` }, { status: 500 });
+          }
+        }
+      } else {
+        // Single child registration (fallback for old format)
+        const childrenData = {
+          childName: registrationData.childName,
+          childDOB: registrationData.childDOB,
+          childAge: registrationData.childAge,
+          parentName: registrationData.parentName,
+          parentEmail: registrationData.parentEmail,
+          parentPhoneNumber: registrationData.parentPhoneNumber,
+          parentWhatsappNumber: registrationData.parentWhatsappNumber,
+          address: registrationData.address,
+          emergencyContactName: registrationData.emergencyContactName,
+          emergencyContactPhoneNumber: registrationData.emergencyContactPhoneNumber,
+          emergencyContactWhatsappNumber: registrationData.emergencyContactWhatsappNumber,
+          emergencyContactRelationshipToChild: registrationData.emergencyContactRelationshipToChild,
+          dropChildOffSelf: registrationData.dropChildOffSelf,
+          dropOffNames: registrationData.dropOffNames,
+          programs: registrationData.programs,
+          dayCareSchedule: registrationData.dayCareSchedule,
+          hasAllergies: registrationData.hasAllergies,
+          allergies: registrationData.allergies,
+          hasSpecialHealthConditions: registrationData.hasSpecialHealthConditions,
+          specialHealthConditions: registrationData.specialHealthConditions,
+          photographUsageConsent: registrationData.photographUsageConsent,
+          feeding: registrationData.feeding,
+          hasSiblings: registrationData.hasSiblings,
+          sibling: registrationData.sibling,
+          saturdayClubSchedule: registrationData.saturdayClubSchedule,
+          summerCampSchedule: registrationData.summerCampSchedule,
+          familyId: registrationData.familyId,
+          childMindingSchedule: registrationData.childMindingSchedule,
+          christmasCampSchedule: registrationData.christmasCampSchedule,
+          is_active: true,
+          order_id: transaction.order_id,
+          reference: reference,
+        };
+
+        const { error: registrationError } = await supabase
+          .from("children")
+          .insert(childrenData);
+
+        if (registrationError) {
+          return NextResponse.json({ error: "Failed to save registration" }, { status: 500 });
+        }
+      }
     } else {
       // Save to children table for other programs
       const childrenData = {
@@ -293,7 +386,13 @@ export async function POST(request: NextRequest) {
         schedule = registrationData.summerCampSchedule;
       } else if (registrationData.program_type === "Christmas Camp") {
         programName = "Christmas Camp Program";
-        schedule = registrationData.christmasCampSchedule;
+        if (registrationData.children && Array.isArray(registrationData.children)) {
+          // Multiple children - show all schedules
+          const schedules = registrationData.children.map((child: any) => child.christmasCampSchedule).filter(Boolean);
+          schedule = schedules.length > 1 ? `${schedules.length} children: ${schedules.join(", ")}` : schedules[0] || "N/A";
+        } else {
+          schedule = registrationData.christmasCampSchedule;
+        }
       } else if (registrationData.program_type === "Baby & Me") {
         programName = "Baby & Me Program";
         schedule = "Monthly";
@@ -316,7 +415,9 @@ export async function POST(request: NextRequest) {
         amount: displayAmountCedis,
         program_type: registrationData.program_type,
         paymentDate: new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format
-        parentName: registrationData.parentName,
+        parentName: registrationData.children && Array.isArray(registrationData.children) 
+          ? registrationData.children[0]?.parentName || registrationData.parentName 
+          : registrationData.parentName,
         program: programName,
         schedule: schedule,
         reference: reference,
@@ -326,12 +427,16 @@ export async function POST(request: NextRequest) {
       const emailContent = generateReceiptEmailContent(receiptData);
       
       // Send receipt to parent
+      const parentEmail = registrationData.program_type === "Code Ninjas Club" ? registrationData.email : 
+          registrationData.program_type === "School Fees" ? registrationData.email : 
+          registrationData.program_type === "Shop Order" ? registrationData.customer_email :
+          registrationData.children && Array.isArray(registrationData.children) 
+            ? registrationData.children[0]?.parentEmail || registrationData.parentEmail
+            : registrationData.parentEmail;
+
       await transporter.sendMail({
         from: process.env.EMAIL,
-        to: registrationData.program_type === "Code Ninjas Club" ? registrationData.email : 
-            registrationData.program_type === "School Fees" ? registrationData.email : 
-            registrationData.program_type === "Shop Order" ? registrationData.customer_email :
-            registrationData.parentEmail,
+        to: parentEmail,
         subject: registrationData.program_type === "School Fees" 
           ? `Payment Receipt - School Fees Payment` 
           : registrationData.program_type === "Shop Order"

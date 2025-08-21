@@ -16,6 +16,7 @@ interface RegistrationData {
   parentEmail: string;
   christmasCampSchedule: string;
   reference: string;
+  familyId?: string;
 }
 
 const VerifyPageContent = () => {
@@ -35,7 +36,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
         // Fetch transaction data
         const { data: transaction, error: transactionError } = await supabase
           .from("transactions")
@@ -50,7 +50,6 @@ const VerifyPageContent = () => {
           return
         }
 
-
         // Check if transaction is successful
         if (transaction.status !== "success") {
           // If transaction is still pending, retry after delay
@@ -60,29 +59,51 @@ const VerifyPageContent = () => {
           return
         }
 
-        // Look for registration in children table
-        const { data: registrationData, error: registrationError } = await supabase
-          .from("children")
-          .select("*")
-          .eq("reference", ref)
-          .maybeSingle()
-
-
-        if (registrationError && registrationError.code !== "PGRST116") {
-          console.error("Registration lookup error:", registrationError)
-          setError(registrationError.message)
-          setLoading(false)
-          return
-        }
-  
-        if (registrationData) {
-          setRegistration(registrationData)
+        // Extract registration details from transaction
+        const transactionDetails = transaction.details
+        if (transactionDetails && transactionDetails.children && Array.isArray(transactionDetails.children)) {
+          // This is a sibling registration - use the first child for display
+          const firstChild = transactionDetails.children[0]
+          setRegistration({
+            childName: firstChild.childName,
+            parentName: firstChild.parentName,
+            parentEmail: firstChild.parentEmail,
+            christmasCampSchedule: firstChild.christmasCampSchedule,
+            reference: ref,
+            familyId: transactionDetails.familyId,
+          })
           setLoading(false)
         } else {
-          // If registration not found, retry after delay
-          setTimeout(() => {
-            verifyTransaction()
-          }, 5000) // Reduced delay to 5 seconds
+          // Look for single registration in children table (fallback for old registrations)
+          const { data: registrationData, error: registrationError } = await supabase
+            .from("children")
+            .select("*")
+            .eq("reference", ref)
+            .maybeSingle()
+
+          if (registrationError && registrationError.code !== "PGRST116") {
+            console.error("Registration lookup error:", registrationError)
+            setError(registrationError.message)
+            setLoading(false)
+            return
+          }
+    
+          if (registrationData) {
+            setRegistration({
+              childName: registrationData.childName,
+              parentName: registrationData.parentName,
+              parentEmail: registrationData.parentEmail,
+              christmasCampSchedule: registrationData.christmasCampSchedule,
+              reference: ref,
+              familyId: registrationData.familyId,
+            })
+            setLoading(false)
+          } else {
+            // If registration not found, retry after delay
+            setTimeout(() => {
+              verifyTransaction()
+            }, 5000) // Reduced delay to 5 seconds
+          }
         }
       } catch (error) {
         console.error("Verification error:", error)
@@ -111,7 +132,7 @@ const VerifyPageContent = () => {
           <div className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 relative">
             <div className="absolute inset-0 rounded-full border-4 border-gold-30 border-t-gold animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <LuLoader className="w-8 h-8 md:w-10 md:h-10 text-gold animate-pulse" />
+              <LuLoader className="w-8 h-8 md:w-10 md:w-10 text-gold animate-pulse" />
             </div>
           </div>
 
@@ -154,7 +175,7 @@ const VerifyPageContent = () => {
         >
           <div className="flex items-center justify-center mb-4 md:mb-6">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full flex items-center justify-center">
-              <LuTriangleAlert className="w-8 h-8 md:w-10 md:h-10 text-red-500" />
+              <LuTriangleAlert className="w-8 h-8 md:w-10 md:w-10 text-red-500" />
             </div>
           </div>
 
@@ -242,7 +263,7 @@ const VerifyPage = () => {
           <div className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 relative">
             <div className="absolute inset-0 rounded-full border-4 border-gold-30 border-t-gold animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <LuLoader className="w-8 h-8 md:w-10 md:h-10 text-gold animate-pulse" />
+              <LuLoader className="w-8 h-8 md:w-10 md:w-10 text-gold animate-pulse" />
             </div>
           </div>
           <h2 className="text-2xl md:text-3xl font-playfair font-bold text-deep-green mb-3 md:mb-4">
