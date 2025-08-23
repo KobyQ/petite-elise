@@ -247,6 +247,13 @@ const EditProduct: React.FC<EditProductProps> = ({
         return;
       }
     }
+    if (currentStep === 2) {
+      // Validate step 2 - ensure at least one image exists (either existing or new)
+      if (formData.existingImages.length === 0 && formData.images.length === 0) {
+        toast.error("Please ensure at least one product image exists", { position: "top-right" });
+        return;
+      }
+    }
     setCurrentStep(prev => Math.min(prev + 1, 3));
   };
 
@@ -284,6 +291,12 @@ const EditProduct: React.FC<EditProductProps> = ({
 
     if (!formData.stock_quantity || parseInt(formData.stock_quantity) < 0) {
       toast.error("Valid stock quantity is required", { position: "top-right" });
+      return;
+    }
+
+    // Ensure at least one image exists (either existing or new)
+    if (formData.existingImages.length === 0 && formData.images.length === 0) {
+      toast.error("At least one product image is required", { position: "top-right" });
       return;
     }
 
@@ -498,7 +511,7 @@ const EditProduct: React.FC<EditProductProps> = ({
       <h3 className="text-lg font-semibold mb-4">Product Images</h3>
       
       {/* Existing Images */}
-      {formData.existingImages.length > 0 && (
+      {formData.existingImages.length > 0 ? (
         <div>
           <label className="block font-semibold mb-2">Current Images ({formData.existingImages.length})</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -522,6 +535,12 @@ const EditProduct: React.FC<EditProductProps> = ({
             ))}
           </div>
         </div>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+          <p className="text-yellow-800 text-sm">
+            ⚠️ No current images. Please add at least one new image to continue.
+          </p>
+        </div>
       )}
       
       <div>
@@ -535,6 +554,7 @@ const EditProduct: React.FC<EditProductProps> = ({
         />
         <p className="text-sm text-gray-600 mt-1">
           Select one or more images to add. Images will be uploaded to secure storage when you update the product.
+          <span className="text-red-600 font-medium">At least one image must exist (either current or new).</span>
         </p>
       </div>
 

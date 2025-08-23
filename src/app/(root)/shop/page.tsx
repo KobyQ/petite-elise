@@ -40,6 +40,24 @@ interface CartItem {
   quantity: number;
 }
 
+// Helper function to get product image with fallback for general use
+const getProductImage = (images: string[] | undefined) => {
+  if (images && images.length > 0 && images[0]) {
+    return images[0];
+  }
+  // Use abc.png as the generic placeholder for cart and modals
+  return "/images/abc.png";
+};
+
+// Helper function specifically for product cards to use logo as placeholder
+const getProductCardImage = (images: string[] | undefined) => {
+  if (images && images.length > 0 && images[0]) {
+    return images[0];
+  }
+  // Use logo.jpg as the placeholder image for product cards
+  return "/images/logo.jpg";
+};
+
 // ProductCard component defined outside to prevent re-creation on every render
 const ProductCard = ({ 
   product, 
@@ -65,7 +83,7 @@ const ProductCard = ({
     >
       <div className="relative overflow-hidden">
         <Image
-          src={product.images?.[0] || "/placeholder-product.jpg"}
+          src={getProductCardImage(product.images)}
           alt={product.name}
           width={400}
           height={300}
@@ -597,7 +615,7 @@ const Shop = () => {
                       {cart.map((item) => (
                         <div key={item.product.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                           <Image
-                            src={item.product.images?.[0] || "/placeholder-product.jpg"}
+                            src={getProductImage(item.product.images)}
                             alt={item.product.name}
                             width={60}
                             height={60}
@@ -750,11 +768,11 @@ const Shop = () => {
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="text-center py-8 bg-gray-50 rounded-lg">
-                        <p className="text-gray-500">No images available</p>
-                      </div>
-                    )}
+                                         ) : (
+                       <div className="text-center py-8 bg-gray-50 rounded-lg">
+                         <p className="text-gray-500">No images available</p>
+                       </div>
+                     )}
                   </div>
 
                   {/* Product Information */}

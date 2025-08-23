@@ -217,6 +217,13 @@ const AddProduct: React.FC<AddProductProps> = ({
         return;
       }
     }
+    if (currentStep === 2) {
+      // Validate step 2 - ensure at least one image is selected
+      if (formData.images.length === 0) {
+        toast.error("Please upload at least one product image", { position: "top-right" });
+        return;
+      }
+    }
     setCurrentStep(prev => Math.min(prev + 1, 3));
   };
 
@@ -254,6 +261,11 @@ const AddProduct: React.FC<AddProductProps> = ({
 
     if (!formData.stock_quantity || parseInt(formData.stock_quantity) < 0) {
       toast.error("Valid stock quantity is required", { position: "top-right" });
+      return;
+    }
+
+    if (formData.images.length === 0) {
+      toast.error("At least one product image is required", { position: "top-right" });
       return;
     }
 
@@ -463,7 +475,7 @@ const AddProduct: React.FC<AddProductProps> = ({
       <h3 className="text-lg font-semibold mb-4">Product Images</h3>
       
       <div>
-        <label className="block font-semibold mb-1">Select Images</label>
+        <label className="block font-semibold mb-1">Select Images *</label>
         <input
           type="file"
           multiple
@@ -474,6 +486,7 @@ const AddProduct: React.FC<AddProductProps> = ({
         <p className="text-sm text-gray-600 mt-1">
           Select one or more images. Images will be uploaded to secure storage when you create the product.
           You can remove and change images before submitting.
+          <span className="text-red-600 font-medium">At least one image is required.</span>
         </p>
       </div>
 
