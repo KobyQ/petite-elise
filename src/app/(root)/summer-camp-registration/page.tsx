@@ -191,7 +191,15 @@ const SummerCampRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Summer Camp"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Summer Camp"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Summer Camp"]
+        })(),
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
       summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",

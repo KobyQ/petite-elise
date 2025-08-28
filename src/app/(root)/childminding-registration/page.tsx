@@ -190,7 +190,15 @@ const ChildMindingRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Childminding"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Childminding"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Childminding"]
+        })(),
       childMindingSchedule: selectedChild?.childMindingSchedule || [],
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",

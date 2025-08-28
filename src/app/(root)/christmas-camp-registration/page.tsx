@@ -191,7 +191,15 @@ const ChristmasCampRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Christmas Camp"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Christmas Camp"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Christmas Camp"]
+        })(),
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
       summerCampSchedule: selectedChild?.summerCampSchedule || "",
       christmasCampSchedule: selectedChild?.christmasCampSchedule || "",

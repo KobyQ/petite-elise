@@ -193,7 +193,15 @@ const DevelopmentalPlayGroupRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Developmental Playgroup"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Developmental Playgroup"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Developmental Playgroup"]
+        })(),
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],

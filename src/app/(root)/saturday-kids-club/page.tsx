@@ -184,7 +184,15 @@ const SaturdayKidsClub = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Saturday Kids Club"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Saturday Kids Club"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Saturday Kids Club"]
+        })(),
       saturdayClubSchedule: selectedChild?.saturdayClubSchedule || "",
       summerCampSchedule: selectedChild?.summerCampSchedule || "",
       hasSibling: selectedChild?.hasSibling || "",

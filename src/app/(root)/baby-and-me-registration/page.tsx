@@ -194,7 +194,15 @@ const BabyAndMeRegistration = () => {
       emergencyContactRelationshipToChild: selectedChild?.emergencyContactRelationshipToChild || "",
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
-      programs: selectedChild?.programs || ["Baby & Me"],
+      // Ensure only programs relevant to this page are pre-selected
+      programs:
+        (() => {
+          const allowedPrograms = ["Baby & Me", "Developmental Playgroup"]
+          const fromSelected = (selectedChild?.programs || []).filter((p: string) =>
+            allowedPrograms.includes(p)
+          )
+          return fromSelected.length ? fromSelected : ["Baby & Me"]
+        })(),
       hasSibling: selectedChild?.hasSibling || "",
       hasAllergies: selectedChild?.hasAllergies || "",
       allergies: selectedChild?.allergies || [],
