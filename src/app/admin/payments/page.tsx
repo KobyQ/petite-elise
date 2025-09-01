@@ -38,7 +38,7 @@ const SCHEDULE_OPTIONS: Record<string, string[]> = {
   ],
   "Summer Camp": ["full month", "weekly", "daily"],
   "Christmas Camp": ["weekly", "daily"],
-  "Childminding": ["hourly", "full day"],
+  "Childminding": ["hourly", "full day", "monthly"],
   "Code Ninjas Club": ["full term"],
   "Baby & Me": ["monthly"],
   "Developmental Playgroup": ["monthly"],

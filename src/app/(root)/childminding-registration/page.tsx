@@ -53,6 +53,24 @@ const ChildMindingRegistration = () => {
 
   const fetchPricingForSchedule = async (schedule: string) => {
     try {
+      // For monthly schedules, fetch monthly pricing
+      if (schedule === "monthly") {
+        const { data, error } = await supabase
+          .from("program_pricing")
+          .select("*")
+          .eq("program_name", "Childminding")
+          .eq("schedule", "monthly")
+          .single()
+
+        if (error) {
+          console.error("Error fetching monthly pricing:", error)
+          return null
+        }
+
+        return data
+      }
+
+      // For hourly and full day schedules, fetch by specific schedule
       const { data, error } = await supabase
         .from("program_pricing")
         .select("*")
