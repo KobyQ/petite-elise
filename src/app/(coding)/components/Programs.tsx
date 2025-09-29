@@ -23,17 +23,17 @@ const Programs = () => {
             <div className="h-1 bg-coding"></div>
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                <BsPuzzle className="h-5 w-5 text-coding" /> Mini Coders Cohort 1
+                <BsPuzzle className="h-5 w-5 text-coding" /> Scratch Programming for Mini Coders
               </CardTitle>
               <CardDescription className="text-lg font-medium text-coding">For 6-9 years</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
                 {[
-                  "Intermediate Coding with Codeit",
-                  "Programming Fundamentals",
-                  "Game Development",
-                  "Problem Solving & Storytelling",
+                  "Coding Basics",
+                  "Scratch Jr ",
+                  "Loops",
+                  "Animations",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <div className="h-6 w-6 rounded-full bg-lime-950 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -56,13 +56,13 @@ const Programs = () => {
             <div className="h-1 bg-coding"></div>
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                <FaCode className="h-5 w-5 text-coding" /> Mini Coders Cohort 2
+                <FaCode className="h-5 w-5 text-coding" />  Advanced Scratch & HTML Basics For Little Ninjas
               </CardTitle>
-              <CardDescription className="text-lg font-medium text-coding">For 6-9 years</CardDescription>
+              <CardDescription className="text-lg font-medium text-coding">For 10-13 years</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {["Coding Basics", "Scratch Jr", "Loops", "Animations"].map((item, i) => (
+                {["Advanced Motion &  Blocks", " Creating Games", "Advanced Character & Sprites ", "Introduction to HTML"].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <div className="h-6 w-6 rounded-full bg-lime-950 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-coding text-sm">✓</span>

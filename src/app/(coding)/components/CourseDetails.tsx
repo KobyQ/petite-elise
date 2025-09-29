@@ -106,7 +106,7 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Registration Deadline
                       </h4>
-                      <p className="mt-1 text-gray-400"> 2nd July,2025</p>
+                      <p className="mt-1 text-gray-400"> 2nd October, 2025</p>
                     </div>
                   </div>
 
@@ -118,7 +118,7 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Cohort Starts
                       </h4>
-                      <p className="mt-1 text-gray-400">7th July, 2025</p>
+                      <p className="mt-1 text-gray-400">4th October, 2025</p>
                     </div>
                   </div>
 
