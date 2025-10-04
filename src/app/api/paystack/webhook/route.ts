@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
         contactMode: registrationData.contactMode,
         childName: registrationData.childName,
         ageGroup: registrationData.ageGroup,
+        age: registrationData.age,
+        dateOfBirth: registrationData.dateOfBirth,
         schedule: registrationData.schedule,
         hasCodingExperience: registrationData.hasCodingExperience,
         codingExperience: registrationData.codingExperience,
@@ -216,7 +218,6 @@ export async function POST(request: NextRequest) {
         // Handle Christmas Camp registrations (including siblings)
         if (registrationData.children && Array.isArray(registrationData.children)) {
           // Multiple children registration - save each as individual record
-          console.log("Processing Christmas Camp children:", registrationData.children.length);
           for (const child of registrationData.children) {
             const childrenData = {
               childName: child.childName || "",
