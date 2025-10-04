@@ -34,7 +34,7 @@ const validationSchema = Yup.object({
     .required("Email is required"),
   contactMode: Yup.string().required("Please select a contact mode"),
   childName: Yup.string().required("Child's name is required"),
-  ageGroup: Yup.string().required("Please select an age group"),
+  // ageGroup: Yup.string().required("Please select an age group"),
   hasCodingExperience: Yup.string().required("Please select an option"),
   codingExperience: Yup.string().when("hasCodingExperience", {
     is: "yes",
@@ -256,7 +256,7 @@ export default function RegistrationForm() {
       dropChildOffSelf: selectedChild?.dropChildOffSelf || "",
       dropOffNames: selectedChild?.dropOffNames || [{ name: "", relationToChild: "" }],
       childName: selectedChild?.childName || "",
-      ageGroup: selectedChild?.ageGroup || "",
+      // ageGroup: selectedChild?.ageGroup || "",
       hasCodingExperience: selectedChild?.hasCodingExperience || "",
       codingExperience:  selectedChild?.hasCodingExperience || "",
       schedule: selectedChild?.schedule?.toLowerCase()|| "",
@@ -359,7 +359,7 @@ export default function RegistrationForm() {
     },
   });
 
-  const { values, errors, handleSubmit, isSubmitting, setFieldValue, setFieldError, isValid, dirty } = formik;
+  const { values, errors, handleSubmit, isSubmitting, setFieldValue,validateForm, setFieldError, isValid, dirty } = formik;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -946,23 +946,35 @@ export default function RegistrationForm() {
                         transition={{ delay: 0.5 }}
                         className="pt-4"
                       >
-                        <Button
-                          type="submit"
-                          disabled={isSubmitting || submittingPayment || !(isValid && dirty)}
-                          className="w-full bg-lime-500 hover:bg-lime-600 text-black font-semibold py-6 text-lg relative overflow-hidden group"
-                        >
-                          {isSubmitting || submittingPayment ? (
-                            <div className="flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                              Processing...
-                            </div>
-                          ) : (
-                            <>
-                              <span className="relative z-10">Submit Registration</span>
-                              <span className="absolute inset-0 h-full w-0 bg-lime-600 transition-all duration-300 ease-out group-hover:w-full"></span>
-                            </>
-                          )}
-                        </Button>
+                    <Button
+  type="button" // ⬅️ not "submit", so we can manually control validation
+  onClick={async () => {
+    const errors = await validateForm(); // Formik validate
+    if (Object.keys(errors).length > 0) {
+      // Show toast for the first error
+      const firstErrorField = Object.keys(errors)[0];
+      toast.error(`${firstErrorField} is required`, {
+        position: "top-right",
+      });
+    } else {
+      // No errors → actually submit form
+      handleSubmit();
+    }
+  }}
+  className="w-full bg-lime-500 hover:bg-lime-600 text-black font-semibold py-6 text-lg relative overflow-hidden group"
+>
+  {isSubmitting || submittingPayment ? (
+    <div className="flex items-center justify-center">
+      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+      Processing...
+    </div>
+  ) : (
+    <>
+      <span className="relative z-10">Submit Registration</span>
+      <span className="absolute inset-0 h-full w-0 bg-lime-600 transition-all duration-300 ease-out group-hover:w-full"></span>
+    </>
+  )}
+</Button>
                       </motion.div>
                     </Form>
 
