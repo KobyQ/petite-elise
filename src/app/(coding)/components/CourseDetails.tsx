@@ -10,9 +10,9 @@ import {
   FaCalendarAlt,
   FaClock,
   FaMapMarkerAlt,
-  FaUsers,
 } from "react-icons/fa";
 import { formatMoneyToCedis } from "@/utils/constants";
+import { IoIosPricetags } from "react-icons/io";
 
 interface CodeNinjaConfig {
   registration_deadline: string;
@@ -173,16 +173,15 @@ const CourseDetails = () => {
 
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 rounded-full bg-lime-950 flex items-center justify-center flex-shrink-0">
-                    <FaUsers className="h-6 w-6 text-coding" />
+                    <IoIosPricetags className="h-6 w-6 text-coding" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Limited Slots</h4>
+                       <div>
+                    <h4 className="font-semibold text-white">Cost</h4>
                     <p className="mt-1 text-gray-400">
-                      20 students only!
-                      <br />
-                      Cost: {pricing  ? formatMoneyToCedis(pricing) : "TBD"} per child
+                       Cost: {pricing  ? formatMoneyToCedis(pricing) : "TBD"} per child
                     </p>
                   </div>
+              
                 </div>
               </div>
             </div>
