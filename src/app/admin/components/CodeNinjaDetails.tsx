@@ -103,7 +103,7 @@ const CodeNinjaDetails = ({
             </div>
             <div>
             <p className="text-sm text-gray-500">Date of Birth</p>
-            <p className="font-semibold text-lg">{data?.dob || "N/A"}</p>
+            <p className="font-semibold text-lg">{data?.dateOfBirth || "N/A"}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Age</p>
