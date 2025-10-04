@@ -6,6 +6,7 @@ import Founders from "../components/Founders";
 import HeroSection from "../components/HeroSection";
 import Partnership from "../components/Partnership";
 import Programs from "../components/Programs";
+// CodeNinjaConfig component removed - data now integrated into CourseDetails
 
 
 export const metadata: Metadata = {

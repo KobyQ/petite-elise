@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaCode, FaHome, FaUsers, FaUserShield, FaMoneyBillWave, FaFileInvoiceDollar, FaTicketAlt, FaStore, FaShoppingCart, FaTags, FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaCode, FaHome, FaUsers, FaUserShield, FaMoneyBillWave, FaFileInvoiceDollar, FaTicketAlt, FaStore, FaShoppingCart, FaTags, FaChevronDown, FaChevronRight, FaCog } from "react-icons/fa";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -14,6 +14,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/admin/dashboard", icon: FaHome },
     { name: "Students", path: "/admin/students", icon: FaUsers },
     { name: "Code Ninjas", path: "/admin/code-ninjas", icon: FaCode },
+    { name: "Code Ninja Config", path: "/admin/code-ninja-config", icon: FaCog },
     { name: "Fee Requests", path: "/admin/fee-requests", icon: FaFileInvoiceDollar },
     { name: "Discount Codes", path: "/admin/discount-codes", icon: FaTicketAlt },
     { name: "Payment Configs", path: "/admin/payments", icon: FaMoneyBillWave },

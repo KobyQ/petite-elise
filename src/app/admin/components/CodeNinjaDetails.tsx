@@ -101,9 +101,13 @@ const CodeNinjaDetails = ({
               <p className="text-sm text-gray-500">Child Name</p>
               <p className="font-semibold text-lg">{data.childName}</p>
             </div>
+            <div>
+            <p className="text-sm text-gray-500">Date of Birth</p>
+            <p className="font-semibold text-lg">{data?.dob || "N/A"}</p>
+          </div>
           <div>
-            <p className="text-sm text-gray-500">Age Group</p>
-            <p className="font-semibold text-lg">{data.ageGroup}</p>
+            <p className="text-sm text-gray-500">Age</p>
+            <p className="font-semibold text-lg">{data?.age || "N/A"}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Parent Name</p>
@@ -133,10 +137,7 @@ const CodeNinjaDetails = ({
               </p>
             </div>
           )}
-          <div>
-            <p className="text-sm text-gray-500">Payment Method</p>
-            <p className="font-semibold text-lg">{data.paymentMethod}</p>
-          </div>
+    
           <div>
             <p className="text-sm text-gray-500">Photograph Usage Consent</p>
             <p className="font-semibold text-lg">{data.photographUsageConsent}</p>

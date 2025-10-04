@@ -55,3 +55,6 @@ html {
   display: none;  /* Safari and Chrome */
 }
 
+#dob::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

@@ -1,7 +1,9 @@
+"use client"
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaBolt,
   FaBookOpen,
@@ -10,8 +12,107 @@ import {
   FaMapMarkerAlt,
   FaUsers,
 } from "react-icons/fa";
+import { formatMoneyToCedis } from "@/utils/constants";
+
+interface CodeNinjaConfig {
+  registration_deadline: string;
+  cohort_starts: string;
+  programs: any[];
+}
+
+interface PricingItem {
+  id: string;
+  program_name: string;
+  schedule: string;
+  price: number;
+  created_at: string;
+}
 
 const CourseDetails = () => {
+  const [config, setConfig] = useState<CodeNinjaConfig | null>(null);
+  const [pricing, setPricing] = useState<number>();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchConfig();
+    fetchPricing();
+  }, []);
+
+  
+
+  const fetchConfig = async () => {
+    try {
+      const response = await fetch("/api/code-ninja-config");
+      const result = await response.json();
+      
+      if (response.ok && result.data) {
+        setConfig(result.data);
+      } else {
+        console.error("Error fetching config:", result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching config:", error);
+    }
+  };
+
+  const fetchPricing = async () => {
+    try {
+      const response = await fetch("/api/code-ninja-pricing");
+      const result = await response.json();
+      
+      if (response.ok && result.data) {
+
+        // Filter for Code Ninjas Club pricing
+      
+        setPricing(result?.data?.[0]?.price);
+      } else {
+        console.error("Error fetching pricing:", result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching pricing:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "TBD";
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      return "TBD";
+    }
+  };
+
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-700 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-700 rounded w-96 mx-auto mb-8"></div>
+              <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                <div className="h-64 bg-gray-700 rounded"></div>
+                <div className="h-64 bg-gray-700 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+
+
   return (
     <section className="py-20 bg-black">
       <div className="container mx-auto px-4">
@@ -79,7 +180,7 @@ const CourseDetails = () => {
                     <p className="mt-1 text-gray-400">
                       20 students only!
                       <br />
-                      Cost: GHS 1,500 per child
+                      Cost: {pricing  ? formatMoneyToCedis(pricing) : "TBD"} per child
                     </p>
                   </div>
                 </div>
@@ -106,7 +207,9 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Registration Deadline
                       </h4>
-                      <p className="mt-1 text-gray-400"> 2nd October, 2025</p>
+                      <p className="mt-1 text-gray-400">
+                        {config ? formatDate(config.registration_deadline) : "TBD"}
+                      </p>
                     </div>
                   </div>
 
@@ -118,7 +221,9 @@ const CourseDetails = () => {
                       <h4 className="font-semibold text-white">
                         Cohort Starts
                       </h4>
-                      <p className="mt-1 text-gray-400">4th October, 2025</p>
+                      <p className="mt-1 text-gray-400">
+                        {config ? formatDate(config.cohort_starts) : "TBD"}
+                      </p>
                     </div>
                   </div>
 
